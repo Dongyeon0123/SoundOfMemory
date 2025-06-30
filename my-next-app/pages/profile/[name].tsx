@@ -54,9 +54,34 @@ const ProfilePage: React.FC = () => {
       <div className={styles.centerCard}>
         {/* 헤더 */}
         <div className={styles.fixedHeader}>
-          <div className={styles.headerContent}>
-            <Image src="/logo.png" alt="logo" width={60} height={60} />
-            <span style={{ fontWeight: 700, fontSize: 22 }}>{profile.name} 프로필</span>
+          <div className={styles.headerContent} style={{ position: 'relative', justifyContent: 'center' }}>
+            {/* 뒤로가기 버튼 */}
+            <button
+              onClick={() => router.back()}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                height: 40,
+                width: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              aria-label="뒤로가기"
+            >
+              {/* 뒤로가기 아이콘 (SVG) */}
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            {/* 가운데 프로필 텍스트 */}
+            <span style={{ fontWeight: 700, fontSize: 22, textAlign: 'center' }}>프로필</span>
           </div>
           <div className={styles.grayLine} />
         </div>
@@ -77,4 +102,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage; 
+export default ProfilePage;
