@@ -13,6 +13,8 @@ const myAvatar = profiles.find(p => p.name === '임승원');
 const favorites = profiles.filter(p => p.name === '한윤석');
 const friends = profiles.filter(p => ['이동연', '김희용', '박준형', 'DongYeon'].includes(p.name));
 
+const ICON_SIZE = 24;
+
 export default function Home() {
   const profile = useSelector((state: RootState) => state.profile);
   return (
@@ -21,18 +23,14 @@ export default function Home() {
         {/* 헤더 */}
         <div className={styles.fixedHeader}>
           <div className={styles.headerContent}>
-            <Image src="/logo.png" alt="logo" width={60} height={60} />
-            <div className={styles.iconGroup}>
-              <FiSearch size={26} />
-              <div className={styles.iconWithBadge}>
-                <IoNotificationsOutline size={26} />
-                <span className={styles.plusBadge}>+</span>
-              </div>
-              <div className={styles.iconWithBadge}>
-                <FaUser size={26} />
-                <span className={styles.plusBadge}>+</span>
-              </div>
-              <FiSettings size={26} />
+            <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+              <Image src="/logo.png" alt="logo" width={60} height={60} />
+            </Link>
+            <div className={styles.icon}>
+                <FiSearch size={ICON_SIZE} color="#222" />
+                <IoNotificationsOutline size={ICON_SIZE} color="#222" />
+                <FaUser size={ICON_SIZE} color="#222" />
+                <FiSettings size={ICON_SIZE} color="#222" />
             </div>
           </div>
           <div className={styles.grayLine} />
@@ -85,4 +83,4 @@ export default function Home() {
       </div>
     </div>
   );
-} 
+}
