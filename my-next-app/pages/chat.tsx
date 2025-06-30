@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Chat() {
+const Chat: React.FC = () => {
   return (
     <div style={{ paddingTop: 70 }}>
       <div style={{ marginTop: 32, textAlign: 'center' }}>
@@ -8,4 +8,6 @@ export default function Chat() {
       </div>
     </div>
   );
-} 
+};
+
+export default Chat; 
