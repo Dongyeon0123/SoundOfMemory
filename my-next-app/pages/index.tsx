@@ -9,9 +9,9 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { profiles } from '../profiles';
 
-const myAvatar = profiles.find(p => p.name === '임승원');
-const favorites = profiles.filter(p => p.name === '한윤석');
-const friends = profiles.filter(p => ['이동연', '김희용', '박준형', 'DongYeon'].includes(p.name));
+const myAvatar = profiles.find(p => p.id === '1');
+const favorites = profiles.filter(p => p.id === '3');
+const friends = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
 
 const ICON_SIZE = 24;
 
@@ -41,7 +41,7 @@ export default function Home() {
           <div className={styles.sectionBlock}>
             <h4 className={styles.sectionTitle}>나의 아바타</h4>
             {myAvatar && (
-              <Link href={`/profile/${myAvatar.name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link href={`/profile/${myAvatar.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
                   <div className={styles.avatarWrap}>
                     <Image src={myAvatar.img} alt={myAvatar.name} width={56} height={56} className={styles.avatarImg} />
@@ -55,7 +55,7 @@ export default function Home() {
           <div className={styles.sectionBlock}>
             <h4 className={styles.sectionTitle}>즐겨찾기</h4>
             {favorites.map(friend => (
-              <Link href={`/profile/${friend.name}`} key={friend.name} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link href={`/profile/${friend.id}`} key={friend.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
                   <div className={styles.avatarWrap}>
                     <Image src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
@@ -69,7 +69,7 @@ export default function Home() {
           <div className={styles.sectionBlock}>
             <h4 className={styles.sectionTitle}>친구</h4>
             {friends.map(friend => (
-              <Link href={`/profile/${friend.name}`} key={friend.name} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link href={`/profile/${friend.id}`} key={friend.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
                   <div className={styles.avatarWrap}>
                     <Image src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
