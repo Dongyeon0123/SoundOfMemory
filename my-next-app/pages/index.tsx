@@ -7,15 +7,15 @@ import styles from '../styles/styles.module.css';
 import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { profiles } from '../profiles';
+import { profiles, Profile } from '../profiles';
 
-const myAvatar = profiles.find(p => p.id === '1');
-const favorites = profiles.filter(p => p.id === '3');
-const friends = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
+const myAvatar: Profile | undefined = profiles.find(p => p.id === '1');
+const favorites: Profile[] = profiles.filter(p => p.id === '3');
+const friends: Profile[] = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
 
 const ICON_SIZE = 20;
 
-export default function Home() {
+const Home: React.FC = () => {
   const profile = useSelector((state: RootState) => state.profile);
   return (
     <div className={styles.fullContainer}>
@@ -83,4 +83,6 @@ export default function Home() {
       </div>
     </div>
   );
-}
+};
+
+export default Home;

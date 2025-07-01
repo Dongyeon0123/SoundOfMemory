@@ -1,24 +1,17 @@
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import styles from '../../styles/styles.module.css';
-import { profiles } from '../../profiles';
+import { profiles, Profile } from '../../profiles';
 import { FiEdit2 } from 'react-icons/fi';
 import { MdDocumentScanner } from 'react-icons/md';
 import { BiQrScan } from 'react-icons/bi';
 
-interface Profile {
-  id: string;
-  name: string;
-  desc: string;
-  img: string;
-}
-
-const ICON_SIZE = 20;
+const ICON_SIZE = 24;
 
 const ProfilePage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
-  const profile = profiles.find((p: Profile) => p.id === id);
+  const profile: Profile | undefined = profiles.find((p: Profile) => p.id === id);
 
   if (!profile) return <div style={{ padding: 24 }}>존재하지 않는 프로필입니다.</div>;
 
@@ -51,7 +44,7 @@ const ProfilePage: React.FC = () => {
               }}
               aria-label="뒤로가기"
             >
-              <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                 <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
@@ -123,7 +116,7 @@ const ProfilePage: React.FC = () => {
             </div>
             <div style={{ marginTop: 0, textAlign: 'center' }}>
               <div className={styles.friendName} style={{ fontSize: 22 }}>{profile.name}</div>
-              <div style={{ marginTop: 12, color: '#9095A0FF', fontSize: 16 }}>{profile.desc}</div>
+              <div style={{ marginTop: 12, color: '#555', fontSize: 16 }}>{profile.desc}</div>
             </div>
           </div>
         </div>
