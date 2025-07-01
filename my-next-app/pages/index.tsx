@@ -20,7 +20,6 @@ const Home: React.FC = () => {
   return (
     <div className={styles.fullContainer}>
       <div className={styles.centerCard}>
-        {/* 헤더 */}
         <div className={styles.fixedHeader}>
           <div className={styles.headerContent}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
