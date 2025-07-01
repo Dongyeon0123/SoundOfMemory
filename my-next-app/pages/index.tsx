@@ -35,7 +35,7 @@ const Home: React.FC = () => {
           </div>
           <div className={`${styles.grayLine} ${styles.grayLineWithMargin}`} />
         </div>
-        {/* 본문 */}
+        
         <div className={styles.scrollMain}>
           {/* 나의 아바타 */}
           <div className={styles.sectionBlock}>
