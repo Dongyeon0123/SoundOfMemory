@@ -37,7 +37,7 @@ const Home: React.FC = () => {
         </div>
         
         <div className={styles.scrollMain}>
-          {/* 나의 아바타 */}
+          
           <div className={styles.sectionBlock}>
             <h4 className={styles.sectionTitle}>나의 아바타</h4>
             {myAvatar && (
