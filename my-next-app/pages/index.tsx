@@ -13,7 +13,7 @@ const myAvatar = profiles.find(p => p.id === '1');
 const favorites = profiles.filter(p => p.id === '3');
 const friends = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
 
-const ICON_SIZE = 24;
+const ICON_SIZE = 20;
 
 export default function Home() {
   const profile = useSelector((state: RootState) => state.profile);
@@ -33,7 +33,7 @@ export default function Home() {
                 <FiSettings size={ICON_SIZE} color="#222" />
             </div>
           </div>
-          <div className={styles.grayLine} />
+          <div className={`${styles.grayLine} ${styles.grayLineWithMargin}`} />
         </div>
         {/* 본문 */}
         <div className={styles.scrollMain}>

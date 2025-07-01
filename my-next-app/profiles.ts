@@ -2,13 +2,13 @@ export const profiles = [
   {
     id: '1',
     name: '임승원',
-    desc: 'AI, 프론트엔드, UX에 관심이 많아요.',
+    desc: '@의사',
     img: '/Selection.png',
   },
   {
     id: '2',
     name: '이동연',
-    desc: 'React, TypeScript, 음악을 좋아하는 개발자.',
+    desc: '@개발자',
     img: '/Selection-5.png',
   },
   {

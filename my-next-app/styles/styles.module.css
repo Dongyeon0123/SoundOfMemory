@@ -1,3 +1,4 @@
+/* 전체 뷰포트 중앙 카드 배치 */
 .fullContainer {
   width: 100vw;
   height: 100vh;
@@ -8,9 +9,10 @@
   padding: 0;
 }
 
+/* 카드형 컨테이너 */
 .centerCard {
-  width: 430px;
-  height: 932px;
+  width: 393px;
+  height: 852px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
@@ -19,32 +21,36 @@
   flex-direction: column;
 }
 
+/* 상단 고정 헤더 */
 .fixedHeader {
   position: sticky;
   top: 30px;
   left: 0;
   background: #fff;
-  z-index: 100;
+  z-index: 1;
   box-sizing: border-box;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  /* width: 100%; ← 삭제 또는 주석처리 */
 }
 
+/* 헤더 내부 레이아웃 */
 .headerContent {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px; /* 좌우 여백 넉넉하게 */
+  padding: 0 16px;
   height: 70px;
-  margin-bottom: 15px;
+  margin-bottom: 0;
+  position: relative;
 }
 
+/* 아이콘 그룹 */
 .icon {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
+/* 알림 뱃지 */
 .plusBadge {
   position: absolute;
   right: -4px;
@@ -61,27 +67,54 @@
   font-weight: bold;
 }
 
+/* 헤더 아래 구분선 */
 .grayLine {
   width: 100%;
   height: 1px;
   background: #D3D3D3;
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
+.grayLineWithMargin {
+  margin-bottom: 30px;
+}
+
+/* 메인 헤더(아바타 등) */
+.mainHeader {
+  width: 100%;
+  margin: 0;
+  padding: 5px 0;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('/background.png');
+  background-repeat: no-repeat;
+  background-size: 100% 50%;
+  background-position: top center;
+  height: 120px;
+}
+
+/* 스크롤 가능한 본문 */
 .scrollMain {
-  margin-top: 30px;
   flex: 1;
-  overflow-y: auto;
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: stretch;
   font-size: 20px;
   font-weight: 500;
-  padding: 24px 0 0 0;
+  padding: 30px 0 0 0;
   background: #fff;
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
+  z-index: 1;
+}
+
+.scrollMainProfile {
+  z-index: 0 !important;
 }
 
 /* 반응형: 모바일 환경 최적화 */
@@ -89,9 +122,13 @@
   .fullContainer {
     padding: 0;
   }
+  .centerCard {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
   .fixedHeader {
     border-radius: 0;
-    /* width: 100vw; ← 삭제 또는 주석처리 */
     min-width: 0;
   }
   .headerContent {
@@ -99,7 +136,7 @@
     padding: 0 10px;
   }
   .scrollMain {
-    margin-top: 48px;
+    margin-top: 0;
     font-size: 17px;
     padding: 16px 0 0 0;
   }
@@ -108,13 +145,19 @@
     height: 12px;
     font-size: 9px;
   }
+  .mainHeader {
+    width: 100vw;
+    border-radius: 0;
+  }
 }
 
+/* 섹션 블록 */
 .sectionBlock {
   width: 100%;
   margin-bottom: 32px;
 }
 
+/* 섹션 타이틀 */
 .sectionTitle {
   margin: 0 0 12px 0;
   padding-left: 24px;
@@ -124,6 +167,7 @@
   color: #222;
 }
 
+/* 친구 리스트 행 */
 .friendRow {
   display: flex;
   align-items: center;
@@ -132,9 +176,17 @@
   margin-bottom: 30px;
 }
 
+.friendRow .avatarWrap {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 56px !important;
+  height: 56px !important;
+}
+
+/* 아바타 */
 .avatarWrap {
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid #eee;
@@ -142,6 +194,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .avatarImg {
