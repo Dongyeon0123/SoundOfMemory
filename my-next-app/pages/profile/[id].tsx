@@ -117,6 +117,9 @@ const ProfilePage: React.FC = () => {
             <div style={{ marginTop: 0, textAlign: 'center' }}>
               <div className={styles.friendName} style={{ fontSize: 22 }}>{profile.name}</div>
               <div style={{ marginTop: 12, color: '#555', fontSize: 16 }}>{profile.desc}</div>
+              <div style={{ marginTop: 10, color: '#636AE8FF', fontSize: 16, textAlign: 'center', }}>{profile.tag.map((t, i) => (
+                <span key={i} style={{ marginRight: 14 }}>{t}</span>
+              ))}</div>
             </div>
           </div>
         </div>
