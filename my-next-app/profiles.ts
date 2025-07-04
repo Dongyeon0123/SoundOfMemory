@@ -5,6 +5,7 @@ export interface Profile {
   img: string;
   tag: string[];
   mbti?: string;
+  introduce?: string;
 }
 
 export const profiles: Profile[] = [
@@ -15,6 +16,7 @@ export const profiles: Profile[] = [
     img: '/Selection.png',
     tag: ['#여행', '#AI서비스', '#드론'],
     mbti: 'ESTJ',
+    introduce: '안녕하세요, <임승원>입니다. 여행과 독서를 좋아하며 새로운 사람들과의 소통을 즐깁니다. 평범한 일상 속에서 작은 행복을 찾는 것을 좋아해요. 저의 프로필에 관심 가져주셔서 감사합니다!',
   },
   {
     id: '2',
@@ -23,6 +25,7 @@ export const profiles: Profile[] = [
     img: '/Selection-5.png',
     tag: ['#축구', '#개발', '#여행'],
     mbti: 'ESTP',
+    introduce: '',
   },
   {
     id: '3',
@@ -31,6 +34,7 @@ export const profiles: Profile[] = [
     img: '/Selection-2.png',
     tag: ['#여행', '#백엔드', '#개발'],
     mbti: '',
+    introduce: '',
   },
   {
     id: '4',
@@ -39,6 +43,7 @@ export const profiles: Profile[] = [
     img: '/Selection-3.png',
     tag: ['#알고리즘', '#데이터', '#개발'],
     mbti: '',
+    introduce: '',
   },
   {
     id: '5',
@@ -47,6 +52,7 @@ export const profiles: Profile[] = [
     img: '/Selection-4.png',
     tag: ['#기획', '#디자인'],
     mbti: '',
+    introduce: '',
   },
   {
     id: '6',
@@ -55,5 +61,6 @@ export const profiles: Profile[] = [
     img: '/Selection-5.png',
     tag: ['#음악'],
     mbti: '',
+    introduce: '',
   },
 ]; 
