@@ -117,7 +117,7 @@ const ProfilePage: React.FC = () => {
             </div>
             <div style={{ marginTop: 0, textAlign: 'center' }}>
               <div className={styles.friendName} style={{ fontSize: 22 }}>{profile.name}</div>
-              <div style={{ marginTop: 12, color: '#555', fontSize: 16 }}>{profile.desc}</div>
+              <div style={{ marginTop: 12, color: '#9095A0FF', fontSize: 16 }}>{profile.desc}</div>
               <div
                 style={{
                   marginTop: 12,

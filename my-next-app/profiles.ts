@@ -24,7 +24,7 @@ export const profiles: Profile[] = [
   {
     id: '1',
     name: '임승원',
-    desc: 'AI, 프론트엔드, UX에 관심이 많아요.',
+    desc: '@개발자',
     img: '/Selection.png',
     tag: ['#여행', '#AI서비스', '#드론'],
     mbti: 'ESTJ',
