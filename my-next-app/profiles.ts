@@ -1,4 +1,4 @@
-export interface Profile {
+export type Profile = {
   id: string;
   name: string;
   desc: string;
@@ -6,17 +6,38 @@ export interface Profile {
   tag: string[];
   mbti?: string;
   introduce?: string;
-}
+  history?: {
+    school: string;
+    period: string;
+    role: string;
+  }[];
+  career?: {
+    org: string;
+    dept: string;
+    period: string;
+    months: string;
+    role: string;
+  }[];
+};
 
 export const profiles: Profile[] = [
   {
     id: '1',
     name: '임승원',
-    desc: '@의사',
+    desc: 'AI, 프론트엔드, UX에 관심이 많아요.',
     img: '/Selection.png',
     tag: ['#여행', '#AI서비스', '#드론'],
     mbti: 'ESTJ',
     introduce: '안녕하세요, <임승원>입니다. 여행과 독서를 좋아하며 새로운 사람들과의 소통을 즐깁니다. 평범한 일상 속에서 작은 행복을 찾는 것을 좋아해요. 저의 프로필에 관심 가져주셔서 감사합니다!',
+    history: [
+      { school: '수유초등학교', period: '2007 ~ 2012', role: '학생' },
+      { school: '신일중학교', period: '2013 ~ 2015', role: '학생' },
+      { school: '하나고등학교', period: '2016 ~ 2018', role: '학생' },
+      { school: '건국대학교', period: '2020 ~', role: '학생' }
+    ],
+    career: [
+      { org: '35사단', dept: '드론봇담당관', period: '2022 ~ 2023', months: '6개월', role: '간부' }
+    ]
   },
   {
     id: '2',

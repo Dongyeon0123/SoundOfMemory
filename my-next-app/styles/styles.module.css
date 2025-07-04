@@ -111,6 +111,7 @@
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
   z-index: 1;
+  overflow-y: auto;
 }
 
 .scrollMainProfile {
@@ -289,4 +290,59 @@
   font-size: 18px;
   font-weight: 600;
   color: #222;
+}
+
+.historyBadge {
+  border-radius: 8px;
+  border-width: 1px;
+  height: 30px;
+  line-height: 30px;
+  border-color: #EBEBEA;
+  border-style: solid;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 12px;
+  display: inline-block;
+  min-width: 40px;
+  max-width: 40px;
+  text-align: center;
+  color: #000;
+}
+
+.historyBox {
+  position: relative;
+  margin-top: 10px;
+  width: 80%;
+  min-height: 60px;
+  height: auto;
+  border-radius: 8px;
+  border-width: 1px;
+  border-color: #EBEBEA;
+  border-style: solid;
+  box-shadow: 0px 0px 1px #171a1f12, 0px 0px 2px #171a1f1F;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 16px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+}
+
+.historyContent {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 54px;
+  padding: 16px 24px;
+  box-sizing: border-box;
+  gap: 8px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-color: #EBEBEA;
+  border-style: solid;
+  box-shadow: 0px 0px 1px #171a1f12, 0px 0px 2px #171a1f1F;
 }

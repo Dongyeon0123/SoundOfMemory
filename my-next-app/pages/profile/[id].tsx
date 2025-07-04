@@ -164,6 +164,50 @@ const ProfilePage: React.FC = () => {
               <span style={{ fontSize: 15, color: '#888', fontWeight: 500, marginTop: 12 }}>{profile.introduce || '소개를 작성해보세요 !'}</span>
               <FiEdit2 size={20} color="#000" style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }} />
             </div>
+            {/* 이력 박스 */}
+            <div className={styles.historyBox}>
+              <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>이력</span>
+              <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 15, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+                {profile.history && profile.history.length > 0 ? (
+                  profile.history.map((h, i) => (
+                    <div key={i} className={styles.historyContent} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <span style={{ color: '#222', fontWeight: 600, fontSize: 16 }}>{h.school}</span>
+                        <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 2 }}>{h.period}</span>
+                      </div>
+                      <span className={styles.historyBadge}>{h.role}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span>이력이 없습니다.</span>
+                )}
+              </div>
+              <FiEdit2 size={20} color="#000" style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }} />
+            </div>
+            {/* 경력 박스 */}
+            <div className={styles.historyBox} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', position: 'relative', marginTop: 10 }}>
+              <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>경력</span>
+              <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 15, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+                {profile.career && profile.career.length > 0 ? (
+                  profile.career.map((c, i) => (
+                    <div key={i} className={styles.historyContent} style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'space-between', width: '100%' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <span style={{ color: '#222', fontWeight: 600, fontSize: 16 }}>{c.org}</span>
+                        <span style={{ color: '#555', fontWeight: 500, fontSize: 14, marginTop: 2 }}>{c.dept}</span>
+                        <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 2 }}>{c.period}</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                        <span className={styles.historyItemBadge}>{c.months}</span>
+                        <span className={styles.historyItemBadge}>{c.role}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <span>경력이 없습니다.</span>
+                )}
+              </div>
+              <FiEdit2 size={20} color="#000" style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }} />
+            </div>
           </div>
         </div>
       </div>
