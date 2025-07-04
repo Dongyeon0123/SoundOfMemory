@@ -9,6 +9,7 @@
   padding: 0;
 }
 
+/* 카드형 컨테이너 */
 .centerCard {
   width: 393px;
   height: 852px;
@@ -206,4 +207,66 @@
   font-size: 16px;
   font-weight: bold;
   color: #333;
+}
+
+.chatButton {
+  cursor: pointer;
+  margin-top: 10px;
+  width: 358px;
+  height: 44px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Inter;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: #FFFFFFFF;
+  background: #636AE8FF;
+  opacity: 1;
+  border: none;
+  border-radius: 6px;
+}
+  /* Hover */
+.chatButton:hover {
+  color: #FFFFFFFF;
+  background: #4850E4FF;
+}
+  /* Pressed */
+.chatButton:hover:active {
+  color: #FFFFFFFF;
+  background: #2C35E0FF;
+}
+  /* Disabled */
+.chatButton:disabled {
+  opacity: 0.4;
+}
+
+.profileIcons {
+  background-color: #F7F7F7FF;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mbtiBox {
+  position: relative;
+  margin-top: 10px;
+  width: 80%;
+  height: 84px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-color: #EBEBEA;
+  border-style: solid;
+  box-shadow: 0px 0px 1px #171a1f12, 0px 0px 2px #171a1f1F;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
 }
