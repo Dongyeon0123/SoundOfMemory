@@ -2,9 +2,10 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import styles from '../../styles/styles.module.css';
 import { profiles, Profile } from '../../profiles';
-import { FiEdit2 } from 'react-icons/fi';
+import { FiEdit2, FiPhone, FiAtSign } from 'react-icons/fi';
 import { MdDocumentScanner } from 'react-icons/md';
 import { BiQrScan } from 'react-icons/bi';
+import { FaChrome, FaYoutube } from 'react-icons/fa';
 
 const ICON_SIZE = 24;
 
@@ -117,9 +118,45 @@ const ProfilePage: React.FC = () => {
             <div style={{ marginTop: 0, textAlign: 'center' }}>
               <div className={styles.friendName} style={{ fontSize: 22 }}>{profile.name}</div>
               <div style={{ marginTop: 12, color: '#555', fontSize: 16 }}>{profile.desc}</div>
-              <div style={{ marginTop: 10, color: '#636AE8FF', fontSize: 16, textAlign: 'center', }}>{profile.tag.map((t, i) => (
-                <span key={i} style={{ marginRight: 14 }}>{t}</span>
-              ))}</div>
+              <div
+                style={{
+                  marginTop: 12,
+                  color: '#636AE8FF',
+                  fontSize: 16,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap',
+                  gap: 14,
+                  textAlign: 'center'
+                }}
+              >
+                {profile.tag.map((t, i) => (
+                  <span key={i}>{t}</span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <button className={styles.chatButton}>대화하기</button>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginTop: 16 }}>
+              <div className={styles.profileIcons}>
+                <FiPhone size={28} color="#000" style={{ cursor: 'pointer' }} />
+              </div>
+              <div className={styles.profileIcons}>
+                <FiAtSign size={28} color="#000" style={{ cursor: 'pointer' }} />
+              </div>
+              <div className={styles.profileIcons}>
+                <FaChrome size={28} color="#000" style={{ cursor: 'pointer' }} />
+              </div>
+              <div className={styles.profileIcons}>
+                <FaYoutube size={28} color="#FF0000" style={{ cursor: 'pointer' }} />
+              </div>
+            </div>
+            
+            <div className={styles.mbtiBox} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', position: 'relative' }}>
+              <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>MBTI</span>
+              <span style={{ fontSize: 15, color: '#888', fontWeight: 500, marginTop: 6 }}>{profile.mbti || '입력되지 않음'}</span>
+              <FiEdit2 size={20} color="#000" style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }} />
             </div>
           </div>
         </div>
