@@ -1,0 +1,105 @@
+.mbtiModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .mbtiModalContent {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px;
+    min-width: 320px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  
+  .mbtiModalTitle {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+  }
+  
+  .mbtiOptionGroup {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+  }
+  
+  .mbtiOptionButton {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #333;
+    font-weight: bold;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .mbtiOptionButton.selected {
+    border: 2px solid #636AE8FF;
+    background: #636AE8FF;
+    color: #fff;
+  }
+  
+  .mbtiModalActions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+  }
+  
+  .mbtiModalButton {
+    padding: 8px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+  
+  .mbtiModalButton.save {
+    border: none;
+    background: #636AE8FF;
+    color: #fff;
+    font-weight: 700;
+  }
+  
+  .mbtiBox {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+  }
+  
+  .mbtiBoxTitle {
+    font-size: 18px;
+    color: #222;
+    font-weight: 600;
+  }
+  
+  .mbtiBoxContent {
+    font-size: 15px;
+    color: #888;
+    font-weight: 500;
+    margin-top: 10px;
+  }
+  
+  .mbtiEditIcon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    cursor: pointer;
+  }
