@@ -7,6 +7,7 @@ import styles from '../styles/styles.module.css';
 import Link from 'next/link';
 import { profiles, Profile } from '../profiles';
 
+
 const myAvatar: Profile | undefined = profiles.find(p => p.id === '1');
 const favorites: Profile[] = profiles.filter(p => p.id === '3');
 const friends: Profile[] = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
@@ -81,5 +82,9 @@ const Home: React.FC = () => {
     </div>
   );
 };
+
+export async function getServerSideProps() {
+  return { props: {} };
+}
 
 export default Home;
