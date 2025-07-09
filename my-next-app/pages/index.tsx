@@ -40,7 +40,7 @@ const Home: React.FC = () => {
             {myAvatar && (
               <Link href={`/profile/${myAvatar.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
-                  <div className={styles.avatarWrap}>
+                  <div className={styles.HomeAvatarWrap}>
                     <Image src={myAvatar.img} alt={myAvatar.name} width={56} height={56} className={styles.avatarImg} />
                   </div>
                   <span className={styles.friendName}>{myAvatar.name}</span>
@@ -54,7 +54,7 @@ const Home: React.FC = () => {
             {favorites.map(friend => (
               <Link href={`/profile/${friend.id}`} key={friend.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
-                  <div className={styles.avatarWrap}>
+                  <div className={styles.HomeAvatarWrap}>
                     <Image src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
                   </div>
                   <span className={styles.friendName}>{friend.name}</span>
@@ -68,7 +68,7 @@ const Home: React.FC = () => {
             {friends.map(friend => (
               <Link href={`/profile/${friend.id}`} key={friend.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
-                  <div className={styles.avatarWrap}>
+                  <div className={styles.HomeAvatarWrap}>
                     <Image src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
                   </div>
                   <span className={styles.friendName}>{friend.name}</span>
