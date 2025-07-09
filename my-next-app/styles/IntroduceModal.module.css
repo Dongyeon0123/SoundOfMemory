@@ -1,0 +1,63 @@
+.introModalOverlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .introModalContent {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px;
+    min-width: 320px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  
+  .introModalTitle {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+  }
+  
+  .introTextarea {
+    width: 100%;
+    min-height: 80px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    resize: vertical;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .introModalActions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+  
+  .introModalButton {
+    padding: 8px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+  
+  .introModalButton.save {
+    border: none;
+    background: #636AE8FF;
+    color: #fff;
+    font-weight: 700;
+  }
+  
