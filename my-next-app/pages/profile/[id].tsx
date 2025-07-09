@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
 import styles from '../../styles/styles.module.css';
 import mbtiStyles from '../../styles/MbtiModal.module.css';
 import introStyles from '../../styles/IntroduceModal.module.css';
-import { profiles, Profile } from '../../profiles';
+import { fetchProfileById, updateProfileField } from '../../profiles';
+import type { Profile } from '../../profiles';
 import { FiEdit2, FiPhone, FiAtSign } from 'react-icons/fi';
 import { MdDocumentScanner } from 'react-icons/md';
 import { BiQrScan } from 'react-icons/bi';
@@ -128,29 +128,57 @@ function IntroduceModal({
 const ProfilePage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [showMBTIModal, setShowMBTIModal] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCareerModal, setShowCareerModal] = useState(false);
 
-  const [mbti, setMbti] = useState<string | undefined>(
-    profiles.find((p: Profile) => p.id === id)?.mbti
-  );
-  const [introduce, setIntroduce] = useState<string | undefined>(
-    profiles.find((p: Profile) => p.id === id)?.introduce
-  );
-  const [history, setHistory] = useState<any[]>(
-    profiles.find((p: Profile) => p.id === id)?.history ?? []
-  );
-  const [career, setCareer] = useState<any[]>(
-    profiles.find((p: Profile) => p.id === id)?.career ?? []
-  );
+  useEffect(() => {
+    console.log("id:", id);
+    if (typeof id === "string") {
+      fetchProfileById(id).then(profile => {
+        setProfile(profile);
+        console.log("파이어베이스에서 불러온 데이터:", profile);
+      });
+    }
+  }, [id]);
+
+  // 모달 관련 상태 (profile 데이터 기반)
+  const [mbti, setMbti] = useState<string | undefined>(undefined);
+  const [introduce, setIntroduce] = useState<string | undefined>(undefined);
+  const [history, setHistory] = useState<any[]>([]);
+  const [career, setCareer] = useState<any[]>([]);
+
+  // profile이 바뀔 때마다 상태 동기화
+  useEffect(() => {
+    setMbti(profile?.mbti);
+    setIntroduce(profile?.introduce);
+    setHistory(profile?.history ?? []);
+    setCareer(profile?.career ?? []);
+  }, [profile]);
 
   // 삭제 함수
   const handleDeleteHistory = (idx: number) => setHistory(prev => prev.filter((_, i) => i !== idx));
   const handleDeleteCareer = (idx: number) => setCareer(prev => prev.filter((_, i) => i !== idx));
 
-  const profile: Profile | undefined = profiles.find((p: Profile) => p.id === id);
+  // Firestore 동기화용 onSave 핸들러
+  const handleSaveMbti = (newMbti: string) => {
+    setMbti(newMbti);
+    if (profile) updateProfileField(profile.id, { mbti: newMbti });
+  };
+  const handleSaveIntroduce = (newIntro: string) => {
+    setIntroduce(newIntro);
+    if (profile) updateProfileField(profile.id, { introduce: newIntro });
+  };
+  const handleSaveHistory = (newHistory: any[]) => {
+    setHistory(newHistory);
+    if (profile) updateProfileField(profile.id, { history: newHistory });
+  };
+  const handleSaveCareer = (newCareer: any[]) => {
+    setCareer(newCareer);
+    if (profile) updateProfileField(profile.id, { career: newCareer });
+  };
 
   if (!profile) return <div style={{ padding: 24 }}>존재하지 않는 프로필입니다.</div>;
 
@@ -248,11 +276,29 @@ const ProfilePage: React.FC = () => {
         {/* 본문 */}
         <div className={styles.scrollMain + ' ' + styles.scrollMainProfile}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div className={styles.mainHeader}>
-              <div className={styles.avatarWrap}>
-                <Image src={profile.img} alt={profile.name} width={100} height={100} className={styles.avatarImg} />
-              </div>
+          <div className={styles.mainHeader}>
+          <div className={styles.bgImgWrap}>
+            {profile.backgroundImg && (
+              <img
+                src={profile.backgroundImg}
+                alt={profile.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: 'inherit' }}
+              />
+            )}
+          </div>
+            <div className={styles.avatarWrap}>
+              {profile.img && (
+                <img
+                  src={profile.img}
+                  alt={profile.name}
+                  width={100}
+                  height={100}
+                  className={styles.avatarImg}
+                  style={{ objectFit: 'cover', borderRadius: '50%' }}
+                />
+              )}
             </div>
+          </div>
             <div style={{ marginTop: 0, textAlign: 'center' }}>
               <div className={styles.friendName} style={{ fontSize: 22 }}>{profile.name}</div>
               <div style={{ marginTop: 12, color: '#9095A0FF', fontSize: 16 }}>{profile.desc}</div>
@@ -269,7 +315,7 @@ const ProfilePage: React.FC = () => {
                 }}
               >
                 {profile.tag.map((t, i) => (
-                  <span key={i}>{t}</span>
+                  <span key={i}>#{t}</span>
                 ))}
               </div>
             </div>
@@ -306,7 +352,7 @@ const ProfilePage: React.FC = () => {
               <MBTIModal
                 currentMBTI={mbti}
                 onClose={() => setShowMBTIModal(false)}
-                onSave={setMbti}
+                onSave={handleSaveMbti}
               />
             )}
 
@@ -325,7 +371,7 @@ const ProfilePage: React.FC = () => {
               <IntroduceModal
                 currentIntroduce={introduce}
                 onClose={() => setShowIntroModal(false)}
-                onSave={setIntroduce}
+                onSave={handleSaveIntroduce}
               />
             )}
 
@@ -390,7 +436,7 @@ const ProfilePage: React.FC = () => {
               open={showHistoryModal}
               items={history}
               onClose={() => setShowHistoryModal(false)}
-              onSave={setHistory}
+              onSave={handleSaveHistory}
             />
 
 
@@ -459,7 +505,7 @@ const ProfilePage: React.FC = () => {
                 open={showCareerModal}
                 items={career}
                 onClose={() => setShowCareerModal(false)}
-                onSave={setCareer}
+                onSave={handleSaveCareer}
               />
           </div>
         </div>
@@ -467,5 +513,9 @@ const ProfilePage: React.FC = () => {
     </div>
   );
 };
+
+export async function getServerSideProps() {
+  return { props: {} };
+}
 
 export default ProfilePage;
