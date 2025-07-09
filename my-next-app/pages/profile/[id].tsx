@@ -248,11 +248,26 @@ const ProfilePage: React.FC = () => {
         {/* 본문 */}
         <div className={styles.scrollMain + ' ' + styles.scrollMainProfile}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div className={styles.mainHeader}>
-              <div className={styles.avatarWrap}>
-                <Image src={profile.img} alt={profile.name} width={100} height={100} className={styles.avatarImg} />
-              </div>
+          <div className={styles.mainHeader}>
+          <div className={styles.bgImgWrap}>
+            <Image
+              src={profile.backgroundImg}
+              alt={profile.name}
+              fill
+              style={{ objectFit: 'cover', objectPosition: 'top' }}
+              priority
+            />
+          </div>
+            <div className={styles.avatarWrap}>
+              <Image
+                src={profile.img}
+                alt={profile.name}
+                width={100}
+                height={100}
+                className={styles.avatarImg}
+              />
             </div>
+          </div>
             <div style={{ marginTop: 0, textAlign: 'center' }}>
               <div className={styles.friendName} style={{ fontSize: 22 }}>{profile.name}</div>
               <div style={{ marginTop: 12, color: '#9095A0FF', fontSize: 16 }}>{profile.desc}</div>
