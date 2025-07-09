@@ -15,7 +15,7 @@ export type Profile = {
     org: string;
     dept: string;
     period: string;
-    months: string;
+    months: number;
     role: string;
   }[];
 };
@@ -36,7 +36,7 @@ export const profiles: Profile[] = [
       { school: '건국대학교', period: '2020 ~', role: '학생' }
     ],
     career: [
-      { org: '35사단', dept: '드론봇담당관', period: '2022 ~ 2023', months: '6개월', role: '간부' }
+      { org: '35사단', dept: '드론봇담당관', period: '2022 ~ 2023', months: 6, role: '간부' }
     ]
   },
   {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import styles from '../../styles/styles.module.css';
@@ -9,10 +9,12 @@ import { FiEdit2, FiPhone, FiAtSign } from 'react-icons/fi';
 import { MdDocumentScanner } from 'react-icons/md';
 import { BiQrScan } from 'react-icons/bi';
 import { FaChrome, FaYoutube } from 'react-icons/fa';
+import HistoryModal from './HistoryModal';
+import CareerModal from './CareerModal';
 
 const ICON_SIZE = 24;
 
-// MBTI Modal 컴포넌트
+// MBTI Modal
 const MBTI_LETTERS = [
   ['E', 'I'],
   ['S', 'N'],
@@ -81,7 +83,7 @@ function MBTIModal({ currentMBTI, onClose, onSave }: {
   );
 }
 
-// 소개(자기소개) Modal 컴포넌트
+// 소개(자기소개) Modal
 function IntroduceModal({
   currentIntroduce,
   onClose,
@@ -128,12 +130,25 @@ const ProfilePage: React.FC = () => {
   const { id } = router.query;
   const [showMBTIModal, setShowMBTIModal] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showCareerModal, setShowCareerModal] = useState(false);
+
   const [mbti, setMbti] = useState<string | undefined>(
     profiles.find((p: Profile) => p.id === id)?.mbti
   );
   const [introduce, setIntroduce] = useState<string | undefined>(
     profiles.find((p: Profile) => p.id === id)?.introduce
   );
+  const [history, setHistory] = useState<any[]>(
+    profiles.find((p: Profile) => p.id === id)?.history ?? []
+  );
+  const [career, setCareer] = useState<any[]>(
+    profiles.find((p: Profile) => p.id === id)?.career ?? []
+  );
+
+  // 삭제 함수
+  const handleDeleteHistory = (idx: number) => setHistory(prev => prev.filter((_, i) => i !== idx));
+  const handleDeleteCareer = (idx: number) => setCareer(prev => prev.filter((_, i) => i !== idx));
 
   const profile: Profile | undefined = profiles.find((p: Profile) => p.id === id);
 
@@ -277,7 +292,7 @@ const ProfilePage: React.FC = () => {
             </div>
             
             {/* MBTI 박스 */}
-            <div className={`${styles.mbtiBox} ${mbtiStyles.mbtiBox}`}>
+            <div className={`${styles.mbtiBox} ${mbtiStyles.mbtiBox}`} style={{ marginTop: 15 }}>
               <span className={mbtiStyles.mbtiBoxTitle}>MBTI</span>
               <span className={mbtiStyles.mbtiBoxContent}>{mbti || 'MBTI가 입력되지 않았습니다.'}</span>
               <FiEdit2
@@ -314,48 +329,138 @@ const ProfilePage: React.FC = () => {
               />
             )}
 
-            {/* 이력, 경력 박스 등은 기존 코드 그대로 */}
-            <div className={styles.historyBox}>
+            {/* 이력 박스 */}
+            <div className={styles.historyBox} style={{ position: 'relative' }}>
               <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>이력</span>
+              <FiEdit2
+                size={20}
+                color="#000"
+                style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }}
+                onClick={() => setShowHistoryModal(true)}
+              />
               <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 15, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
-                {profile.history && profile.history.length > 0 ? (
-                  profile.history.map((h, i) => (
-                    <div key={i} className={styles.historyContent} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                {history && history.length > 0 ? (
+                  history.map((h, i) => (
+                    <div
+                      key={i}
+                      className={styles.historyContent}
+                      style={{
+                        background: '#f6f8ff',
+                        borderRadius: 12,
+                        boxShadow: '0 1px 6px 0 rgba(99,106,232,0.07)',
+                        padding: '15px 16px 13px 16px',
+                        marginBottom: 8,
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <span style={{ color: '#222', fontWeight: 600, fontSize: 16 }}>{h.school}</span>
-                        <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 2 }}>{h.period}</span>
+                        <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 6 }}>{h.period}</span>
                       </div>
-                      <span className={styles.historyBadge}>{h.role}</span>
+                      
+                      <span
+                        style={{
+                          color: '#636AE8FF',
+                          fontWeight: 500,
+                          fontSize: 13,
+                          background: '#fff',
+                          border: '1px solid rgb(170, 170, 170)',
+                          borderRadius: 8,
+                          padding: '8px 4px',
+                          marginLeft: 16,
+                          display: 'inline-block',
+                          minWidth: 64,
+                          textAlign: 'center'
+                        }}
+                      >
+                        {h.role}
+                      </span>
                     </div>
                   ))
                 ) : (
                   <span>이력이 없습니다.</span>
                 )}
               </div>
-              <FiEdit2 size={20} color="#000" style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }} />
             </div>
-            <div className={styles.historyBox} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', position: 'relative', marginTop: 10 }}>
+            <HistoryModal
+              open={showHistoryModal}
+              items={history}
+              onClose={() => setShowHistoryModal(false)}
+              onSave={setHistory}
+            />
+
+
+            {/* 경력 박스 */}
+            <div className={styles.historyBox} style={{ position: 'relative', marginTop: 10, marginBottom: 10, }}>
               <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>경력</span>
+              <FiEdit2
+                size={20}
+                color="#000"
+                style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }}
+                onClick={() => setShowCareerModal(true)}
+              />
               <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 15, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
-                {profile.career && profile.career.length > 0 ? (
-                  profile.career.map((c, i) => (
-                    <div key={i} className={styles.historyContent} style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'space-between', width: '100%' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                {career && career.length > 0 ? (
+                  career.map((c, i) => (
+                    <div
+                      key={i}
+                      className={styles.historyContent}
+                      style={{
+                        background: '#f6f8ff',
+                        borderRadius: 12,
+                        boxShadow: '0 1px 6px 0 rgba(99,106,232,0.07)',
+                        padding: '15px 16px 13px 16px',
+                        marginBottom: 8,
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <span style={{ color: '#222', fontWeight: 600, fontSize: 16 }}>{c.org}</span>
-                        <span style={{ color: '#555', fontWeight: 500, fontSize: 14, marginTop: 2 }}>{c.dept}</span>
-                        <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 2 }}>{c.period} {c.months}</span>
+                        <span style={{ color: '#9095A0FF', fontWeight: 500, fontSize: 14, marginTop: 6, marginBottom: 6, }}>{c.dept}</span>
+                        <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 2 }}>
+                          {c.period}
+                          <span style={{ color: '#000', fontSize: 13, fontWeight: 600, marginLeft: 8 }}>{c.months}개월</span>
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                        <span className={styles.historyBadge}>{c.role}</span>
-                      </div>
+                      
+                      <span
+                        style={{
+                          color: '#636AE8FF',
+                          fontWeight: 500,
+                          fontSize: 13,
+                          background: '#fff',
+                          border: '1px solid rgb(170, 170, 170)',
+                          borderRadius: 8,
+                          padding: '8px 4px',
+                          marginLeft: 16,
+                          display: 'inline-block',
+                          minWidth: 64,
+                          textAlign: 'center'
+                        }}
+                      >
+                        {c.role}
+                      </span>
                     </div>
                   ))
                 ) : (
                   <span>경력이 없습니다.</span>
                 )}
               </div>
-              <FiEdit2 size={20} color="#000" style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }} />
             </div>
+              <CareerModal
+                open={showCareerModal}
+                items={career}
+                onClose={() => setShowCareerModal(false)}
+                onSave={setCareer}
+              />
           </div>
         </div>
       </div>

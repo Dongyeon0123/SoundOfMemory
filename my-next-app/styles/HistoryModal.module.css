@@ -1,0 +1,225 @@
+.modalOverlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.25s;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  
+  .modalContent {
+    background: #fff;
+    border-radius: 18px;
+    padding: 26px 18px 20px 18px;
+    min-width: 180px;
+    max-width: 340px;
+    box-shadow: 0 6px 22px 0 rgba(99,106,232,0.13), 0 1.5px 8px 0 rgba(0,0,0,0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    animation: modalPop 0.24s cubic-bezier(.33,1.02,.57,1.02);
+  }
+  
+  @keyframes modalPop {
+    0%   { transform: scale(0.92); opacity: 0; }
+    100% { transform: scale(1);    opacity: 1; }
+  }
+  
+  .modalTitle {
+    margin: 0 0 10px 0;
+    font-size: 22px;
+    font-weight: 800;
+    text-align: center;
+    color: #222;
+    letter-spacing: -1px;
+  }
+  
+  .listItem {
+    background: #F6F8FF;
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 4px 0 rgba(99,106,232,0.06);
+    transition: box-shadow 0.2s;
+  }
+  .listItem:hover {
+    box-shadow: 0 4px 16px 0 rgba(99,106,232,0.13);
+  }
+  
+  .actionBtn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: #636AE8FF;
+    font-weight: 700;
+    margin-left: 8px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    transition: background 0.13s;
+  }
+  .actionBtn:hover {
+    background: #F0F3FF;
+  }
+  
+  .actionBtn.delete {
+    color: #d32f2f;
+    font-weight: 600;
+  }
+  .actionBtn.delete:hover {
+    background: #FFF0F0;
+  }
+  
+  .addForm {
+    margin-top: 18px;
+    background: #F6F8FF;
+    border-radius: 10px;
+    padding: 14px 12px 10px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    align-items: center;
+  }
+  
+  .addBtn {
+    border: none;
+    background: #636AE8FF;
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: 8px;
+    padding: 9px 22px;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: background 0.16s;
+  }
+  .addBtn:hover {
+    background: #4752c7;
+  }
+  
+  .modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  
+  .modalButton {
+    padding: 8px 30px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    background: #E0E3E7;
+    color: #555;
+    transition: background 0.14s, color 0.14s;
+  }
+  .modalButton.save {
+    background: #636AE8FF;
+    color: #fff;
+  }
+  .modalButton.save:hover {
+    background: #4752c7;
+  }
+  .modalButton.cancel:hover {
+    background: #d7d7e8;
+  }
+
+  .modalBoxList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 10px 0 18px 0;
+  }
+  
+  .modalBoxItem {
+    background: #f6f8ff;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px 0 rgba(99,106,232,0.07);
+    padding: 5px 0 8px 5px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: box-shadow 0.18s;
+  }
+  
+  .modalBoxItem:hover {
+    box-shadow: 0 4px 16px 0 rgba(99,106,232,0.13);
+  }
+  
+  .modalBoxRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 18px;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  
+  .modalBoxLabel {
+    font-size: 14px;
+    color: #636AE8FF;
+    font-weight: 700;
+    margin-right: 6px;
+    min-width: 48px;
+  }
+  
+  .modalBoxValue, .modalBoxInput {
+    font-size: 14px;
+    color: #222;
+    font-weight: 500;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .modalBoxInput {
+    background: #f7f8fa;
+    border-radius: 6px;
+    border: 1px solid #e0e3e7;
+    padding: 5px 8px;
+    margin-left: 2px;
+    margin-right: 2px;
+    min-width: 70px;
+  }
+  
+  .modalBoxActions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+  }
+  
+  .modalAddBtn {
+    margin-top: 10px;
+    background: #fff;
+    border: 1.5px dashed #bbb;
+    border-radius: 8px;
+    padding: 8px 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #636AE8FF;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .modalAddBtn:hover {
+    background: #f3f4fa;
+  }
+  
