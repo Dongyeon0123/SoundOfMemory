@@ -315,7 +315,7 @@ const ProfilePage: React.FC = () => {
                 }}
               >
                 {profile.tag.map((t, i) => (
-                  <span key={i}>{t}</span>
+                  <span key={i}>#{t}</span>
                 ))}
               </div>
             </div>
