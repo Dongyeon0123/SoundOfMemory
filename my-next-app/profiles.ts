@@ -26,7 +26,7 @@ export type Profile = {
 
 export const profiles: Profile[] = [
   {
-    id: '1',
+    id: 'Bo65F6bzKnaJlZhLpheqY5kN2gT2',
     name: '임승원',
     desc: '@개발자',
     img: '/Selection.png',

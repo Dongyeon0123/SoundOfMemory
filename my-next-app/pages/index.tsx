@@ -1,20 +1,25 @@
-import React from 'react';
-import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
 import { FiSearch, FiSettings } from 'react-icons/fi';
 import { IoNotificationsOutline } from 'react-icons/io5';
 import { FaUser } from 'react-icons/fa';
 import styles from '../styles/styles.module.css';
 import Link from 'next/link';
-import { profiles, Profile } from '../profiles';
-
-
-const myAvatar: Profile | undefined = profiles.find(p => p.id === '1');
-const favorites: Profile[] = profiles.filter(p => p.id === '3');
-const friends: Profile[] = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
+import { fetchProfiles, Profile } from '../profiles';
 
 const ICON_SIZE = 20;
 
 const Home: React.FC = () => {
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+
+  useEffect(() => {
+    fetchProfiles().then(setProfiles);
+  }, []);
+
+  // Firestore에서 불러온 데이터로 myAvatar, favorites, friends 분류
+  const myAvatar: Profile | undefined = profiles.find(p => p.id === 'Bo65F6bzKnaJlZhLpheqY5kN2gT2');
+  const favorites: Profile[] = profiles.filter(p => p.id === '3');
+  const friends: Profile[] = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
+
   return (
     <div className={styles.fullContainer}>
       <div className={styles.centerCard}>
@@ -22,7 +27,7 @@ const Home: React.FC = () => {
         <div className={styles.fixedHeader}>
           <div className={styles.headerContent}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
-              <Image src="/logo.png" alt="logo" width={60} height={60} />
+              <img src="/logo.png" alt="logo" width={60} height={60} />
             </Link>
             <div className={styles.icon}>
                 <FiSearch size={ICON_SIZE} color="#222" />
@@ -42,7 +47,7 @@ const Home: React.FC = () => {
               <Link href={`/profile/${myAvatar.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
                   <div className={styles.HomeAvatarWrap}>
-                    <Image src={myAvatar.img} alt={myAvatar.name} width={56} height={56} className={styles.avatarImg} />
+                    <img src={myAvatar.img} alt={myAvatar.name} width={56} height={56} className={styles.avatarImg} />
                   </div>
                   <span className={styles.friendName}>{myAvatar.name}</span>
                 </div>
@@ -56,7 +61,7 @@ const Home: React.FC = () => {
               <Link href={`/profile/${friend.id}`} key={friend.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
                   <div className={styles.HomeAvatarWrap}>
-                    <Image src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
+                    <img src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
                   </div>
                   <span className={styles.friendName}>{friend.name}</span>
                 </div>
@@ -70,7 +75,7 @@ const Home: React.FC = () => {
               <Link href={`/profile/${friend.id}`} key={friend.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
                   <div className={styles.HomeAvatarWrap}>
-                    <Image src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
+                    <img src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
                   </div>
                   <span className={styles.friendName}>{friend.name}</span>
                 </div>
