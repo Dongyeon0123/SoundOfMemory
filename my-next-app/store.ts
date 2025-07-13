@@ -1,4 +1,5 @@
 import { configureStore, createSlice } from '@reduxjs/toolkit';
+import chatReducer from './chat';
 
 const initialProfile = {
   name: '임승원',
@@ -22,6 +23,7 @@ export function makeStore() {
   return configureStore({
     reducer: {
       profile: profileSlice.reducer,
+      chat: chatReducer,
     },
   });
 }

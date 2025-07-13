@@ -152,12 +152,11 @@
     color: #fff;
   }
   .inputSection {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 393px;
+    /* position: fixed; */
+    position: static;
+    width: 100%;
     border-top: 1px solid #ddd;
-    padding: 8px;
+    padding: 12px 16px;
     display: flex;
     align-items: flex-end;
     gap: 8px;
@@ -165,6 +164,7 @@
     z-index: 10;
     box-sizing: border-box;
     align-items: center;
+    margin-top: auto;
   }
   
   .textarea {

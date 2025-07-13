@@ -3,14 +3,13 @@ import type { AppProps } from 'next/app';
 import { Provider } from 'react-redux';
 import { makeStore } from '../store';
 
-const store = makeStore();
-
-const App: React.FC<AppProps> = ({ Component, pageProps }) => {
+function MyApp({ Component, pageProps }: AppProps) {
+  const store = makeStore();
   return (
     <Provider store={store}>
       <Component {...pageProps} />
     </Provider>
   );
-};
+}
 
-export default App; 
+export default MyApp; 

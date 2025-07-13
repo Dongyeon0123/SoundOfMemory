@@ -276,7 +276,7 @@ const ProfilePage: React.FC = () => {
         {/* 본문 */}
         <div className={styles.scrollMain + ' ' + styles.scrollMainProfile}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div className={styles.mainHeader}>
+            <div className={styles.mainHeader}>
           <div className={styles.bgImgWrap}>
             {profile.backgroundImg && (
               <img
@@ -286,7 +286,7 @@ const ProfilePage: React.FC = () => {
               />
             )}
           </div>
-            <div className={styles.avatarWrap}>
+              <div className={styles.avatarWrap}>
               {profile.img && (
                 <img
                   src={profile.img}
