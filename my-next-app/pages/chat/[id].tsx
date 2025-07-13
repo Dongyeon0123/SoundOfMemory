@@ -6,12 +6,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import {
   setInput,
-  addMessage,
-  setProMode,
-  setProfile,
   setMessages,
-  setChat,
-  fetchChatById,
+  setProMode,
+  addMessage,
+  subscribeChatById,
 } from "../../chat";
 import { fetchProfileById } from "../../profiles";
 
@@ -20,38 +18,26 @@ const Chat = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
-  const { profile, messages, input, isProMode } = useSelector(
-    (state: RootState) => state.chat
-  );
+  const { messages, input, isProMode } = useSelector((state: RootState) => state.chat);
   const { id } = router.query;
-  const [profileInfo, setProfileInfo] = useState<{
-    id: string;
-    name: string;
-    img: string;
-  } | null>(null);
+  const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Firestore에서 프로필/채팅 데이터 불러오기
+  // 프로필 및 실시간 채팅 리스닝
   useEffect(() => {
     if (typeof id === "string") {
       setLoading(true);
-      // 프로필 정보(users 컬렉션)
       fetchProfileById(id).then((profile) => {
         if (profile) {
-          setProfileInfo({
-            id: profile.id,
-            name: profile.name,
-            img: profile.img,
-          });
+          setProfileInfo({ id: profile.id, name: profile.name, img: profile.img });
         }
       });
-      // 채팅 메시지(chats 컬렉션)
-      fetchChatById(id).then((data) => {
-        if (data) {
-          dispatch(setChat(data));
-        }
+      // 실시간 리스닝 등록
+      const unsubscribe = subscribeChatById(id, (msgs) => {
+        dispatch(setMessages(msgs));
         setLoading(false);
       });
+      return () => unsubscribe();
     }
   }, [id, dispatch]);
 
@@ -73,20 +59,39 @@ const Chat = () => {
     }
   };
 
+  // PRO 모드 토글
   const toggleProMode = () => {
     dispatch(setProMode(!isProMode));
   };
 
+  // 메시지 전송 및 Firestore에 저장
   const sendMessage = async (msg?: string) => {
     const text = (msg ?? input).trim();
-    if (!text) return;
+    if (!text || !profileInfo?.id) return;
+  
     dispatch(addMessage(text));
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
-    // 예시: 0.5초 후 봇 메시지 자동 추가
-    setTimeout(() => {
-      dispatch(addMessage("오! 그건 정말 흥미로운 질문이야."));
-    }, 500);
+  
+    try {
+      const response = await fetch(
+        "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: profileInfo.id,
+            message: text,
+          }),
+        }
+      );
+      // 응답 상태와 결과를 콘솔에 출력
+      console.log("POST 응답 status:", response.status);
+      const data = await response.json().catch(() => null);
+      console.log("POST 응답 body:", data);
+    } catch (error) {
+      console.error("서버 전송 실패:", error);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -140,9 +145,7 @@ const Chat = () => {
               const msgTypeClass = isBot ? styles.bot : styles.user;
               return (
                 <div key={idx} className={`${styles.msgWrapper} ${msgTypeClass}`}>
-                  <div className={styles.name}>
-                    {isBot ? profile : "You"}
-                  </div>
+                  <div className={styles.name}>{isBot ? profileInfo?.name : "You"}</div>
                   <div className={styles.bubble}>{msg}</div>
                 </div>
               );

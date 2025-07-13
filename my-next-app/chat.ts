@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { doc, getDoc, Timestamp } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "./firebase";
 
-// 1. 상태 타입 정의 (Firestore 구조 반영)
+// 상태 타입 정의
 export interface ChatState {
   profile: string;
   messages: string[];
@@ -16,7 +16,6 @@ export interface ChatState {
   processingStartedAt?: string;
 }
 
-// 2. 초기 상태
 const initialState: ChatState = {
   profile: "",
   messages: [],
@@ -30,7 +29,6 @@ const initialState: ChatState = {
   processingStartedAt: "",
 };
 
-// 3. slice 생성
 const chatSlice = createSlice({
   name: "chat",
   initialState,
@@ -71,7 +69,7 @@ export const {
 
 export default chatSlice.reducer;
 
-// Firestore Timestamp → ISO 문자열 변환 함수
+// Timestamp → ISO 문자열 변환
 function toDateString(ts: any): string {
   if (!ts) return "";
   if (typeof ts === "string") return ts;
@@ -80,31 +78,40 @@ function toDateString(ts: any): string {
   return String(ts);
 }
 
-// Firestore에서 채팅 데이터 불러오기
+// Firestore에서 채팅 데이터 단건 fetch
 export async function fetchChatById(id: string): Promise<Partial<ChatState> | null> {
-    try {
-      // /users/{id}/chats/{id}_avatar_chat 문서에서 데이터 읽기
-      const ref = doc(db, "users", id, "chats", `${id}_avatar_chat`);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        console.log("문서가 존재하지 않습니다.");
-        return null;
-      }
-      const data = snap.data();
-  
-      return {
-        profile: data.profile ?? "",
-        messages: data.messages ?? [],
-        isProMode: data.isProMode ?? true,
-        isProcessing: data.isProcessing ?? false,
-        lastSummaryAt: data.lastSummaryAt ? toDateString(data.lastSummaryAt) : "",
-        lastSummaryIndex: data.lastSummaryIndex,
-        lastUpdated: data.lastUpdated ? toDateString(data.lastUpdated) : "",
-        processingEndedAt: data.processingEndedAt ? toDateString(data.processingEndedAt) : "",
-        processingStartedAt: data.processingStartedAt ? toDateString(data.processingStartedAt) : "",
-      };
-    } catch (error) {
-      console.error("fetchChatById 에러:", error);
+  try {
+    const ref = doc(db, "users", id, "chats", `${id}_avatar_chat`);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      console.log("문서가 존재하지 않습니다.");
       return null;
     }
+    const data = snap.data();
+    return {
+      profile: data.profile ?? "",
+      messages: data.messages ?? [],
+      isProMode: data.isProMode ?? true,
+      isProcessing: data.isProcessing ?? false,
+      lastSummaryAt: data.lastSummaryAt ? toDateString(data.lastSummaryAt) : "",
+      lastSummaryIndex: data.lastSummaryIndex,
+      lastUpdated: data.lastUpdated ? toDateString(data.lastUpdated) : "",
+      processingEndedAt: data.processingEndedAt ? toDateString(data.processingEndedAt) : "",
+      processingStartedAt: data.processingStartedAt ? toDateString(data.processingStartedAt) : "",
+    };
+  } catch (error) {
+    console.error("fetchChatById 에러:", error);
+    return null;
   }
+}
+
+// Firestore 실시간 리스닝
+export function subscribeChatById(userId: string, callback: (messages: string[]) => void) {
+  const ref = doc(db, "users", userId, "chats", `${userId}_avatar_chat`);
+  return onSnapshot(ref, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      callback(data.messages ?? []);
+    }
+  });
+}
