@@ -11,6 +11,7 @@ import { BiQrScan } from 'react-icons/bi';
 import { FaChrome, FaYoutube } from 'react-icons/fa';
 import HistoryModal from './HistoryModal';
 import CareerModal from './CareerModal';
+import Link from 'next/link';
 
 const ICON_SIZE = 24;
 
@@ -320,7 +321,9 @@ const ProfilePage: React.FC = () => {
               </div>
             </div>
             <div>
+            <Link href={`/chat/${profile.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
               <button className={styles.chatButton}>대화하기</button>
+            </Link>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginTop: 16 }}>
               <div className={styles.profileIcons}>
