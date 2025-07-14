@@ -12,6 +12,7 @@ import {
   subscribeChatById,
 } from "../../chat";
 import { fetchProfileById } from "../../profiles";
+import { FiSend } from 'react-icons/fi';
 
 const Chat = () => {
   const router = useRouter();
@@ -110,12 +111,29 @@ const Chat = () => {
       <div className={cardStyles.centerCard}>
         {/* 헤더 */}
         <div className={styles.header}>
-          <img
-            src="/chat/leftArrow.png"
-            className={styles.backIcon}
-            onClick={() => router.back()}
-            alt="뒤로가기"
-          />
+        <button
+              onClick={() => router.back()}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                height: 40,
+                width: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              aria-label="뒤로가기"
+            >
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
           <div className={styles.title}>Sound Of Memory</div>
         </div>
 
@@ -125,7 +143,9 @@ const Chat = () => {
             src={profileInfo?.img || "/chat/profile.png"}
             alt={`${profileInfo?.name || "프로필"} 프로필`}
           />
-          <div className={styles.name}>{profileInfo?.name || ""}</div>
+          <div className={styles.profileName}>{profileInfo?.name || ""}
+            <span style={{fontSize: 14, color: '#999'}}><br></br>AI</span>
+          </div>
           <div className={styles.toggleWrap}>
             <div
               className={`${styles.toggle} ${isProMode ? styles.on : ""}`}
@@ -136,6 +156,9 @@ const Chat = () => {
             </div>
           </div>
         </div>
+
+        {/* 그레이 구분선 */}
+        <div style={{ width: '100%', height: '1px', background: '#e0e0e0' }} />
 
         {/* 메시지 섹션 */}
         <div className={styles.messageSection}>
@@ -174,12 +197,15 @@ const Chat = () => {
             rows={1}
             maxLength={500}
           />
-          <img
-            src="/chat/send.png"
-            className={styles.sendIcon}
+          <button
+            className={styles.button}
             onClick={() => sendMessage()}
-            alt="전송"
-          />
+            aria-label="전송"
+            disabled={!input.trim()}
+            type="button"
+          >
+            <FiSend className="icon" />
+          </button>
         </div>
       </div>
     </div>
