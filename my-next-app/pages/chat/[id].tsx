@@ -22,6 +22,7 @@ const Chat = () => {
   const { id } = router.query;
   const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isWaitingForReply, setIsWaitingForReply] = useState(false);
 
   // 프로필 및 실시간 채팅 리스닝
   useEffect(() => {
@@ -72,6 +73,7 @@ const Chat = () => {
     dispatch(addMessage(text));
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
+    setIsWaitingForReply(true);
   
     try {
       const response = await fetch(
@@ -91,6 +93,8 @@ const Chat = () => {
       console.log("POST 응답 body:", data);
     } catch (error) {
       console.error("서버 전송 실패:", error);
+    } finally {
+      setIsWaitingForReply(false);
     }
   };
 
@@ -150,6 +154,9 @@ const Chat = () => {
                 </div>
               );
             })
+          )}
+          {isWaitingForReply && (
+            <div className={styles.typingIndicator}><span /></div>
           )}
           <div ref={scrollRef} />
         </div>

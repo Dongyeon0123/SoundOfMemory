@@ -192,3 +192,31 @@
     height: 24px;
     cursor: pointer;
   }
+.typingIndicator {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  margin: 8px 0 8px 12px;
+}
+.typingIndicator span {
+  display: inline-block;
+  width: 36px;
+  height: 16px;
+  background: none;
+  position: relative;
+}
+.typingIndicator span::before {
+  content: '...';
+  font-size: 2rem;
+  letter-spacing: 0.3em;
+  color: #aaa;
+  animation: typingDots 1.2s infinite steps(4);
+}
+@keyframes typingDots {
+  0% { opacity: 0.2; }
+  20% { opacity: 1; }
+  40% { opacity: 0.2; }
+  60% { opacity: 1; }
+  80% { opacity: 0.2; }
+  100% { opacity: 0.2; }
+}
