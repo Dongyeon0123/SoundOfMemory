@@ -6,9 +6,9 @@ import introStyles from '../../styles/IntroduceModal.module.css';
 import { fetchProfileById, updateProfileField } from '../../profiles';
 import type { Profile } from '../../profiles';
 import { FiEdit2, FiPhone, FiAtSign } from 'react-icons/fi';
-import { MdDocumentScanner } from 'react-icons/md';
+import { MdDocumentScanner, MdReport, MdNotificationsActive, MdBlock } from 'react-icons/md';
 import { BiQrScan } from 'react-icons/bi';
-import { FaChrome, FaYoutube } from 'react-icons/fa';
+import { FaChrome, FaYoutube, FaStar } from 'react-icons/fa';
 import HistoryModal from './HistoryModal';
 import CareerModal from './CareerModal';
 import Link from 'next/link';
@@ -126,6 +126,8 @@ function IntroduceModal({
   );
 }
 
+const MY_PROFILE_ID = 'Bo65F6bzKnaJlZhLpheqY5kN2gT2';
+
 const ProfilePage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -181,6 +183,8 @@ const ProfilePage: React.FC = () => {
     if (profile) updateProfileField(profile.id, { career: newCareer });
   };
 
+  const isMyProfile = id === MY_PROFILE_ID;
+
   if (!profile) return <div style={{ padding: 24 }}>존재하지 않는 프로필입니다.</div>;
 
   return (
@@ -218,60 +222,116 @@ const ProfilePage: React.FC = () => {
             </button>
             {/* 가운데 프로필 텍스트 */}
             <span style={{ fontWeight: 700, fontSize: 18, textAlign: 'center' }}>프로필</span>
-            {/* 오른쪽 아이콘들 */}
-            <div
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                height: 40
-              }}
-            >
-              <button
+            {/* 오른쪽 아이콘들 (내 프로필/타인 프로필 분기) */}
+            {isMyProfile ? (
+              <div
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-                aria-label="프로필 편집"
-              >
-                <FiEdit2 size={ICON_SIZE} color="#222" />
-              </button>
-              <button
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-                aria-label="카메라 스캔"
-              >
-                <MdDocumentScanner size={ICON_SIZE} color="#222" />
-              </button>
-              <button
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  cursor: 'pointer',
+                  position: 'absolute',
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
                   display: 'flex',
                   alignItems: 'center',
-                  marginRight: '10px',
+                  gap: 12,
+                  height: 40
                 }}
-                aria-label="QR코드"
               >
-                <BiQrScan size={ICON_SIZE} color="#222" />
-              </button>
-            </div>
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  aria-label="프로필 편집"
+                >
+                  <FiEdit2 size={ICON_SIZE} color="#222" />
+                </button>
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  aria-label="카메라 스캔"
+                >
+                  <MdDocumentScanner size={ICON_SIZE} color="#222" />
+                </button>
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginRight: '10px',
+                  }}
+                  aria-label="QR코드"
+                >
+                  <BiQrScan size={ICON_SIZE} color="#222" />
+                </button>
+              </div>
+            ) : (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  height: 40
+                }}
+              >
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  aria-label="차단"
+                >
+                  <MdBlock size={ICON_SIZE} color="#B0BEC5" />
+                </button>
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  aria-label="즐겨찾기"
+                >
+                  <FaStar size={ICON_SIZE} color="#FFD700" />
+                </button>
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginRight: '10px',
+                  }}
+                  aria-label="신고"
+                >
+                  <MdNotificationsActive size={ICON_SIZE} color="#E53935" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
         {/* 본문 */}
@@ -320,10 +380,15 @@ const ProfilePage: React.FC = () => {
                 ))}
               </div>
             </div>
+            {/* 버튼 영역: 내 프로필이면 대화하기, 타인이면 친구추가 */}
             <div>
-            <Link href={`/chat/${profile.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <button className={styles.chatButton}>대화하기</button>
-            </Link>
+              {isMyProfile ? (
+                <Link href={`/chat/${profile.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <button className={styles.chatButton}>대화하기</button>
+                </Link>
+              ) : (
+                <button className={styles.chatButton}>친구추가</button>
+              )}
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginTop: 16 }}>
               <div className={styles.profileIcons}>
@@ -339,54 +404,57 @@ const ProfilePage: React.FC = () => {
                 <FaYoutube size={28} color="#FF0000" style={{ cursor: 'pointer' }} />
               </div>
             </div>
-            
-            {/* MBTI 박스 */}
+            {/* MBTI 박스: 내 프로필만 편집 가능 */}
             <div className={`${styles.mbtiBox} ${mbtiStyles.mbtiBox}`} style={{ marginTop: 15 }}>
               <span className={mbtiStyles.mbtiBoxTitle}>MBTI</span>
               <span className={mbtiStyles.mbtiBoxContent}>{mbti || 'MBTI가 입력되지 않았습니다.'}</span>
-              <FiEdit2
-                size={20}
-                color="#000"
-                className={mbtiStyles.mbtiEditIcon}
-                onClick={() => setShowMBTIModal(true)}
-              />
+              {isMyProfile && (
+                <FiEdit2
+                  size={20}
+                  color="#000"
+                  className={mbtiStyles.mbtiEditIcon}
+                  onClick={() => setShowMBTIModal(true)}
+                />
+              )}
             </div>
-            {showMBTIModal && (
+            {isMyProfile && showMBTIModal && (
               <MBTIModal
                 currentMBTI={mbti}
                 onClose={() => setShowMBTIModal(false)}
                 onSave={handleSaveMbti}
               />
             )}
-
-            {/* 소개 박스 */}
+            {/* 소개 박스: 내 프로필만 편집 가능 */}
             <div className={styles.introduceBox} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', position: 'relative', marginTop: 10 }}>
               <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>소개</span>
               <span style={{ fontSize: 15, color: '#888', fontWeight: 500, marginTop: 12 }}>{introduce || '소개를 작성해보세요 !'}</span>
-              <FiEdit2
-                size={20}
-                color="#000"
-                style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }}
-                onClick={() => setShowIntroModal(true)}
-              />
+              {isMyProfile && (
+                <FiEdit2
+                  size={20}
+                  color="#000"
+                  style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }}
+                  onClick={() => setShowIntroModal(true)}
+                />
+              )}
             </div>
-            {showIntroModal && (
+            {isMyProfile && showIntroModal && (
               <IntroduceModal
                 currentIntroduce={introduce}
                 onClose={() => setShowIntroModal(false)}
                 onSave={handleSaveIntroduce}
               />
             )}
-
-            {/* 이력 박스 */}
+            {/* 이력 박스: 내 프로필만 편집 가능 */}
             <div className={styles.historyBox} style={{ position: 'relative' }}>
               <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>이력</span>
-              <FiEdit2
-                size={20}
-                color="#000"
-                style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }}
-                onClick={() => setShowHistoryModal(true)}
-              />
+              {isMyProfile && (
+                <FiEdit2
+                  size={20}
+                  color="#000"
+                  style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }}
+                  onClick={() => setShowHistoryModal(true)}
+                />
+              )}
               <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 15, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
                 {history && history.length > 0 ? (
                   history.map((h, i) => (
@@ -405,12 +473,10 @@ const ProfilePage: React.FC = () => {
                         justifyContent: 'space-between'
                       }}
                     >
-                      
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <span style={{ color: '#222', fontWeight: 600, fontSize: 16 }}>{h.school}</span>
                         <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 6 }}>{h.period}</span>
                       </div>
-                      
                       <span
                         style={{
                           color: '#636AE8FF',
@@ -435,23 +501,25 @@ const ProfilePage: React.FC = () => {
                 )}
               </div>
             </div>
-            <HistoryModal
-              open={showHistoryModal}
-              items={history}
-              onClose={() => setShowHistoryModal(false)}
-              onSave={handleSaveHistory}
-            />
-
-
-            {/* 경력 박스 */}
+            {isMyProfile && (
+              <HistoryModal
+                open={showHistoryModal}
+                items={history}
+                onClose={() => setShowHistoryModal(false)}
+                onSave={handleSaveHistory}
+              />
+            )}
+            {/* 경력 박스: 내 프로필만 편집 가능 */}
             <div className={styles.historyBox} style={{ position: 'relative', marginTop: 10, marginBottom: 10, }}>
               <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>경력</span>
-              <FiEdit2
-                size={20}
-                color="#000"
-                style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }}
-                onClick={() => setShowCareerModal(true)}
-              />
+              {isMyProfile && (
+                <FiEdit2
+                  size={20}
+                  color="#000"
+                  style={{ position: 'absolute', top: 12, right: 12, cursor: 'pointer' }}
+                  onClick={() => setShowCareerModal(true)}
+                />
+              )}
               <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 15, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
                 {career && career.length > 0 ? (
                   career.map((c, i) => (
@@ -470,7 +538,6 @@ const ProfilePage: React.FC = () => {
                         justifyContent: 'space-between'
                       }}
                     >
-                      
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <span style={{ color: '#222', fontWeight: 600, fontSize: 16 }}>{c.org}</span>
                         <span style={{ color: '#9095A0FF', fontWeight: 500, fontSize: 14, marginTop: 6, marginBottom: 6, }}>{c.dept}</span>
@@ -479,7 +546,6 @@ const ProfilePage: React.FC = () => {
                           <span style={{ color: '#000', fontSize: 13, fontWeight: 600, marginLeft: 8 }}>{c.months}개월</span>
                         </span>
                       </div>
-                      
                       <span
                         style={{
                           color: '#636AE8FF',
@@ -504,12 +570,14 @@ const ProfilePage: React.FC = () => {
                 )}
               </div>
             </div>
+            {isMyProfile && (
               <CareerModal
                 open={showCareerModal}
                 items={career}
                 onClose={() => setShowCareerModal(false)}
                 onSave={handleSaveCareer}
               />
+            )}
           </div>
         </div>
       </div>
