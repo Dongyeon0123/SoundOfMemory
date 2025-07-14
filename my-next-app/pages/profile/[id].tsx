@@ -301,7 +301,7 @@ const ProfilePage: React.FC = () => {
                   }}
                   aria-label="차단"
                 >
-                  <MdBlock size={ICON_SIZE} color="#B0BEC5" />
+                  <MdBlock size={ICON_SIZE} color="#222" />
                 </button>
                 <button
                   style={{
