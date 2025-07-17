@@ -26,7 +26,15 @@ export default function HistoryModal({
 
   const handleChange = (idx: number, key: string, value: string) => {
     setList(prev =>
-      prev.map((item, i) => (i === idx ? { ...item, [key]: value } : item))
+      prev.map((item, i) => {
+        if (i !== idx) return item;
+        const updated = { ...item, [key]: value };
+        // 연도 변경 시 period도 갱신
+        if (key === 'periodStart' || key === 'periodEnd') {
+          updated.period = `${updated.periodStart || ''} ~ ${updated.periodEnd || ''}`;
+        }
+        return updated;
+      })
     );
   };
 
@@ -44,6 +52,8 @@ export default function HistoryModal({
       ...prev,
       {
         school: addForm.school,
+        periodStart: addForm.periodStart,
+        periodEnd: addForm.periodEnd,
         period: `${addForm.periodStart} ~ ${addForm.periodEnd}`,
         role: addForm.role,
       },
