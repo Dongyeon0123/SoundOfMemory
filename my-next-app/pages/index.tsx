@@ -32,7 +32,9 @@ const Home: React.FC = () => {
             <div className={styles.icon}>
                 <FiSearch size={ICON_SIZE} color="#222" />
                 <IoNotificationsOutline size={ICON_SIZE} color="#222" />
-                <FaUser size={ICON_SIZE} color="#222" />
+                <Link href="/friend-requests" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <FaUser size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
+                </Link>
                 <FiSettings size={ICON_SIZE} color="#222" />
             </div>
           </div>
