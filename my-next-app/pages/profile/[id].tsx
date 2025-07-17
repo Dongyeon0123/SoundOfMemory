@@ -127,8 +127,6 @@ function IntroduceModal({
   );
 }
 
-const MY_PROFILE_ID = 'Bo65F6bzKnaJlZhLpheqY5kN2gT2';
-
 const ProfilePage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -423,6 +421,7 @@ const ProfilePage: React.FC = () => {
               <div className={styles.profileIcons}>
                 <FaChrome size={28} color="#000" style={{ cursor: 'pointer' }} />
               </div>
+              
               <div className={styles.profileIcons}>
                 <FaYoutube size={28} color="#FF0000" style={{ cursor: 'pointer' }} />
               </div>

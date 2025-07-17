@@ -106,12 +106,15 @@ export async function fetchChatById(id: string): Promise<Partial<ChatState> | nu
 }
 
 // Firestore 실시간 리스닝
-export function subscribeChatById(userId: string, callback: (messages: string[]) => void) {
+export function subscribeChatById(userId: string, callback: (messages: string[]) => void, onNoDoc?: () => void) {
   const ref = doc(db, "users", userId, "chats", `${userId}_avatar_chat`);
   return onSnapshot(ref, (snap) => {
     if (snap.exists()) {
       const data = snap.data();
       callback(data.messages ?? []);
+    } else {
+      callback([]);
+      if (onNoDoc) onNoDoc();
     }
   });
 }

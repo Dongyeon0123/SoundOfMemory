@@ -18,7 +18,7 @@
     background-color: #fff;
     border-bottom: 1px solid #ddd;
     position: relative;
-    margin-top: 30px;
+    margin-top: 19px;
   }
   
   .backIcon {
@@ -256,4 +256,16 @@
 /* Disabled */
 .button:disabled {
   opacity: 0.4;
+}
+.icon {
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+}
+.icon,
+.icon > *,
+.icon svg,
+.icon img,
+.icon button {
+  cursor: pointer;
 }

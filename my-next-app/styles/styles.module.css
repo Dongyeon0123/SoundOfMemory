@@ -48,6 +48,7 @@
 .icon {
   display: flex;
   gap: 12px;
+  cursor: pointer;
 }
 
 /* 알림 뱃지 */
@@ -278,6 +279,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .mbtiBox {

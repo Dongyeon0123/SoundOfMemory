@@ -24,6 +24,7 @@ const Chat = () => {
   const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
+  const [showNoChatModal, setShowNoChatModal] = useState(false);
 
   // 프로필 및 실시간 채팅 리스닝
   useEffect(() => {
@@ -37,6 +38,8 @@ const Chat = () => {
       // 실시간 리스닝 등록
       const unsubscribe = subscribeChatById(id, (msgs) => {
         dispatch(setMessages(msgs));
+        setLoading(false);
+      }, () => {
         setLoading(false);
       });
       return () => unsubscribe();
@@ -52,6 +55,14 @@ const Chat = () => {
   useEffect(() => {
     handleResize();
   }, [input]);
+
+  useEffect(() => {
+    if (!loading && messages.length === 0) {
+      setShowNoChatModal(true);
+      const timer = setTimeout(() => setShowNoChatModal(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, messages]);
 
   const handleResize = () => {
     const el = textareaRef.current;
@@ -129,7 +140,7 @@ const Chat = () => {
                 width: 40,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
               }}
               aria-label="뒤로가기"
             >
@@ -165,14 +176,13 @@ const Chat = () => {
 
         {/* 메시지 섹션 */}
         <div className={styles.messageSection}>
-          <div style={{ width: '100%', height: '1px', background: '#e0e0e0' }} />
           {loading ? (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
               <div className="spinner" style={{ marginBottom: 18 }} />
               <div style={{ fontSize: 16, color: '#636AE8', fontWeight: 600 }}>메시지를 불러오는 중입니다...</div>
             </div>
           ) : messages.length === 0 ? (
-            <div className={styles.loading}>채팅 내역이 없습니다.</div>
+            null
           ) : (
             messages.map((msg, idx) => {
               const isBot = idx % 2 === 1;
@@ -190,6 +200,21 @@ const Chat = () => {
           )}
           <div ref={scrollRef} />
         </div>
+        {showNoChatModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.18)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: '36px 48px', fontSize: 20, fontWeight: 700, color: '#636AE8', boxShadow: '0 4px 24px rgba(0,0,0,0.12)' }}>
+              채팅을 시작해보세요
+            </div>
+          </div>
+        )}
 
         {/* 입력 섹션 */}
         <div className={styles.inputSection}>
