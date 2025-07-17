@@ -77,8 +77,11 @@ const Chat = () => {
     setIsWaitingForReply(true);
   
     try {
+      const endpoint = isProMode
+        ? "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarpaid"
+        : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree";
       const response = await fetch(
-        "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree",
+        endpoint,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
