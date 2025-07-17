@@ -82,7 +82,7 @@
   }
   
   .on {
-    background: #4f46e5;
+    background: #636AE8FF;
   }
   
   .on::after {
@@ -137,7 +137,7 @@
   }
   .bubble {
     padding: 10px 16px;
-    border-radius: 12px;
+    border-radius: 10px;
     max-width: 90%;
     font-size: 14px;
     line-height: 1.4;
@@ -150,7 +150,7 @@
   }
   
   .user .bubble {
-    background: #4f46e5;
+    background: #636AE8FF;
     color: #fff;
     margin-left: 50px;
   }
@@ -173,22 +173,20 @@
   .textarea {
     flex: 1;
     border: none;
-    padding: 0 15px;
-    border-radius: 20px;
+    padding: 12px 15px 12px 15px;
+    border-radius: 10px;
     background: #f1f3f5;
     font-size: 14px;
     font-family: inherit;
-    overflow-y: auto;
-    min-height: 30px;
+    min-height: 40px;
     max-height: 80px;
     outline: none;
-    align-items: center;
-    line-height: 50px;
+    resize: none;
+    box-sizing: border-box;
   }
   
   .textarea::placeholder {
     color: grey;
-    line-height: 50px;
   }
   
   .sendIcon {
