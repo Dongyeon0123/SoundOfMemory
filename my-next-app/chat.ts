@@ -20,7 +20,7 @@ const initialState: ChatState = {
   profile: "",
   messages: [],
   input: "",
-  isProMode: true,
+  isProMode: false,
   isProcessing: false,
   lastSummaryAt: "",
   lastSummaryIndex: undefined,
