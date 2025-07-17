@@ -40,7 +40,7 @@
   justify-content: space-between;
   padding: 0 16px;
   height: 70px;
-  margin-bottom: 0;
+  margin-bottom: 40px;
   position: relative;
 }
 
@@ -165,12 +165,12 @@
 /* 섹션 블록 */
 .sectionBlock {
   width: 100%;
-  margin-bottom: 32px;
+  margin-bottom: 15px;
 }
 
 /* 섹션 타이틀 */
 .sectionTitle {
-  margin: 0 0 12px 0;
+  margin: 0 0 20px 0;
   padding-left: 24px;
   font-size: 18px;
   font-weight: 700;
@@ -184,7 +184,7 @@
   align-items: center;
   gap: 16px;
   padding: 0 24px;
-  margin-bottom: 30px;
+  margin-bottom: 5px;
 }
 
 .friendRow .avatarWrap {

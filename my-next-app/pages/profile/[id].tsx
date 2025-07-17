@@ -6,12 +6,13 @@ import introStyles from '../../styles/IntroduceModal.module.css';
 import { fetchProfileById, updateProfileField } from '../../profiles';
 import type { Profile } from '../../profiles';
 import { FiEdit2, FiPhone, FiAtSign } from 'react-icons/fi';
-import { MdDocumentScanner, MdReport, MdNotificationsActive, MdBlock } from 'react-icons/md';
+import { MdDocumentScanner, MdNotificationsActive, MdBlock } from 'react-icons/md';
 import { BiQrScan } from 'react-icons/bi';
 import { FaChrome, FaYoutube, FaStar } from 'react-icons/fa';
 import HistoryModal from './HistoryModal';
 import CareerModal from './CareerModal';
 import Link from 'next/link';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const ICON_SIZE = 24;
 
@@ -137,6 +138,15 @@ const ProfilePage: React.FC = () => {
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCareerModal, setShowCareerModal] = useState(false);
+  const [myUid, setMyUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setMyUid(user ? user.uid : null);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (typeof id === "string") {
@@ -184,7 +194,7 @@ const ProfilePage: React.FC = () => {
     if (profile) updateProfileField(profile.id, { career: newCareer });
   };
 
-  const isMyProfile = id === MY_PROFILE_ID;
+  const isMyProfile = myUid && id === myUid;
 
   if (loading) return (
     <div className={styles.fullContainer}>
