@@ -162,8 +162,12 @@ const Chat = () => {
 
         {/* 메시지 섹션 */}
         <div className={styles.messageSection}>
+          <div style={{ width: '100%', height: '1px', background: '#e0e0e0' }} />
           {loading ? (
-            <div className={styles.loading}>메시지를 불러오는 중입니다...</div>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
+              <div className="spinner" style={{ marginBottom: 18 }} />
+              <div style={{ fontSize: 16, color: '#636AE8', fontWeight: 600 }}>메시지를 불러오는 중입니다...</div>
+            </div>
           ) : messages.length === 0 ? (
             <div className={styles.loading}>채팅 내역이 없습니다.</div>
           ) : (
@@ -190,7 +194,7 @@ const Chat = () => {
             ref={textareaRef}
             className={styles.textarea}
             value={input}
-            placeholder="오늘 남은 메시지 개수 : [ N ] 개"
+            placeholder="메시지를 입력하세요."
             onChange={(e) => dispatch(setInput(e.target.value))}
             onInput={handleResize}
             onKeyDown={handleKeyDown}
