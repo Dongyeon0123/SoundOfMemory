@@ -132,17 +132,18 @@ const ProfilePage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showMBTIModal, setShowMBTIModal] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCareerModal, setShowCareerModal] = useState(false);
 
   useEffect(() => {
-    console.log("id:", id);
     if (typeof id === "string") {
+      setLoading(true);
       fetchProfileById(id).then(profile => {
         setProfile(profile);
-        console.log("파이어베이스에서 불러온 데이터:", profile);
+        setLoading(false);
       });
     }
   }, [id]);
@@ -185,6 +186,18 @@ const ProfilePage: React.FC = () => {
 
   const isMyProfile = id === MY_PROFILE_ID;
 
+  if (loading) return (
+    <div className={styles.fullContainer}>
+      <div className={styles.centerCard}>
+        <div style={{
+          height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300
+        }}>
+          <div className="spinner" style={{ marginBottom: 18 }} />
+          <div style={{ fontSize: 18, color: '#636AE8', fontWeight: 600 }}>로딩 중...</div>
+        </div>
+      </div>
+    </div>
+  );
   if (!profile) return <div style={{ padding: 24 }}>존재하지 않는 프로필입니다.</div>;
 
   return (
