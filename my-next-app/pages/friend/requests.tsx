@@ -11,6 +11,9 @@ const FriendRequests: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [processingRequests, setProcessingRequests] = useState<Set<string>>(new Set());
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalType, setModalType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     const auth = getAuth();
@@ -52,19 +55,47 @@ const FriendRequests: React.FC = () => {
     setProcessingRequests(prev => new Set(prev).add(requestId));
 
     try {
-      // 요청 객체에서 toUserId 추출
-      const request = friendRequests.find(req => req.requestId === requestId);
-      if (!request) throw new Error('요청 정보를 찾을 수 없습니다.');
-      const success = await updateFriendRequestStatus(requestId, action, request.toUserId);
-      if (success) {
+      // Firebase Auth 토큰 가져오기
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        setModalMessage('로그인이 필요합니다.');
+        setModalType('error');
+        setShowModal(true);
+        return;
+      }
+      const idToken = await currentUser.getIdToken();
+
+      // Cloud Function endpoint 결정
+      const endpoint = action === 'accept'
+        ? 'https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/acceptFriendRequest'
+        : 'https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/rejectFriendRequest';
+
+      // Cloud Function 호출
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ requestId }),
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
         setFriendRequests(prev => prev.filter(req => req.requestId !== requestId));
-        alert(action === 'accept' ? '친구요청을 수락했습니다!' : '친구요청을 거절했습니다.');
+        setModalMessage(action === 'accept' ? '친구요청을 수락했습니다!' : '친구요청을 거절했습니다.');
+        setModalType('success');
+        setShowModal(true);
       } else {
-        alert('요청 처리에 실패했습니다.');
+        setModalMessage(result.message || '요청 처리에 실패했습니다.');
+        setModalType('error');
+        setShowModal(true);
       }
     } catch (error) {
       console.error('요청 처리 오류:', error);
-      alert('요청 처리 중 오류가 발생했습니다.');
+      setModalMessage('요청 처리 중 오류가 발생했습니다.');
+      setModalType('error');
+      setShowModal(true);
     } finally {
       setProcessingRequests(prev => {
         const newSet = new Set(prev);
@@ -136,9 +167,13 @@ const FriendRequests: React.FC = () => {
         
         <div className={styles.scrollMain} style={{ paddingTop: 20 }}>
           {loading ? (
-            <div style={{ textAlign: 'center', color: '#636AE8', margin: 24 }}>
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              height: '60vh', minHeight: 300, width: '100%',
+              position: 'absolute', left: 0, top: 0, zIndex: 10,
+            }}>
               <div className="spinner" style={{ marginBottom: 18 }} />
-              친구요청을 불러오는 중...
+              <span style={{ color: '#636AE8', fontSize: 18, fontWeight: 600 }}>친구요청을 불러오는 중...</span>
             </div>
           ) : pendingRequests.length === 0 ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
@@ -219,6 +254,85 @@ const FriendRequests: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* 성공/에러 모달 */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            borderRadius: 16,
+            padding: '32px 24px',
+            maxWidth: 320,
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
+          }}>
+            {/* 아이콘 */}
+            <div style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              backgroundColor: modalType === 'success' ? '#E8F5E8' : '#FFEBEE',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+            }}>
+              {modalType === 'success' ? (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 12L11 14L15 10" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="10" stroke="#4CAF50" strokeWidth="2"/>
+                </svg>
+              ) : (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 8V12M12 16H12.01" stroke="#F44336" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="10" stroke="#F44336" strokeWidth="2"/>
+                </svg>
+              )}
+            </div>
+            
+            {/* 메시지 */}
+            <div style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: '#222',
+              marginBottom: 24,
+              lineHeight: 1.4,
+            }}>
+              {modalMessage}
+            </div>
+            
+            {/* 확인 버튼 */}
+            <button
+              onClick={() => setShowModal(false)}
+              style={{
+                background: modalType === 'success' ? '#636AE8' : '#F44336',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 24px',
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

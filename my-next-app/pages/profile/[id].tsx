@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '../../styles/styles.module.css';
 import mbtiStyles from '../../styles/MbtiModal.module.css';
 import introStyles from '../../styles/IntroduceModal.module.css';
-import { fetchProfileById, updateProfileField } from '../../profiles';
+import { fetchProfileById, updateProfileField, fetchFriends, sendFriendRequest } from '../../profiles';
 import type { Profile } from '../../profiles';
 import { FiEdit2, FiPhone, FiAtSign } from 'react-icons/fi';
 import { MdDocumentScanner, MdNotificationsActive, MdBlock } from 'react-icons/md';
@@ -137,6 +137,10 @@ const ProfilePage: React.FC = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCareerModal, setShowCareerModal] = useState(false);
   const [myUid, setMyUid] = useState<string | null>(null);
+  const [isFriend, setIsFriend] = useState(false);
+  const [requesting, setRequesting] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+  const [modal, setModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({ show: false, message: '', type: 'success' });
 
   useEffect(() => {
     const auth = getAuth();
@@ -155,6 +159,32 @@ const ProfilePage: React.FC = () => {
       });
     }
   }, [id]);
+
+  useEffect(() => {
+    if (myUid && id && typeof id === 'string' && myUid !== id) {
+      fetchFriends(myUid).then(friends => {
+        setIsFriend(friends.some(f => f.friendId === id));
+      });
+    }
+  }, [myUid, id]);
+
+  const handleSendFriendRequest = async () => {
+    if (!myUid || !id || typeof id !== 'string') return;
+    setRequesting(true);
+    try {
+      const success = await sendFriendRequest(myUid, id);
+      if (success) {
+        setRequestSent(true);
+        setModal({ show: true, message: '친구요청이 전송되었습니다!', type: 'success' });
+      } else {
+        setModal({ show: true, message: '이미 친구이거나 친구요청이 존재합니다.', type: 'error' });
+      }
+    } catch (e) {
+      setModal({ show: true, message: '친구요청 전송 중 오류가 발생했습니다.', type: 'error' });
+    } finally {
+      setRequesting(false);
+    }
+  };
 
   // 모달 관련 상태 (profile 데이터 기반)
   const [mbti, setMbti] = useState<string | undefined>(undefined);
@@ -401,14 +431,20 @@ const ProfilePage: React.FC = () => {
                 ))}
               </div>
             </div>
-            {/* 버튼 영역: 내 프로필이면 대화하기, 타인이면 친구추가 */}
+            {/* 버튼 영역: 내 프로필이면 대화하기, 타인이면 친구추가/대화하기/요청됨 */}
             <div>
               {isMyProfile ? (
                 <Link href={`/chat/${profile.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <button className={styles.chatButton}>대화하기</button>
                 </Link>
+              ) : isFriend ? (
+                <Link href={`/chat/${profile.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <button className={styles.chatButton}>대화하기</button>
+                </Link>
+              ) : requestSent ? (
+                <button className={styles.chatButton} disabled>요청됨</button>
               ) : (
-                <button className={styles.chatButton}>친구추가</button>
+                <button className={styles.chatButton} onClick={handleSendFriendRequest} disabled={requesting}>{requesting ? '요청중...' : '친구추가'}</button>
               )}
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginTop: 16 }}>
@@ -603,6 +639,82 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* 성공/실패 모달 */}
+      {modal.show && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            borderRadius: 16,
+            padding: '32px 24px',
+            maxWidth: 320,
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
+          }}>
+            {/* 아이콘 */}
+            <div style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              backgroundColor: modal.type === 'success' ? '#E8F5E8' : '#FFEBEE',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+            }}>
+              {modal.type === 'success' ? (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 12L11 14L15 10" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="10" stroke="#4CAF50" strokeWidth="2"/>
+                </svg>
+              ) : (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 8V12M12 16H12.01" stroke="#F44336" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="10" stroke="#F44336" strokeWidth="2"/>
+                </svg>
+              )}
+            </div>
+            {/* 메시지 */}
+            <div style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: '#222',
+              marginBottom: 24,
+              lineHeight: 1.4,
+            }}>
+              {modal.message}
+            </div>
+            {/* 확인 버튼 */}
+            <button
+              onClick={() => setModal({ ...modal, show: false })}
+              style={{
+                background: modal.type === 'success' ? '#636AE8' : '#F44336',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 24px',
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

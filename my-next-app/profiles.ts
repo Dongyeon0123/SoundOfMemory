@@ -329,3 +329,18 @@ export async function cleanupDuplicateFriendRequests(): Promise<number> {
     return 0;
   }
 } 
+
+// 친구 목록 불러오기
+export async function fetchFriends(userId: string): Promise<any[]> {
+  const querySnapshot = await getDocs(collection(db, "users", userId, "friends"));
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+}
+
+// 즐겨찾기 토글 변경
+export async function toggleFavorite(userId: string, friendId: string, value: boolean) {
+  const ref = doc(db, "users", userId, "friends", friendId);
+  await updateDoc(ref, { favorite: value });
+} 

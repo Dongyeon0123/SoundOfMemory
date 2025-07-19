@@ -4,9 +4,10 @@ import { IoNotificationsOutline } from 'react-icons/io5';
 import { FaUser } from 'react-icons/fa';
 import styles from '../styles/styles.module.css';
 import Link from 'next/link';
-import { fetchProfiles, fetchProfileById, Profile, sendFriendRequest, getReceivedFriendRequests, hasSentFriendRequest, cleanupDuplicateFriendRequests } from '../profiles';
+import { fetchProfiles, fetchProfileById, Profile, sendFriendRequest, getReceivedFriendRequests, hasSentFriendRequest, cleanupDuplicateFriendRequests, fetchFriends, toggleFavorite } from '../profiles';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import NotificationModal from '../components/NotificationModal';
+import { useRouter } from 'next/router';
 
 const ICON_SIZE = 20;
 
@@ -22,6 +23,9 @@ const Home: React.FC = () => {
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [successModal, setSuccessModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({ show: false, message: '', type: 'success' });
   const [requestedUsers, setRequestedUsers] = useState<Set<string>>(new Set());
+  const [friends, setFriends] = useState<any[]>([]);
+
+  const router = useRouter();
 
   useEffect(() => {
     const auth = getAuth();
@@ -108,9 +112,14 @@ const Home: React.FC = () => {
     }
   }, [userId, profiles]);
 
-  // Firestore에서 불러온 데이터로 favorites, friends 분류
-  const favorites: Profile[] = profiles.filter(p => p.id === '3');
-  const friends: Profile[] = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
+  useEffect(() => {
+    if (userId) {
+      fetchFriends(userId).then(setFriends);
+    }
+  }, [userId]);
+
+  const favorites = friends.filter(f => f.favorite);
+  const normalFriends = friends.filter(f => !f.favorite);
 
   // 친구요청 보내기 함수
   const handleSendFriendRequest = async (targetUserId: string) => {
@@ -317,9 +326,9 @@ const Home: React.FC = () => {
               <Link href={`/profile/${friend.id}`} key={friend.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
                   <div className={styles.HomeAvatarWrap}>
-                    <img src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
+                    <img src={friend.friendAvatar} alt={friend.friendName} width={56} height={56} className={styles.avatarImg} />
                   </div>
-                  <span className={styles.friendName}>{friend.name}</span>
+                  <span className={styles.friendName}>{friend.friendName}</span>
                 </div>
               </Link>
             ))}
@@ -327,13 +336,13 @@ const Home: React.FC = () => {
           {/* 친구 */}
           <div className={styles.sectionBlock}>
             <h4 className={styles.sectionTitle}>친구</h4>
-            {friends.map(friend => (
+            {normalFriends.map(friend => (
               <Link href={`/profile/${friend.id}`} key={friend.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.friendRow}>
                   <div className={styles.HomeAvatarWrap}>
-                    <img src={friend.img} alt={friend.name} width={56} height={56} className={styles.avatarImg} />
+                    <img src={friend.friendAvatar} alt={friend.friendName} width={56} height={56} className={styles.avatarImg} />
                   </div>
-                  <span className={styles.friendName}>{friend.name}</span>
+                  <span className={styles.friendName}>{friend.friendName}</span>
                 </div>
               </Link>
             ))}
@@ -372,11 +381,18 @@ const Home: React.FC = () => {
             />
             <div style={{ maxHeight: 260, overflowY: 'auto', marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
               {profiles
-                .filter(p => search && p.name && p.name.includes(search))
+                .filter(p => search && p.name && p.name.includes(search) && p.id !== userId) // 나 자신 제외
                 .map(p => (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 8px', borderRadius: 10, background: '#f7f8fa', transition: 'background 0.18s', cursor: 'pointer' }}
+                  <div key={p.id}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 8px', borderRadius: 10, background: '#f7f8fa', transition: 'background 0.18s', cursor: 'pointer' }}
                     onMouseOver={e => e.currentTarget.style.background = '#e6eaff'}
                     onMouseOut={e => e.currentTarget.style.background = '#f7f8fa'}
+                    onClick={e => {
+                      // 버튼 클릭 시에는 프로필 이동 막기
+                      if ((e.target as HTMLElement).tagName === 'BUTTON') return;
+                      router.push(`/profile/${p.id}`);
+                      setShowSearchModal(false);
+                    }}
                   >
                     <img src={p.img} alt={p.name} width={40} height={40} style={{ borderRadius: '50%', border: '2px solid #eee', background: '#fff' }} />
                     <span style={{ fontWeight: 700, fontSize: 16, color: '#222' }}>{p.name}</span>
@@ -406,7 +422,10 @@ const Home: React.FC = () => {
                           e.currentTarget.style.background = '#636AE8';
                         }
                       }}
-                      onClick={() => !requestedUsers.has(p.id) && handleSendFriendRequest(p.id)}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (!requestedUsers.has(p.id)) handleSendFriendRequest(p.id);
+                      }}
                       disabled={sendingRequests.has(p.id) || requestedUsers.has(p.id)}
                     >
                       {sendingRequests.has(p.id) ? '요청중...' : 
@@ -414,7 +433,7 @@ const Home: React.FC = () => {
                     </button>
                   </div>
                 ))}
-              {search && profiles.filter(p => p.name && p.name.includes(search)).length === 0 && (
+              {search && profiles.filter(p => p.name && p.name.includes(search) && p.id !== userId).length === 0 && (
                 <div style={{ color: '#888', textAlign: 'center', marginTop: 18, fontWeight: 600 }}>검색 결과가 없습니다.</div>
               )}
             </div>
