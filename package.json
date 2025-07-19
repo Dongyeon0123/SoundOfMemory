@@ -1,12 +1,20 @@
 {
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  },
   "dependencies": {
-    "@types/node": "^24.0.4",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@types/react-icons": "^2.2.7",
-    "next": "^15.3.4",
+    "@reduxjs/toolkit": "^1.9.5",
+    "cors": "^2.8.5",
+    "firebase": "^11.10.0",
+    "next": "^13.5.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-icons": "^4.12.0"
+    "react-icons": "^4.12.0",
+    "react-redux": "^8.1.2"
   }
 }
