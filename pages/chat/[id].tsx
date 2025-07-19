@@ -53,6 +53,16 @@ const Chat = () => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // 로딩 완료 시 스크롤 맨 아래로
+  useEffect(() => {
+    if (!loading && messages.length > 0) {
+      // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 스크롤
+      setTimeout(() => {
+        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [loading, messages.length]);
+
   // textarea 높이 자동 조절
   useEffect(() => {
     handleResize();

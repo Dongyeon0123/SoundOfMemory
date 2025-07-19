@@ -81,42 +81,54 @@ const Home: React.FC = () => {
     }
   }, [userId]);
 
-  // 친구요청 상태 확인
+  // 친구 목록과 친구요청 상태를 함께 관리
   useEffect(() => {
     if (userId && profiles.length > 0) {
-      const checkRequestStatus = async () => {
-        console.log('친구요청 상태 확인 시작');
+      const loadFriendsAndRequests = async () => {
+        console.log('=== 친구 목록 및 요청 상태 로딩 시작 ===');
+        
+        // 1. 친구 목록 로드
+        const currentFriends = await fetchFriends(userId);
+        console.log('로드된 친구 목록:', currentFriends);
+        setFriends(currentFriends);
+        
+        // 2. 친구요청 상태 확인
+        const friendIds = new Set(currentFriends.map(f => f.friendId));
+        console.log('친구 ID 목록:', Array.from(friendIds));
+        
         const requestedSet = new Set<string>();
         
         for (const profile of profiles) {
           if (profile.id !== userId) {
+            // 이미 친구인 경우는 제외
+            if (friendIds.has(profile.id)) {
+              console.log(`사용자 ${profile.name}(${profile.id})는 이미 친구입니다.`);
+              continue;
+            }
+            
             // 보낸 친구요청이 있는지 확인 (pending 상태만)
             const hasRequested = await hasSentFriendRequest(userId, profile.id);
             console.log(`사용자 ${profile.name}(${profile.id})에게 보낸 요청:`, hasRequested);
             
             if (hasRequested) {
               requestedSet.add(profile.id);
+              console.log(`✅ ${profile.name}(${profile.id})를 요청됨 목록에 추가`);
             }
           }
         }
         
-        console.log('요청 완료된 사용자들:', Array.from(requestedSet));
+        console.log('최종 요청 완료된 사용자들:', Array.from(requestedSet));
         setRequestedUsers(requestedSet);
+        console.log('=== 친구 목록 및 요청 상태 로딩 완료 ===');
       };
       
-      checkRequestStatus();
+      loadFriendsAndRequests();
       
-      // 실시간 업데이트를 위해 주기적으로 체크 (10초마다)
-      const interval = setInterval(checkRequestStatus, 10000);
+      // 실시간 업데이트를 위해 주기적으로 체크 (5초마다)
+      const interval = setInterval(loadFriendsAndRequests, 5000);
       return () => clearInterval(interval);
     }
   }, [userId, profiles]);
-
-  useEffect(() => {
-    if (userId) {
-      fetchFriends(userId).then(setFriends);
-    }
-  }, [userId]);
 
   const favorites = friends.filter(f => f.favorite);
   const normalFriends = friends.filter(f => !f.favorite);
