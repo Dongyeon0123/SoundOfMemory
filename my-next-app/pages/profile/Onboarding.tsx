@@ -51,7 +51,7 @@ export default function Onboarding() {
         introduce,
         tag: [],
       });
-      router.push(`/profile/${user.uid}`);
+      router.push('/');
     } catch (err: any) {
       setError(err.message || '저장 중 오류가 발생했습니다.');
     } finally {

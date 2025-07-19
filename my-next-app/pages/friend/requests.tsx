@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import styles from '../styles/styles.module.css';
+import styles from '../../styles/styles.module.css';
 import { useRouter } from 'next/router';
 import { FiSettings } from 'react-icons/fi';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getReceivedFriendRequests, updateFriendRequestStatus, FriendRequest } from '../profiles';
+import { getReceivedFriendRequests, updateFriendRequestStatus, FriendRequest, getAllFriendRequests } from '../../profiles';
 
 const FriendRequests: React.FC = () => {
   const router = useRouter();
@@ -15,8 +15,10 @@ const FriendRequests: React.FC = () => {
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('친구요청 페이지 - Auth 상태 변경:', user);
       setUserId(user ? user.uid : null);
       if (user) {
+        console.log('친구요청 페이지 - 사용자 UID:', user.uid);
         loadFriendRequests(user.uid);
       } else {
         setLoading(false);
@@ -27,8 +29,15 @@ const FriendRequests: React.FC = () => {
 
   const loadFriendRequests = async (uid: string) => {
     try {
+      console.log('친구요청 페이지 - 요청 로딩 시작:', uid);
       setLoading(true);
+      
+      // 디버깅: 모든 친구 요청 조회
+      const allRequests = await getAllFriendRequests();
+      console.log('친구요청 페이지 - 전체 친구요청:', allRequests);
+      
       const requests = await getReceivedFriendRequests(uid);
+      console.log('친구요청 페이지 - 받은 요청들:', requests);
       setFriendRequests(requests);
     } catch (error) {
       console.error('친구요청 로딩 실패:', error);

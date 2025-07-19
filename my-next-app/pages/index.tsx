@@ -4,8 +4,9 @@ import { IoNotificationsOutline } from 'react-icons/io5';
 import { FaUser } from 'react-icons/fa';
 import styles from '../styles/styles.module.css';
 import Link from 'next/link';
-import { fetchProfiles, fetchProfileById, Profile } from '../profiles';
+import { fetchProfiles, fetchProfileById, Profile, sendFriendRequest, getReceivedFriendRequests, hasSentFriendRequest, cleanupDuplicateFriendRequests } from '../profiles';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import NotificationModal from '../components/NotificationModal';
 
 const ICON_SIZE = 20;
 
@@ -17,13 +18,20 @@ const Home: React.FC = () => {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [search, setSearch] = useState('');
   const [isCardMode, setIsCardMode] = useState(false);
+  const [sendingRequests, setSendingRequests] = useState<Set<string>>(new Set());
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [successModal, setSuccessModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({ show: false, message: '', type: 'success' });
+  const [requestedUsers, setRequestedUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        console.log('Firebase Auth 사용자:', user);
+        console.log('Firebase Auth UID:', user.uid);
         setUserId(user.uid);
         const profile = await fetchProfileById(user.uid);
+        console.log('가져온 프로필:', profile);
         setMyProfile(profile);
       } else {
         setUserId(null);
@@ -38,9 +46,135 @@ const Home: React.FC = () => {
     fetchProfiles().then(setProfiles);
   }, []);
 
+  // 전역에서 중복 정리 함수 사용 가능하도록 설정 (개발용)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).cleanupDuplicateFriendRequests = cleanupDuplicateFriendRequests;
+      console.log('중복 친구요청 정리 함수가 전역에서 사용 가능합니다: window.cleanupDuplicateFriendRequests()');
+    }
+  }, []);
+
+  // 친구요청 개수 가져오기
+  useEffect(() => {
+    if (userId) {
+      const loadPendingRequests = async () => {
+        try {
+          console.log('친구요청 개수 조회 시작:', userId);
+          const requests = await getReceivedFriendRequests(userId);
+          console.log('받은 친구요청들:', requests);
+          const pendingCount = requests.filter(req => req.status === 'pending').length;
+          console.log('대기 중인 친구요청 개수:', pendingCount);
+          setPendingRequestsCount(pendingCount);
+        } catch (error) {
+          console.error('친구요청 개수 로딩 실패:', error);
+        }
+      };
+      
+      loadPendingRequests();
+      // 실시간 업데이트를 위해 주기적으로 체크 (5초마다)
+      const interval = setInterval(loadPendingRequests, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [userId]);
+
+  // 친구요청 상태 확인
+  useEffect(() => {
+    if (userId && profiles.length > 0) {
+      const checkRequestStatus = async () => {
+        console.log('친구요청 상태 확인 시작');
+        const requestedSet = new Set<string>();
+        
+        for (const profile of profiles) {
+          if (profile.id !== userId) {
+            // 보낸 친구요청이 있는지 확인 (pending 상태만)
+            const hasRequested = await hasSentFriendRequest(userId, profile.id);
+            console.log(`사용자 ${profile.name}(${profile.id})에게 보낸 요청:`, hasRequested);
+            
+            if (hasRequested) {
+              requestedSet.add(profile.id);
+            }
+          }
+        }
+        
+        console.log('요청 완료된 사용자들:', Array.from(requestedSet));
+        setRequestedUsers(requestedSet);
+      };
+      
+      checkRequestStatus();
+      
+      // 실시간 업데이트를 위해 주기적으로 체크 (10초마다)
+      const interval = setInterval(checkRequestStatus, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [userId, profiles]);
+
   // Firestore에서 불러온 데이터로 favorites, friends 분류
   const favorites: Profile[] = profiles.filter(p => p.id === '3');
   const friends: Profile[] = profiles.filter(p => ['2', '4', '5', '6'].includes(p.id));
+
+  // 친구요청 보내기 함수
+  const handleSendFriendRequest = async (targetUserId: string) => {
+    console.log('친구요청 보내기 시작:', { userId, targetUserId });
+    
+    if (!userId) {
+      setSuccessModal({ show: true, message: '로그인이 필요합니다.', type: 'error' });
+      return;
+    }
+
+    if (sendingRequests.has(targetUserId)) {
+      return; // 이미 요청 중이면 중복 방지
+    }
+
+    setSendingRequests(prev => new Set(prev).add(targetUserId));
+
+    try {
+      console.log('Cloud Function 호출:', { fromUserId: userId, toUserId: targetUserId });
+      
+      // Firebase Auth 토큰 가져오기
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error('사용자 인증 정보가 없습니다.');
+      }
+      
+      const idToken = await currentUser.getIdToken();
+      console.log('Firebase ID 토큰 획득 완료');
+      
+      // Cloud Function 호출
+      const response = await fetch('https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/sendFriendRequest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          userId: userId,        // 요청하는 사람
+          targetId: targetUserId // 받는사람
+        }),
+      });
+
+      const result = await response.json();
+      console.log('Cloud Function 응답:', result);
+      
+      if (response.ok && result.success) {
+        setSuccessModal({ show: true, message: '친구요청이 전송되었습니다!', type: 'success' });
+        // 요청 완료된 유저를 requestedUsers에 추가
+        setRequestedUsers(prev => new Set(prev).add(targetUserId));
+        console.log('친구요청 상태 업데이트 완료:', targetUserId);
+      } else {
+        setSuccessModal({ show: true, message: result.message || '친구요청 전송에 실패했습니다.', type: 'error' });
+      }
+    } catch (error) {
+      console.error('친구요청 전송 오류:', error);
+      setSuccessModal({ show: true, message: '친구요청 전송 중 오류가 발생했습니다.', type: 'error' });
+    } finally {
+      setSendingRequests(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(targetUserId);
+        return newSet;
+      });
+    }
+  };
 
   return (
     <div className={styles.fullContainer}>
@@ -85,8 +219,29 @@ const Home: React.FC = () => {
               <div className={styles.icon} style={{ marginTop: 30 }}>
                 <FiSearch size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} onClick={() => setShowSearchModal(true)} />
                 <IoNotificationsOutline size={ICON_SIZE} color="#222" />
-                <Link href="/friend-requests" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Link href="/friend/requests" style={{ display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
                   <FaUser size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
+                  {pendingRequestsCount > 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: -6,
+                      right: -6,
+                      background: '#FF4757',
+                      color: '#fff',
+                      borderRadius: '50%',
+                      width: 18,
+                      height: 18,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: '2px solid #fff',
+                      minWidth: 18,
+                    }}>
+                      {pendingRequestsCount > 9 ? '9+' : pendingRequestsCount}
+                    </div>
+                  )}
                 </Link>
                 <FiSettings size={ICON_SIZE} color="#222" />
               </div>
@@ -227,13 +382,35 @@ const Home: React.FC = () => {
                     <span style={{ fontWeight: 700, fontSize: 16, color: '#222' }}>{p.name}</span>
                     <button
                       style={{
-                        marginLeft: 'auto', background: '#636AE8', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 2px 8px 0 rgba(99,106,232,0.07)', transition: 'background 0.18s'
+                        marginLeft: 'auto', 
+                        background: requestedUsers.has(p.id) ? '#E0E0E0' : '#636AE8', 
+                        color: requestedUsers.has(p.id) ? '#666' : '#fff', 
+                        border: 'none', 
+                        borderRadius: 7, 
+                        padding: '7px 18px', 
+                        fontWeight: 700, 
+                        fontSize: 15, 
+                        cursor: requestedUsers.has(p.id) ? 'default' : 'pointer', 
+                        boxShadow: '0 2px 8px 0 rgba(99,106,232,0.07)', 
+                        transition: 'background 0.18s',
+                        opacity: requestedUsers.has(p.id) ? 0.7 : 1,
+                        pointerEvents: requestedUsers.has(p.id) ? 'none' : 'auto',
                       }}
-                      onMouseOver={e => e.currentTarget.style.background = '#4850E4'}
-                      onMouseOut={e => e.currentTarget.style.background = '#636AE8'}
-                      // onClick={...친구추가 로직}
+                      onMouseOver={e => {
+                        if (!requestedUsers.has(p.id)) {
+                          e.currentTarget.style.background = '#4850E4';
+                        }
+                      }}
+                      onMouseOut={e => {
+                        if (!requestedUsers.has(p.id)) {
+                          e.currentTarget.style.background = '#636AE8';
+                        }
+                      }}
+                      onClick={() => !requestedUsers.has(p.id) && handleSendFriendRequest(p.id)}
+                      disabled={sendingRequests.has(p.id) || requestedUsers.has(p.id)}
                     >
-                      친구추가
+                      {sendingRequests.has(p.id) ? '요청중...' : 
+                       requestedUsers.has(p.id) ? '요청됨' : '친구추가'}
                     </button>
                   </div>
                 ))}
@@ -244,6 +421,13 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
+      {/* 성공/실패 모달 */}
+      <NotificationModal
+        show={successModal.show}
+        message={successModal.message}
+        type={successModal.type}
+        onClose={() => setSuccessModal({ show: false, message: '', type: 'success' })}
+      />
     </div>
   );
 };
