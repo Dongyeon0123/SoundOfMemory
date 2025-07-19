@@ -196,7 +196,14 @@ const Chat = () => {
             })
           )}
           {isWaitingForReply && (
-            <div className={styles.typingIndicator}><span /></div>
+            <div className={styles.typingIndicator}>
+              <div className={styles.wave}>
+                <div className={styles.dot}></div>
+                <div className={styles.dot}></div>
+                <div className={styles.dot}></div>
+                <div className={styles.dot}></div>
+              </div>
+            </div>
           )}
           <div ref={scrollRef} />
         </div>

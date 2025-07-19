@@ -1,4 +1,4 @@
-import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
 export type Profile = {
@@ -42,4 +42,9 @@ export async function fetchProfiles(): Promise<Profile[]> {
 export async function updateProfileField(id: string, data: Partial<Profile>) {
   const ref = doc(db, "users", id);
   await updateDoc(ref, data);
+}
+
+export async function setProfileField(id: string, data: Partial<Profile>) {
+  const ref = doc(db, "users", id);
+  await setDoc(ref, data, { merge: true });
 } 

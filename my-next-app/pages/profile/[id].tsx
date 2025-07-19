@@ -396,7 +396,7 @@ const ProfilePage: React.FC = () => {
                   textAlign: 'center'
                 }}
               >
-                {profile.tag.map((t, i) => (
+                {(profile.tag ?? []).map((t, i) => (
                   <span key={i}>#{t}</span>
                 ))}
               </div>
