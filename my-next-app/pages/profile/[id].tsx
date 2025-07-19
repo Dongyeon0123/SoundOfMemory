@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '../../styles/styles.module.css';
 import mbtiStyles from '../../styles/MbtiModal.module.css';
 import introStyles from '../../styles/IntroduceModal.module.css';
-import { fetchProfileById, updateProfileField, fetchFriends, sendFriendRequest } from '../../profiles';
+import { fetchProfileById, updateProfileField, fetchFriends, sendFriendRequest, toggleFavorite } from '../../profiles';
 import type { Profile } from '../../profiles';
 import { FiEdit2, FiPhone, FiAtSign } from 'react-icons/fi';
 import { MdDocumentScanner, MdNotificationsActive, MdBlock } from 'react-icons/md';
@@ -138,6 +138,7 @@ const ProfilePage: React.FC = () => {
   const [showCareerModal, setShowCareerModal] = useState(false);
   const [myUid, setMyUid] = useState<string | null>(null);
   const [isFriend, setIsFriend] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [requesting, setRequesting] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
   const [modal, setModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({ show: false, message: '', type: 'success' });
@@ -163,7 +164,9 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     if (myUid && id && typeof id === 'string' && myUid !== id) {
       fetchFriends(myUid).then(friends => {
-        setIsFriend(friends.some(f => f.friendId === id));
+        const friend = friends.find(f => f.friendId === id);
+        setIsFriend(!!friend);
+        setIsFavorite(!!friend && !!friend.favorite);
       });
     }
   }, [myUid, id]);
@@ -183,6 +186,16 @@ const ProfilePage: React.FC = () => {
       setModal({ show: true, message: '친구요청 전송 중 오류가 발생했습니다.', type: 'error' });
     } finally {
       setRequesting(false);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!myUid || !id || typeof id !== 'string') return;
+    try {
+      await toggleFavorite(myUid, id, !isFavorite);
+      setIsFavorite(!isFavorite);
+    } catch (e) {
+      setModal({ show: true, message: '즐겨찾기 변경 중 오류가 발생했습니다.', type: 'error' });
     }
   };
 
@@ -354,19 +367,22 @@ const ProfilePage: React.FC = () => {
                 >
                   <MdBlock size={ICON_SIZE} color="#222" />
                 </button>
-                <button
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                  aria-label="즐겨찾기"
-                >
-                  <FaStar size={ICON_SIZE} color="#FFD700" />
-                </button>
+                {isFriend && (
+                  <button
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    aria-label="즐겨찾기"
+                    onClick={handleToggleFavorite}
+                  >
+                    <FaStar size={ICON_SIZE} color={isFavorite ? '#FFD700' : '#D3D3D3'} />
+                  </button>
+                )}
                 <button
                   style={{
                     background: 'none',
