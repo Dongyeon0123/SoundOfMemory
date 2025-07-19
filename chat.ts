@@ -2,10 +2,18 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { doc, getDoc, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "./firebase";
 
+// 메시지 타입 정의
+export interface Message {
+  id: string;
+  content: string;
+  sender: 'user' | 'ai';
+  timestamp: Date;
+}
+
 // 상태 타입 정의
 export interface ChatState {
   profile: string;
-  messages: string[];
+  messages: Message[];
   input: string;
   isProMode: boolean;
   isProcessing?: boolean;
@@ -36,7 +44,7 @@ const chatSlice = createSlice({
     setInput(state, action: PayloadAction<string>) {
       state.input = action.payload;
     },
-    addMessage(state, action: PayloadAction<string>) {
+    addMessage(state, action: PayloadAction<Message>) {
       state.messages.push(action.payload);
     },
     setProMode(state, action: PayloadAction<boolean>) {
@@ -48,7 +56,7 @@ const chatSlice = createSlice({
     setProfile(state, action: PayloadAction<string>) {
       state.profile = action.payload;
     },
-    setMessages(state, action: PayloadAction<string[]>) {
+    setMessages(state, action: PayloadAction<Message[]>) {
       state.messages = action.payload;
     },
     setChat(state, action: PayloadAction<Partial<ChatState>>) {
@@ -88,9 +96,31 @@ export async function fetchChatById(id: string): Promise<Partial<ChatState> | nu
       return null;
     }
     const data = snap.data();
+    
+    // 기존 문자열 배열을 Message 객체 배열로 변환
+    const rawMessages = data.messages ?? [];
+    const messages: Message[] = rawMessages.map((msg: any, index: number) => {
+      if (typeof msg === 'string') {
+        // 기존 문자열 메시지를 Message 객체로 변환
+        return {
+          id: `msg_${index}`,
+          content: msg,
+          sender: index % 2 === 1 ? 'ai' : 'user',
+          timestamp: new Date(),
+        };
+      }
+      // 이미 Message 객체인 경우
+      return {
+        id: msg.id || `msg_${index}`,
+        content: msg.content,
+        sender: msg.sender || (index % 2 === 1 ? 'ai' : 'user'),
+        timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+      };
+    });
+    
     return {
       profile: data.profile ?? "",
-      messages: data.messages ?? [],
+      messages: messages,
       isProMode: data.isProMode ?? true,
       isProcessing: data.isProcessing ?? false,
       lastSummaryAt: data.lastSummaryAt ? toDateString(data.lastSummaryAt) : "",
@@ -106,12 +136,34 @@ export async function fetchChatById(id: string): Promise<Partial<ChatState> | nu
 }
 
 // Firestore 실시간 리스닝
-export function subscribeChatById(userId: string, callback: (messages: string[]) => void, onNoDoc?: () => void) {
+export function subscribeChatById(userId: string, callback: (messages: Message[]) => void, onNoDoc?: () => void) {
   const ref = doc(db, "users", userId, "chats", `${userId}_avatar_chat`);
   return onSnapshot(ref, (snap) => {
     if (snap.exists()) {
       const data = snap.data();
-      callback(data.messages ?? []);
+      const rawMessages = data.messages ?? [];
+      
+      // 기존 문자열 배열을 Message 객체 배열로 변환
+      const messages: Message[] = rawMessages.map((msg: any, index: number) => {
+        if (typeof msg === 'string') {
+          // 기존 문자열 메시지를 Message 객체로 변환
+          return {
+            id: `msg_${index}`,
+            content: msg,
+            sender: index % 2 === 1 ? 'ai' : 'user',
+            timestamp: new Date(),
+          };
+        }
+        // 이미 Message 객체인 경우
+        return {
+          id: msg.id || `msg_${index}`,
+          content: msg.content,
+          sender: msg.sender || (index % 2 === 1 ? 'ai' : 'user'),
+          timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+        };
+      });
+      
+      callback(messages);
     } else {
       callback([]);
       if (onNoDoc) onNoDoc();

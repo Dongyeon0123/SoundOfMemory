@@ -10,9 +10,10 @@ import {
   setProMode,
   addMessage,
   subscribeChatById,
+  Message,
 } from "../../chat";
 import { fetchProfileById } from "../../profiles";
-import { FiSend } from 'react-icons/fi';
+import { FiSend, FiX } from 'react-icons/fi';
 
 const Chat = () => {
   const router = useRouter();
@@ -25,6 +26,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
   const [showNoChatModal, setShowNoChatModal] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   // 프로필 및 실시간 채팅 리스닝
   useEffect(() => {
@@ -82,10 +84,21 @@ const Chat = () => {
     const text = (msg ?? input).trim();
     if (!text || !profileInfo?.id) return;
   
-    dispatch(addMessage(text));
+    // 사용자 메시지 추가
+    const userMessage: Message = {
+      id: `user_${Date.now()}`,
+      content: text,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+    dispatch(addMessage(userMessage));
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     setIsWaitingForReply(true);
+  
+    // AbortController 생성
+    const controller = new AbortController();
+    setAbortController(controller);
   
     try {
       const endpoint = isProMode
@@ -100,6 +113,7 @@ const Chat = () => {
             userId: profileInfo.id,
             message: text,
           }),
+          signal: controller.signal,
         }
       );
       // 응답 상태와 결과를 콘솔에 출력
@@ -107,9 +121,23 @@ const Chat = () => {
       const data = await response.json().catch(() => null);
       console.log("POST 응답 body:", data);
     } catch (error) {
-      console.error("서버 전송 실패:", error);
+      if (error.name === 'AbortError') {
+        console.log("요청이 취소되었습니다.");
+      } else {
+        console.error("서버 전송 실패:", error);
+      }
     } finally {
       setIsWaitingForReply(false);
+      setAbortController(null);
+    }
+  };
+
+  // 메시지 전송 취소
+  const cancelMessage = () => {
+    if (abortController) {
+      abortController.abort();
+      setIsWaitingForReply(false);
+      setAbortController(null);
     }
   };
 
@@ -184,13 +212,13 @@ const Chat = () => {
           ) : messages.length === 0 ? (
             null
           ) : (
-            messages.map((msg, idx) => {
-              const isBot = idx % 2 === 1;
+            messages.map((msg) => {
+              const isBot = msg.sender === 'ai';
               const msgTypeClass = isBot ? styles.bot : styles.user;
               return (
-                <div key={idx} className={`${styles.msgWrapper} ${msgTypeClass}`}>
+                <div key={msg.id} className={`${styles.msgWrapper} ${msgTypeClass}`}>
                   <div className={styles.name}>{isBot ? profileInfo?.name : "You"}</div>
-                  <div className={styles.bubble}>{msg}</div>
+                  <div className={styles.bubble}>{msg.content}</div>
                 </div>
               );
             })
@@ -235,15 +263,24 @@ const Chat = () => {
             onKeyDown={handleKeyDown}
             rows={1}
             maxLength={500}
+            disabled={isWaitingForReply}
           />
           <button
             className={styles.button}
-            onClick={() => sendMessage()}
-            aria-label="전송"
-            disabled={!input.trim()}
+            onClick={isWaitingForReply ? cancelMessage : () => sendMessage()}
+            aria-label={isWaitingForReply ? "취소" : "전송"}
+            disabled={!input.trim() && !isWaitingForReply}
             type="button"
+            style={{
+              borderRadius: isWaitingForReply ? '8px' : '50%',
+              transition: 'all 0.2s ease',
+            }}
           >
-            <FiSend className="icon" />
+            {isWaitingForReply ? (
+              <FiX className="icon" style={{ color: '#fff' }} />
+            ) : (
+              <FiSend className="icon" />
+            )}
           </button>
         </div>
       </div>
