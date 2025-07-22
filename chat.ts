@@ -87,21 +87,19 @@ function toDateString(ts: any): string {
 }
 
 // Firestore에서 채팅 데이터 단건 fetch
-export async function fetchChatById(id: string): Promise<Partial<ChatState> | null> {
+export async function fetchChatWithTarget(myUid: string, targetUid: string): Promise<Partial<ChatState> | null> {
   try {
-    const ref = doc(db, "users", id, "chats", `${id}_avatar_chat`);
+    const ref = doc(db, "users", myUid, "chats", `${targetUid}_avatar_chat`);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
       console.log("문서가 존재하지 않습니다.");
       return null;
     }
     const data = snap.data();
-    
-    // 기존 문자열 배열을 Message 객체 배열로 변환
+
     const rawMessages = data.messages ?? [];
     const messages: Message[] = rawMessages.map((msg: any, index: number) => {
       if (typeof msg === 'string') {
-        // 기존 문자열 메시지를 Message 객체로 변환
         return {
           id: `msg_${index}`,
           content: msg,
@@ -109,7 +107,6 @@ export async function fetchChatById(id: string): Promise<Partial<ChatState> | nu
           timestamp: new Date(),
         };
       }
-      // 이미 Message 객체인 경우
       return {
         id: msg.id || `msg_${index}`,
         content: msg.content,
@@ -117,7 +114,7 @@ export async function fetchChatById(id: string): Promise<Partial<ChatState> | nu
         timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
       };
     });
-    
+
     return {
       profile: data.profile ?? "",
       messages: messages,
@@ -130,23 +127,25 @@ export async function fetchChatById(id: string): Promise<Partial<ChatState> | nu
       processingStartedAt: data.processingStartedAt ? toDateString(data.processingStartedAt) : "",
     };
   } catch (error) {
-    console.error("fetchChatById 에러:", error);
+    console.error("fetchChatWithTarget 에러:", error);
     return null;
   }
 }
 
 // Firestore 실시간 리스닝
-export function subscribeChatById(userId: string, callback: (messages: Message[]) => void, onNoDoc?: () => void) {
-  const ref = doc(db, "users", userId, "chats", `${userId}_avatar_chat`);
+export function subscribeChatWithTarget(
+  myUid: string,
+  targetUid: string,
+  callback: (messages: Message[]) => void,
+  onNoDoc?: () => void
+) {
+  const ref = doc(db, "users", myUid, "chats", `${targetUid}_avatar_chat`);
   return onSnapshot(ref, (snap) => {
     if (snap.exists()) {
       const data = snap.data();
       const rawMessages = data.messages ?? [];
-      
-      // 기존 문자열 배열을 Message 객체 배열로 변환
       const messages: Message[] = rawMessages.map((msg: any, index: number) => {
         if (typeof msg === 'string') {
-          // 기존 문자열 메시지를 Message 객체로 변환
           return {
             id: `msg_${index}`,
             content: msg,
@@ -154,7 +153,6 @@ export function subscribeChatById(userId: string, callback: (messages: Message[]
             timestamp: new Date(),
           };
         }
-        // 이미 Message 객체인 경우
         return {
           id: msg.id || `msg_${index}`,
           content: msg.content,
@@ -162,7 +160,7 @@ export function subscribeChatById(userId: string, callback: (messages: Message[]
           timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
         };
       });
-      
+
       callback(messages);
     } else {
       callback([]);

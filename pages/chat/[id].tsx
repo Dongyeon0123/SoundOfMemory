@@ -69,10 +69,6 @@ const Chat = () => {
   // Firestore 구독
   useEffect(() => {
     if (!currentUserId || typeof safeId !== "string") {
-      console.warn("⛔ Firestore 구독 차단 — 로그인 또는 safeId 오류", {
-        currentUserId,
-        safeId,
-      });
       return;
     }
     setLoading(true);
