@@ -59,13 +59,20 @@ const Chat = () => {
 
   // 항상 내 ID 기준 Firestore 경로를 반환하는 helper
   const getChatDocRef = () => {
-    if (!currentUserId || typeof safeId !== "string") return null;
+    if (!currentUserId || typeof safeId !== "string") {
+      console.warn("→ getChatDocRef: 인증되지 않았거나 safeId 문제");
+      return null;
+    }
     return doc(db, "users", currentUserId, "chats", `${safeId}_avatar_chat`);
   };
 
   // Firestore 구독
   useEffect(() => {
     if (!currentUserId || typeof safeId !== "string") {
+      console.warn("⛔ Firestore 구독 차단 — 로그인 또는 safeId 오류", {
+        currentUserId,
+        safeId,
+      });
       return;
     }
     setLoading(true);
@@ -168,7 +175,14 @@ const Chat = () => {
     setLastSentMessage(text);
 
     const chatDocRef = getChatDocRef();
-    if (!chatDocRef) return;
+    if (!chatDocRef) {
+      console.warn("Firestore 경로 생성 실패 — 로그인 상태 또는 safeId 확인 필요");
+      return;
+    }
+    if (!currentUserId) {
+      console.warn("유저 인증 안 됨! Firestore 접근 차단");
+      return;
+    }
     let messagesArr: string[] = [];
     try {
       const docSnap = await getDoc(chatDocRef);
