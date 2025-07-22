@@ -57,53 +57,50 @@ const Chat = () => {
 
   const safeId = Array.isArray(id) ? id[0] : id;
 
-  // **핵심 수정**: Function과 동일한 경로로 Firestore 구독
+  // 항상 내 ID 기준 Firestore 경로를 반환하는 helper
+  const getChatDocRef = () => {
+    if (!currentUserId || typeof safeId !== "string") return null;
+    return doc(db, "users", currentUserId, "chats", `${safeId}_avatar_chat`);
+  };
+
+  // Firestore 구독
   useEffect(() => {
     if (!currentUserId || typeof safeId !== "string") {
-      console.log('구독 조건 미충족', { currentUserId, id });
       return;
     }
-    
     setLoading(true);
-    
-    // Function과 동일한 경로: users/{userId}/chats/{targetId}_avatar_chat
-    const chatDocRef = doc(db, "users", currentUserId, "chats", `${safeId}_avatar_chat`);
-    
+    const chatDocRef = getChatDocRef();
+    if (!chatDocRef) return;
+
     const unsubscribe = onSnapshot(chatDocRef, (docSnap) => {
-      console.log('onSnapshot fired', { exists: docSnap.exists() });
-      
       if (docSnap.exists()) {
         const data = docSnap.data();
         const messagesArray = data.messages || [];
-        console.log('messages from Firestore:', messagesArray);
-        
-        // 문자열 배열 또는 객체 배열 모두 지원
-        // 짝수/홀수 인덱스 + 마지막만 user로 강제
-        const msgs: Message[] = messagesArray.map((item: string, index: number) => {
+        // 연속된 user 메시지 보정
+        const msgs: Message[] = [];
+        for (let index = 0; index < messagesArray.length; index++) {
           let sender: "user" | "ai";
           if (messagesArray.length % 2 === 1 && index === messagesArray.length - 1) {
             sender = "user";
           } else {
             sender = index % 2 === 0 ? "user" : "ai";
           }
-          return {
+          if (index > 0 && sender === "user" && msgs[index - 1]?.sender === "user") {
+            sender = "user";
+          }
+          msgs.push({
             id: `msg_${index}`,
-            content: item,
+            content: messagesArray[index],
             sender,
             timestamp: new Date(),
-          };
-        });
-        
-        console.log('converted messages:', msgs);
+          });
+        }
         dispatch(setMessages(msgs));
       } else {
-        console.log('채팅 문서가 존재하지 않음');
         dispatch(setMessages([]));
       }
-      
       setLoading(false);
     }, (error) => {
-      console.error('onSnapshot error:', error);
       setLoading(false);
     });
 
@@ -111,9 +108,21 @@ const Chat = () => {
   }, [currentUserId, safeId, dispatch, input, lastSentMessage]);
 
   // 메시지 스크롤 맨 아래로
+  const scrollLocked = useRef(false);
+
   useEffect(() => {
+    if (scrollLocked.current) return;
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // input 변할 때 잠깐 scroll 잠그기
+  useEffect(() => {
+    scrollLocked.current = true;
+    const id = setTimeout(() => {
+      scrollLocked.current = false;
+    }, 150);
+    return () => clearTimeout(id);
+  }, [input]);
 
   // 로딩 완료 시 스크롤 맨 아래로
   useEffect(() => {
@@ -130,12 +139,15 @@ const Chat = () => {
   }, [input]);
 
   useEffect(() => {
-    if (!loading && messages.length === 0) {
+    const modalKey = `noChatModalShown_${safeId}`;
+    const alreadyShown = typeof window !== 'undefined' ? localStorage.getItem(modalKey) : null;
+    if (!loading && messages.length === 0 && !alreadyShown) {
       setShowNoChatModal(true);
-      const timer = setTimeout(() => setShowNoChatModal(false), 3000);
+      if (typeof window !== 'undefined') localStorage.setItem(modalKey, "true");
+      const timer = setTimeout(() => setShowNoChatModal(false), 2000);
       return () => clearTimeout(timer);
     }
-  }, [loading, messages]);
+  }, [loading, messages.length, safeId]);
 
   const handleResize = () => {
     const el = textareaRef.current;
@@ -154,11 +166,11 @@ const Chat = () => {
     const text = (msg ?? input).trim();
     if (!text || !profileInfo?.id || !currentUserId || typeof safeId !== "string") return;
     setLastSentMessage(text);
-    // Firestore 경로: users/{userId}/chats/{targetId}_avatar_chat
-    const chatDocRef = doc(db, "users", currentUserId, "chats", `${safeId}_avatar_chat`);
+
+    const chatDocRef = getChatDocRef();
+    if (!chatDocRef) return;
     let messagesArr: string[] = [];
     try {
-      // 기존 messages 배열 불러오기
       const docSnap = await getDoc(chatDocRef);
       if (docSnap.exists() && Array.isArray(docSnap.data().messages)) {
         messagesArr = docSnap.data().messages;
@@ -166,7 +178,6 @@ const Chat = () => {
       messagesArr = [...messagesArr, text];
       await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
     } catch (e) {
-      console.error('Firestore 저장 에러:', e);
       alert('채팅 저장 실패: ' + (e.message || e));
       return;
     }
@@ -174,7 +185,6 @@ const Chat = () => {
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     setIsWaitingForReply(true);
 
-    // AbortController 생성
     const controller = new AbortController();
     setAbortController(controller);
 
@@ -191,23 +201,18 @@ const Chat = () => {
         }),
         signal: controller.signal,
       });
-      console.log("POST 응답 status:", response.status);
       const data = await response.json().catch(() => null);
-      console.log("POST 응답 body:", data);
       if (!response.ok) {
         throw new Error(`서버 응답 오류: ${response.status}`);
       }
-      // AI 응답 메시지를 Firestore에 저장 (string[]에 추가)
       if (data && data.response) {
-        // 여기서 messagesArr를 재사용!
         messagesArr = [...messagesArr, data.response];
         await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === 'AbortError') {
-        console.log("요청이 취소되었습니다.");
+        // 요청이 취소됨
       } else {
-        console.error("서버 전송 실패:", error);
         alert("메시지 전송에 실패했습니다. 다시 시도해주세요.");
       }
     } finally {
@@ -221,7 +226,7 @@ const Chat = () => {
       abortController.abort();
       setIsWaitingForReply(false);
       setAbortController(null);
-      dispatch(setInput("")); // input 값 비우기
+      dispatch(setInput(""));
     }
   };
 
@@ -231,8 +236,6 @@ const Chat = () => {
       sendMessage();
     }
   };
-
-  console.log('messages state:', messages);
 
   return (
     <div className={cardStyles.fullContainer}>
@@ -313,7 +316,7 @@ const Chat = () => {
               const isUser = msg.sender === "user";
               const isAI = msg.sender === "ai";
               const msgTypeClass = isAI ? styles.bot : styles.user;
-              
+
               return (
                 <div key={msg.id} className={`${styles.msgWrapper} ${msgTypeClass}`}>
                   <div className={styles.name}>
@@ -324,7 +327,6 @@ const Chat = () => {
               );
             })
           )}
-          
           {isWaitingForReply && (
             <div className={styles.typingIndicator}>
               <div className={styles.wave}>
