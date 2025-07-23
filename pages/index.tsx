@@ -19,7 +19,7 @@ import HeaderBar from '../components/home/HeaderBar';
 import MyAvatar from '../components/home/MyAvatar';
 import FriendsSection from '../components/home/FriendsSection';
 import SearchModal from '../components/home/SearchModal';
-import FullScreenToggleButton from '../components/home/FullscreenToggleButton';
+import FullScreenToggleButton from '../components/home/FullScreenToggleButton';
 import NotificationModal from '../components/NotificationModal'; // 공통 컴포넌트
 
 const Home: React.FC = () => {
