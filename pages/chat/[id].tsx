@@ -66,56 +66,47 @@ const Chat = () => {
     return doc(db, "users", currentUserId, "chats", `${safeId}_avatar_chat`);
   };
 
+  const parseMessages = (data: any): Message[] => {
+    const messagesArray = data?.messages || [];
+    return messagesArray.map((msg: any, index: number) => ({
+      id: `msg_${index}`,
+      content: typeof msg === "string" ? msg : msg.content,
+      sender: msg?.sender || (index % 2 === 0 ? 'user' : 'ai'),
+      timestamp: new Date(), // Timestamp는 서버 측에서 관리한다면 toDate().toISOString() 도 가능
+    }));
+  };  
+
   // Firestore 구독
   useEffect(() => {
-    if (!currentUserId || typeof safeId !== "string") {
-      return;
-    }
-    setLoading(true);
+    if (!currentUserId || typeof safeId !== "string") return;
     const chatDocRef = getChatDocRef();
     if (!chatDocRef) return;
-
+  
+    setLoading(true);
+  
     const unsubscribe = onSnapshot(chatDocRef, (docSnap) => {
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        const messagesArray = data.messages || [];
-        // 연속된 user 메시지 보정
-        const msgs: Message[] = [];
-        for (let index = 0; index < messagesArray.length; index++) {
-          let sender: "user" | "ai";
-          if (messagesArray.length % 2 === 1 && index === messagesArray.length - 1) {
-            sender = "user";
-          } else {
-            sender = index % 2 === 0 ? "user" : "ai";
-          }
-          if (index > 0 && sender === "user" && msgs[index - 1]?.sender === "user") {
-            sender = "user";
-          }
-          msgs.push({
-            id: `msg_${index}`,
-            content: messagesArray[index],
-            sender,
-            timestamp: new Date(),
-          });
-        }
-        dispatch(setMessages(msgs));
+        const messages = parseMessages(docSnap.data());
+        dispatch(setMessages(messages));
       } else {
         dispatch(setMessages([]));
       }
       setLoading(false);
-    }, (error) => {
-      setLoading(false);
-    });
-
+    }, () => setLoading(false));
+  
     return () => unsubscribe();
-  }, [currentUserId, safeId, dispatch, input, lastSentMessage]);
+  }, [currentUserId, safeId, dispatch]);
+  
 
   // 메시지 스크롤 맨 아래로
   const scrollLocked = useRef(false);
 
   useEffect(() => {
-    if (scrollLocked.current) return;
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > 0) {
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
+    }
   }, [messages]);
 
   // input 변할 때 잠깐 scroll 잠그기
@@ -126,15 +117,6 @@ const Chat = () => {
     }, 150);
     return () => clearTimeout(id);
   }, [input]);
-
-  // 로딩 완료 시 스크롤 맨 아래로
-  useEffect(() => {
-    if (!loading && messages.length > 0) {
-      setTimeout(() => {
-        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    }
-  }, [loading, messages.length]);
 
   // textarea 높이 자동 조절
   useEffect(() => {
@@ -168,17 +150,10 @@ const Chat = () => {
   const sendMessage = async (msg?: string) => {
     const text = (msg ?? input).trim();
     if (!text || !profileInfo?.id || !currentUserId || typeof safeId !== "string") return;
-    setLastSentMessage(text);
-
+  
     const chatDocRef = getChatDocRef();
-    if (!chatDocRef) {
-      console.warn("Firestore 경로 생성 실패 — 로그인 상태 또는 safeId 확인 필요");
-      return;
-    }
-    if (!currentUserId) {
-      console.warn("유저 인증 안 됨! Firestore 접근 차단");
-      return;
-    }
+    if (!chatDocRef) return;
+  
     let messagesArr: string[] = [];
     try {
       const docSnap = await getDoc(chatDocRef);
@@ -188,48 +163,45 @@ const Chat = () => {
       messagesArr = [...messagesArr, text];
       await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
     } catch (e) {
-      alert('채팅 저장 실패: ' + (e.message || e));
+      alert('채팅 저장 실패: ' + (e as any).message);
       return;
     }
+  
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     setIsWaitingForReply(true);
-
+  
     const controller = new AbortController();
     setAbortController(controller);
-
+  
     try {
       const endpoint = isProMode
         ? "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarpaid"
         : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree";
+  
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: profileInfo.id,
-          message: text,
-        }),
+        body: JSON.stringify({ userId: profileInfo.id, message: text }),
         signal: controller.signal,
       });
-      const data = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(`서버 응답 오류: ${response.status}`);
-      }
-      if (data && data.response) {
+  
+      const data = await response.json();
+  
+      if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+      if (data?.response) {
         messagesArr = [...messagesArr, data.response];
         await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
       }
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        // 요청이 취소됨
-      } else {
-        alert("메시지 전송에 실패했습니다. 다시 시도해주세요.");
+      if (error.name !== 'AbortError') {
+        alert("메시지 전송 실패: " + error.message);
       }
     } finally {
       setIsWaitingForReply(false);
       setAbortController(null);
     }
-  };
+  };  
 
   const cancelMessage = () => {
     if (abortController) {
