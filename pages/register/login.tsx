@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '../../firebase';
+import { auth } from '../../types/firebase';
 import cardStyles from '../../styles/styles.module.css';
 import { useRouter } from 'next/router';
 

@@ -3,14 +3,14 @@ import { useRouter } from "next/router";
 import cardStyles from "../../styles/styles.module.css";
 import styles from "../../styles/chat.module.css";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../../store";
-import { setInput, setMessages, setProMode, Message, } from "../../chat";
-import { fetchProfileById } from "../../profiles";
+import { RootState } from "../../types/store";
+import { setInput, setMessages, setProMode, Message, } from "../../types/chat";
+import { fetchProfileById } from "../../types/profiles";
 import { FiSend, FiX } from 'react-icons/fi';
 import { doc, onSnapshot, updateDoc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db } from "../../types/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { sanitizeHtml } from "../../sanitizeHtml";
+import { sanitizeHtml } from "../../types/sanitizeHtml";
 
 const Chat = () => {
   const router = useRouter();

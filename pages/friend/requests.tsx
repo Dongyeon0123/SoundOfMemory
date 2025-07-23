@@ -3,7 +3,7 @@ import styles from '../../styles/styles.module.css';
 import { useRouter } from 'next/router';
 import { FiSettings } from 'react-icons/fi';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getReceivedFriendRequests, updateFriendRequestStatus, FriendRequest, getAllFriendRequests } from '../../profiles';
+import { getReceivedFriendRequests, updateFriendRequestStatus, FriendRequest, getAllFriendRequests } from '../../types/profiles';
 
 const FriendRequests: React.FC = () => {
   const router = useRouter();

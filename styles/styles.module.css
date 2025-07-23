@@ -180,6 +180,27 @@
     width: 100vw;
     border-radius: 0;
   }
+  .fullscreenToggle {
+    display: none;
+  }
+}
+
+.fullscreenToggle {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 100;
+  background: #636AE8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(99, 106, 232, 0.07);
+  transition: background 0.18s;
+  letter-spacing: -1px;
 }
 
 /* 섹션 블록 */

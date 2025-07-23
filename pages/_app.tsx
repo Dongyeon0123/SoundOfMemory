@@ -1,11 +1,11 @@
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import { Provider } from 'react-redux';
-import { makeStore } from '../store';
+import { makeStore } from '../types/store';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { fetchProfileById } from '../profiles';
+import { fetchProfileById } from '../types/profiles';
 import Head from 'next/head';
 
 function MyApp({ Component, pageProps }: AppProps) {

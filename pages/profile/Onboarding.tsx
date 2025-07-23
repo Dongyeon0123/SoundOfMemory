@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { getAuth } from 'firebase/auth';
-import { setProfileField } from '../../profiles';
+import { setProfileField } from '../../types/profiles';
 import cardStyles from '../../styles/styles.module.css';
 import mbtiStyles from '../../styles/MbtiModal.module.css';
 
