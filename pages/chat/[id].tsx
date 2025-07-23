@@ -175,9 +175,13 @@ const Chat = () => {
     setAbortController(controller);
   
     try {
-      const endpoint = isProMode
-        ? "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarpaid"
-        : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree";
+      const isAvatarMine = currentUserId === profileInfo?.id;
+
+      const endpoint = isAvatarMine
+        ? (isProMode
+            ? "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarpaid"
+            : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree")
+            : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/otherchat";
   
       const response = await fetch(endpoint, {
         method: "POST",
@@ -260,15 +264,17 @@ const Chat = () => {
             {profileInfo?.name || ""}
             <span style={{fontSize: 14, color: '#999'}}><br/>AI</span>
           </div>
-          <div className={styles.toggleWrap}>
-            <div
-              className={`${styles.toggle} ${isProMode ? styles.on : ""}`}
-              onClick={toggleProMode}
-            />
-            <div className={styles.label}>
-              {isProMode ? "PRO Mode ON" : "PRO Mode OFF"}
+          {currentUserId === profileInfo?.id && (
+            <div className={styles.toggleWrap}>
+              <div
+                className={`${styles.toggle} ${isProMode ? styles.on : ""}`}
+                onClick={toggleProMode}
+              />
+              <div className={styles.label}>
+                {isProMode ? "PRO Mode ON" : "PRO Mode OFF"}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* 그레이 구분선 */}
