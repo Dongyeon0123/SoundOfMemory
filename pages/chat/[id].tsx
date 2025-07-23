@@ -163,7 +163,7 @@ const Chat = () => {
       messagesArr = [...messagesArr, text];
       await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
     } catch (e) {
-      alert('채팅 저장 실패: ' + (e as any).message);
+      alert("채팅 저장 실패: " + (e as any).message);
       return;
     }
   
@@ -176,17 +176,21 @@ const Chat = () => {
   
     try {
       const isAvatarMine = currentUserId === profileInfo?.id;
-
+  
       const endpoint = isAvatarMine
-        ? (isProMode
-            ? "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarpaid"
-            : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree")
-            : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/otherchat";
+        ? isProMode
+          ? "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarpaid"
+          : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree"
+        : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/otherchat";
+  
+      const requestBody = isAvatarMine
+        ? { userId: profileInfo.id, message: text } // 내 아바타
+        : { userId: currentUserId, targetId: profileInfo.id, message: text }; // 타인
   
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: profileInfo.id, message: text }),
+        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
   
@@ -198,7 +202,7 @@ const Chat = () => {
         await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
       }
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
+      if (error.name !== "AbortError") {
         alert("메시지 전송 실패: " + error.message);
       }
     } finally {
@@ -207,14 +211,24 @@ const Chat = () => {
     }
   };  
 
+  // 메시지 전송 취소
   const cancelMessage = () => {
     if (abortController) {
-      abortController.abort();
-      setIsWaitingForReply(false);
+      abortController.abort();          // 요청 취소
       setAbortController(null);
-      dispatch(setInput(""));
+      setIsWaitingForReply(false);      // 전송 중 상태 해제
+      dispatch(setInput(""));           // 입력창 클리어
     }
   };
+
+  // 새로고침/이탈시 전송중 UI 클린업
+  useEffect(() => {
+    return () => {
+      abortController?.abort();
+      setIsWaitingForReply(false);
+      setAbortController(null);
+    };
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
