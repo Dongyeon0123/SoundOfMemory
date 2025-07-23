@@ -11,15 +11,18 @@ type Friend = {
 type Props = {
   title: string;
   friends: Friend[];
+  loading: boolean;
 };
 
-const FriendsSection: React.FC<Props> = ({ title, friends }) => {
+const FriendsSection: React.FC<Props> = ({ title, friends, loading }) => {
   return (
     <div className={styles.sectionBlock}>
       <h4 className={styles.sectionTitle}>{title}</h4>
-      
-      {friends.length === 0 ? (
-        <div style={{ color: '#888', padding: '12px 0', fontSize: 14 }}>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', color: '#636AE8', margin: 24 }}>불러오는 중...</div>
+      ) : friends.length === 0 ? (
+        <div style={{ color: '#888', padding: '12px 0', fontSize: 14, textAlign: 'center' }}>
           친구가 없습니다.
         </div>
       ) : (

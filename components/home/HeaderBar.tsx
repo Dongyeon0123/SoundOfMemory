@@ -66,12 +66,32 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
 
           {/* 로그인/로그아웃 */}
           {userId ? (
-            <button onClick={onLogout} className={styles.logoutBtn}>
+            <button onClick={onLogout} style={{
+                background: '#fff',
+                color: '#636AE8',
+                border: '1.5px solid #636AE8',
+                borderRadius: 6,
+                padding: '6px 18px',
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: 'pointer',
+                marginRight: 8
+              }}>
               로그아웃
             </button>
           ) : (
             <Link href="/register/login">
-              <button className={styles.loginBtn}>로그인</button>
+              <button style={{
+                    background: '#fff',
+                    color: '#636AE8',
+                    border: '1.5px solid #636AE8',
+                    borderRadius: 6,
+                    padding: '6px 18px',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    cursor: 'pointer',
+                    marginRight: 8
+                  }}>로그인</button>
             </Link>
           )}
         </div>

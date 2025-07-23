@@ -31,12 +31,14 @@ const SearchModal: React.FC<Props> = ({
 
   if (!visible) return null;
 
-  const filtered = profiles.filter(
-    p =>
-      p.name &&
-      p.name.includes(search) &&
-      p.id !== userId
-  );
+  const filtered = search
+  ? profiles.filter(
+      p =>
+        p.name &&
+        p.name.includes(search) &&
+        p.id !== userId
+    )
+  : [];
 
   return (
     <div style={{

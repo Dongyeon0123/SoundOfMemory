@@ -20,7 +20,7 @@ import MyAvatar from '../components/home/MyAvatar';
 import FriendsSection from '../components/home/FriendsSection';
 import SearchModal from '../components/home/SearchModal';
 import FullScreenToggleButton from '../components/home/FullScreenToggleButton';
-import NotificationModal from '../components/NotificationModal'; // 공통 컴포넌트
+import NotificationModal from '../components/NotificationModal';
 
 const Home: React.FC = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -194,8 +194,8 @@ const Home: React.FC = () => {
         {/* 본문 */}
         <div className={styles.scrollMain} style={{ paddingTop: 10 }}>
           <MyAvatar loading={loading} userId={userId} myProfile={myProfile} />
-          <FriendsSection title="즐겨찾기" friends={favorites} />
-          <FriendsSection title="친구" friends={normalFriends} />
+          <FriendsSection title="즐겨찾기" friends={favorites} loading={loading} />
+          <FriendsSection title="친구" friends={normalFriends} loading={loading} />
         </div>
       </div>
 
