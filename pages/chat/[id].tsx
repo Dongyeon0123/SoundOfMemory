@@ -4,17 +4,13 @@ import cardStyles from "../../styles/styles.module.css";
 import styles from "../../styles/chat.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
-import {
-  setInput,
-  setMessages,
-  setProMode,
-  Message,
-} from "../../chat";
+import { setInput, setMessages, setProMode, Message, } from "../../chat";
 import { fetchProfileById } from "../../profiles";
 import { FiSend, FiX } from 'react-icons/fi';
 import { doc, onSnapshot, updateDoc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { sanitizeHtml } from "../../sanitizeHtml";
 
 const Chat = () => {
   const router = useRouter();
@@ -102,12 +98,15 @@ const Chat = () => {
   const scrollLocked = useRef(false);
 
   useEffect(() => {
-    if (messages.length > 0) {
+    if (
+      messages.length > 0 || 
+      isWaitingForReply
+    ) {
       requestAnimationFrame(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
       });
     }
-  }, [messages]);
+  }, [messages, isWaitingForReply]);  
 
   // input 변할 때 잠깐 scroll 잠그기
   useEffect(() => {
@@ -324,7 +323,14 @@ const Chat = () => {
                   <div className={styles.name}>
                     {isAI ? profileInfo?.name : "You"}
                   </div>
-                  <div className={styles.bubble}>{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</div>
+                  <div
+                    className={styles.bubble}
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeHtml(
+                        typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)
+                      )
+                    }}
+                  ></div>
                 </div>
               );
             })
