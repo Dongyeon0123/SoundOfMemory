@@ -129,7 +129,11 @@ const Home: React.FC = () => {
     try {
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      const idToken = await currentUser?.getIdToken();
+      if (!currentUser) {
+        setSuccessModal({ show: true, message: '인증 정보가 없습니다. 다시 로그인 해주세요.', type: 'error' });
+        return;
+      }
+      const idToken = await currentUser.getIdToken();
 
       const response = await fetch('https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/sendFriendRequest', {
         method: 'POST',
@@ -149,11 +153,12 @@ const Home: React.FC = () => {
         setSuccessModal({ show: true, message: '친구요청이 전송되었습니다!', type: 'success' });
         setRequestedUsers(prev => new Set(prev).add(targetUserId));
       } else {
+        console.error('친구요청 실패:', result);
         setSuccessModal({ show: true, message: result.message || '친구요청 실패', type: 'error' });
       }
     } catch (error) {
       console.error('요청 실패:', error);
-      setSuccessModal({ show: true, message: '오류가 발생했습니다.', type: 'error' });
+      setSuccessModal({ show: true, message: error?.message || '오류가 발생했습니다.', type: 'error' });
     } finally {
       setSendingRequests(prev => {
         const next = new Set(prev);
