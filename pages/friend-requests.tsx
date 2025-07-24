@@ -46,7 +46,7 @@ const FriendRequests: React.FC = () => {
       // 요청 객체에서 toUserId 추출
       const request = friendRequests.find(req => req.requestId === requestId);
       if (!request) {
-        alert('친구 요청을 이미 보낸 대상입니다.');
+        alert('이미 친구가 맺어져 있습니다!');
         setProcessingRequests(prev => {
           const newSet = new Set(prev);
           newSet.delete(requestId);
@@ -59,7 +59,8 @@ const FriendRequests: React.FC = () => {
         setFriendRequests(prev => prev.filter(req => req.requestId !== requestId));
         alert(action === 'accept' ? '친구요청을 수락했습니다!' : '친구요청을 거절했습니다.');
       } else {
-        alert('요청 처리에 실패했습니다.');
+        // 서버에서 이미 친구인 경우 영문 메시지를 반환할 수 있으므로 한글로 안내
+        alert('이미 친구가 맺어져 있습니다!');
       }
     } catch (error) {
       console.error('요청 처리 오류:', error);
