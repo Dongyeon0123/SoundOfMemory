@@ -202,13 +202,17 @@ const ProfilePage: React.FC = () => {
         setRequestSent(true);
         setModal({ show: true, message: '친구요청이 전송되었습니다!', type: 'success' });
       } else {
-        setModal({ show: true, message: result.message || '친구요청 실패', type: 'error' });
+        if (result.message === 'Friend request already exists') {
+          setModal({ show: true, message: '이미 친구 요청을 보낸 대상입니다.', type: 'error' });
+        } else {
+          setModal({ show: true, message: result.message || '친구요청 실패', type: 'error' });
+        }
       }
-    } catch (e) {
-      setModal({ show: true, message: e?.message || '친구요청 전송 중 오류가 발생했습니다.', type: 'error' });
-    } finally {
-      setRequesting(false);
-    }
+      } catch (e) {
+        setModal({ show: true, message: e?.message || '친구요청 전송 중 오류가 발생했습니다.', type: 'error' });
+      } finally {
+        setRequesting(false);
+      }
   };
 
   const handleToggleFavorite = async () => {
