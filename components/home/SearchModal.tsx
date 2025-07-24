@@ -143,12 +143,10 @@ const SearchModal: React.FC<Props> = ({
                 }}
                 onMouseOver={e => e.currentTarget.style.background = '#e6eaff'}
                 onMouseOut={e => e.currentTarget.style.background = '#f7f8fa'}
-                onClick={e => {
-                  if ((e.target as HTMLElement).tagName !== 'BUTTON') {
-                    router.push(`/profile/${p.id}`);
-                    onClose();
-                    setSearch('');
-                  }
+                onClick={() => {
+                  router.push(`/profile/${p.id}`);
+                  onClose();
+                  setSearch('');
                 }}
               >
                 <img
@@ -163,46 +161,28 @@ const SearchModal: React.FC<Props> = ({
                   }}
                 />
                 <span style={{ fontWeight: 700, fontSize: 16, color: '#222' }}>{p.name}</span>
-                
                 <button
                   style={{
                     marginLeft: 'auto',
-                    background: requestedUsers.has(p.id) ? '#E0E0E0' : '#636AE8',
-                    color: requestedUsers.has(p.id) ? '#666' : '#fff',
+                    background: '#636AE8',
+                    color: '#fff',
                     border: 'none',
                     borderRadius: 7,
                     padding: '7px 18px',
                     fontWeight: 700,
                     fontSize: 15,
-                    cursor: requestedUsers.has(p.id) ? 'default' : 'pointer',
+                    cursor: 'pointer',
                     boxShadow: '0 2px 8px 0 rgba(99,106,232,0.07)',
                     transition: 'background 0.18s',
-                    opacity: requestedUsers.has(p.id) ? 0.7 : 1,
-                    pointerEvents: requestedUsers.has(p.id) ? 'none' : 'auto',
-                  }}
-                  onMouseOver={e => {
-                    if (!requestedUsers.has(p.id)) {
-                      e.currentTarget.style.background = '#4850E4';
-                    }
-                  }}
-                  onMouseOut={e => {
-                    if (!requestedUsers.has(p.id)) {
-                      e.currentTarget.style.background = '#636AE8';
-                    }
                   }}
                   onClick={e => {
                     e.stopPropagation();
-                    if (!requestedUsers.has(p.id)) {
-                      onRequest(p.id);
-                    }
+                    router.push(`/profile/${p.id}`);
+                    onClose();
+                    setSearch('');
                   }}
-                  disabled={sendingRequests.has(p.id) || requestedUsers.has(p.id)}
                 >
-                  {sendingRequests.has(p.id)
-                    ? '요청중...'
-                    : requestedUsers.has(p.id)
-                    ? '요청됨'
-                    : '친구추가'}
+                  프로필 이동
                 </button>
               </div>
             ))

@@ -175,15 +175,37 @@ const ProfilePage: React.FC = () => {
     if (!myUid || !id || typeof id !== 'string') return;
     setRequesting(true);
     try {
-      const success = await sendFriendRequest(myUid, id);
-      if (success) {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        setModal({ show: true, message: '로그인이 필요합니다.', type: 'error' });
+        setRequesting(false);
+        return;
+      }
+      const idToken = await currentUser.getIdToken();
+
+      const response = await fetch('https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/sendFriendRequest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          userId: myUid,
+          targetId: id
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
         setRequestSent(true);
         setModal({ show: true, message: '친구요청이 전송되었습니다!', type: 'success' });
       } else {
-        setModal({ show: true, message: '이미 친구이거나 친구요청이 존재합니다.', type: 'error' });
+        setModal({ show: true, message: result.message || '친구요청 실패', type: 'error' });
       }
     } catch (e) {
-      setModal({ show: true, message: '친구요청 전송 중 오류가 발생했습니다.', type: 'error' });
+      setModal({ show: true, message: e?.message || '친구요청 전송 중 오류가 발생했습니다.', type: 'error' });
     } finally {
       setRequesting(false);
     }
