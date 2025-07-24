@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styles from '../../styles/HistoryModal.module.css';
+import styles from '../../../styles/HistoryModal.module.css';
 import { FiTrash2, FiPlus } from 'react-icons/fi';
 
 const currentYear = new Date().getFullYear();
