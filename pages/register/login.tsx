@@ -16,26 +16,6 @@ export default function Login() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage('');
-    setError('');
-    setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, form.email, form.password);
-      setMessage('로그인 성공!');
-      setShowModal(true);
-      setTimeout(() => {
-        setShowModal(false);
-        router.push('/');
-      }, 1200);
-    } catch (err: any) {
-      setError(err.message || '로그인 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
@@ -94,8 +74,6 @@ export default function Login() {
             <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" style={{ width: 24, height: 24, marginRight: 10 }} />
             {loading ? '진행 중...' : '구글 계정으로 로그인'}
           </button>
-          {message && <div style={{ marginTop: 18, color: '#636AE8', textAlign: 'center', fontWeight: 600 }}>{message}</div>}
-          {error && <div style={{ marginTop: 16, color: 'red', textAlign: 'center', fontWeight: 600 }}>{error}</div>}
         </div>
         {showModal && (
           <div style={{

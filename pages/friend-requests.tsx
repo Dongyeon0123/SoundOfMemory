@@ -45,7 +45,15 @@ const FriendRequests: React.FC = () => {
     try {
       // 요청 객체에서 toUserId 추출
       const request = friendRequests.find(req => req.requestId === requestId);
-      if (!request) throw new Error('요청 정보를 찾을 수 없습니다.');
+      if (!request) {
+        alert('친구 요청을 이미 보낸 대상입니다.');
+        setProcessingRequests(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(requestId);
+          return newSet;
+        });
+        return;
+      }
       const success = await updateFriendRequestStatus(requestId, action, request.toUserId);
       if (success) {
         setFriendRequests(prev => prev.filter(req => req.requestId !== requestId));
