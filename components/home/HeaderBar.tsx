@@ -1,8 +1,7 @@
 import React from 'react';
 import styles from '../../styles/styles.module.css';
 import { FiSearch, FiSettings } from 'react-icons/fi';
-import { IoNotificationsOutline } from 'react-icons/io5';
-import { FaUser } from 'react-icons/fa';
+import { IoNotificationsOutline, IoPersonOutline } from 'react-icons/io5';
 import Link from 'next/link';
 
 const ICON_SIZE = 20;
@@ -54,7 +53,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 position: 'relative',
               }}
             >
-              <FaUser size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
+              <IoPersonOutline size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
               {pendingRequestsCount > 0 && (
                 <div className={styles.plusBadge}>
                   {pendingRequestsCount > 9 ? '9+' : pendingRequestsCount}
