@@ -56,7 +56,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
             >
               <FaUser size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
               {pendingRequestsCount > 0 && (
-                <div className={styles.badge}>
+                <div className={styles.plusBadge}>
                   {pendingRequestsCount > 9 ? '9+' : pendingRequestsCount}
                 </div>
               )}
