@@ -56,7 +56,9 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
               <IoPersonOutline size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
               {pendingRequestsCount > 0 && (
                 <div className={styles.plusBadge}>
-                  {pendingRequestsCount > 9 ? '9+' : pendingRequestsCount}
+                  <span style={{ marginTop: 1 }}>
+                    {pendingRequestsCount > 9 ? '9+' : pendingRequestsCount}
+                </span>
                 </div>
               )}
             </Link>
