@@ -4,13 +4,16 @@ import cardStyles from "../../styles/styles.module.css";
 import styles from "../../styles/chat.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../types/store";
-import { setInput, setMessages, setProMode, Message, } from "../../types/chat";
+import { setInput, setMessages, setProMode, Message } from "../../types/chat";
 import { fetchProfileById } from "../../types/profiles";
-import { FiSend, FiX } from 'react-icons/fi';
-import { doc, onSnapshot, updateDoc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, onSnapshot, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../types/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { sanitizeHtml } from "../../types/sanitizeHtml";
+
+import ChatHeader from '../../components/chat/ChatHeader';
+import ProfileSection from '../../components/chat/ProfileSection';
+import MessageList from '../../components/chat/MessageList';
+import ChatInput from '../../components/chat/ChatInput';
 
 const Chat = () => {
   const router = useRouter();
@@ -19,13 +22,23 @@ const Chat = () => {
   const dispatch = useDispatch();
   const { messages, input, isProMode } = useSelector((state: RootState) => state.chat);
   const { id } = router.query;
+
   const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
   const [showNoChatModal, setShowNoChatModal] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [lastSentMessage, setLastSentMessage] = useState<string | null>(null);
+
+  // 마지막 내 메시지를 삭제하는 함수
+  const removeLastUserMessage = (msgs: Message[]): Message[] => {
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].sender === 'user') {
+        return [...msgs.slice(0, i), ...msgs.slice(i + 1)];
+      }
+    }
+    return msgs;
+  };
 
   useEffect(() => {
     dispatch(setInput(""));
@@ -34,26 +47,21 @@ const Chat = () => {
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setCurrentUserId(user.uid);
-      else setCurrentUserId(null);
+      setCurrentUserId(user ? user.uid : null);
     });
     return () => unsubscribe();
   }, []);
 
-  // 상대방 프로필 정보 불러오기
   useEffect(() => {
     if (typeof id === "string") {
-      fetchProfileById(id).then((profile) => {
-        if (profile) {
-          setProfileInfo({ id: profile.id, name: profile.name, img: profile.img });
-        }
+      fetchProfileById(id).then(profile => {
+        if (profile) setProfileInfo({ id: profile.id, name: profile.name, img: profile.img });
       });
     }
   }, [id]);
 
   const safeId = Array.isArray(id) ? id[0] : id;
 
-  // 항상 내 ID 기준 Firestore 경로를 반환하는 helper
   const getChatDocRef = () => {
     if (!currentUserId || typeof safeId !== "string") {
       console.warn("→ getChatDocRef: 인증되지 않았거나 safeId 문제");
@@ -68,59 +76,39 @@ const Chat = () => {
       id: `msg_${index}`,
       content: typeof msg === "string" ? msg : msg.content,
       sender: msg?.sender || (index % 2 === 0 ? 'user' : 'ai'),
-      timestamp: new Date(), // Timestamp는 서버 측에서 관리한다면 toDate().toISOString() 도 가능
+      timestamp: new Date(),
     }));
-  };  
+  };
 
-  // Firestore 구독
   useEffect(() => {
     if (!currentUserId || typeof safeId !== "string") return;
     const chatDocRef = getChatDocRef();
     if (!chatDocRef) return;
-  
+
     setLoading(true);
-  
+
     const unsubscribe = onSnapshot(chatDocRef, (docSnap) => {
       if (docSnap.exists()) {
-        const messages = parseMessages(docSnap.data());
-        dispatch(setMessages(messages));
+        const msgs = parseMessages(docSnap.data());
+        dispatch(setMessages(msgs));
       } else {
         dispatch(setMessages([]));
       }
       setLoading(false);
     }, () => setLoading(false));
-  
+
     return () => unsubscribe();
   }, [currentUserId, safeId, dispatch]);
-  
-
-  // 메시지 스크롤 맨 아래로
-  const scrollLocked = useRef(false);
 
   useEffect(() => {
-    if (
-      messages.length > 0 || 
-      isWaitingForReply
-    ) {
+    if (messages.length > 0 || isWaitingForReply) {
       requestAnimationFrame(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
       });
     }
-  }, [messages, isWaitingForReply]);  
+  }, [messages, isWaitingForReply]);
 
-  // input 변할 때 잠깐 scroll 잠그기
-  useEffect(() => {
-    scrollLocked.current = true;
-    const id = setTimeout(() => {
-      scrollLocked.current = false;
-    }, 150);
-    return () => clearTimeout(id);
-  }, [input]);
-
-  // textarea 높이 자동 조절
-  useEffect(() => {
-    handleResize();
-  }, [input]);
+  useEffect(() => { handleResize(); }, [input]);
 
   useEffect(() => {
     const modalKey = `noChatModalShown_${safeId}`;
@@ -145,7 +133,6 @@ const Chat = () => {
     dispatch(setProMode(!isProMode));
   };
 
-  // 메시지 전송 및 Firestore에 저장
   const sendMessage = async (msg?: string) => {
     const text = (msg ?? input).trim();
     if (!text || !profileInfo?.id || !currentUserId || typeof safeId !== "string") return;
@@ -203,6 +190,9 @@ const Chat = () => {
     } catch (error: any) {
       if (error.name !== "AbortError") {
         alert("메시지 전송 실패: " + error.message);
+        // AI 응답 실패 시 마지막 내 메시지 제거
+        const newMessages = removeLastUserMessage(messages);
+        dispatch(setMessages(newMessages));
       }
     } finally {
       setIsWaitingForReply(false);
@@ -210,17 +200,18 @@ const Chat = () => {
     }
   };  
 
-  // 메시지 전송 취소
   const cancelMessage = () => {
     if (abortController) {
-      abortController.abort();          // 요청 취소
+      abortController.abort();
       setAbortController(null);
-      setIsWaitingForReply(false);      // 전송 중 상태 해제
-      dispatch(setInput(""));           // 입력창 클리어
+      setIsWaitingForReply(false);
+      // 전송 중 메시지 취소 시 마지막 내 메시지도 제거
+      const newMessages = removeLastUserMessage(messages);
+      dispatch(setMessages(newMessages));
+      dispatch(setInput(""));
     }
   };
 
-  // 새로고침/이탈시 전송중 UI 클린업
   useEffect(() => {
     return () => {
       abortController?.abort();
@@ -239,171 +230,54 @@ const Chat = () => {
   return (
     <div className={cardStyles.fullContainer}>
       <div className={cardStyles.centerCard}>
-        {/* 헤더 */}
-        <div className={styles.header}>
-          <button
-            onClick={() => router.back()}
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              height: 40,
-              width: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            aria-label="뒤로가기"
-          >
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <div className={styles.title}>Sound Of Memory</div>
-        </div>
-
-        {/* 프로필 섹션 */}
-        <div className={styles.profileSection}>
-          <img
-            src={profileInfo?.img || "/chat/profile.png"}
-            alt={`${profileInfo?.name || "프로필"} 프로필`}
-          />
-          <div className={styles.profileName}>
-            {profileInfo?.name || ""}
-            <span style={{fontSize: 14, color: '#999'}}><br/>AI</span>
-          </div>
-          {currentUserId === profileInfo?.id && (
-            <div className={styles.toggleWrap}>
-              <div
-                className={`${styles.toggle} ${isProMode ? styles.on : ""}`}
-                onClick={toggleProMode}
-              />
-              <div className={styles.label}>
-                {isProMode ? "PRO Mode ON" : "PRO Mode OFF"}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 그레이 구분선 */}
+  
+        <ChatHeader title="Sound Of Memory" />
+  
+        <ProfileSection
+          name={profileInfo?.name || ""}
+          img={profileInfo?.img}
+          isProMode={isProMode}
+          showProToggle={currentUserId === profileInfo?.id}
+          onToggleProMode={toggleProMode}
+        />
+  
         <div style={{ width: '100%', height: '1px', background: '#e0e0e0' }} />
-
-        {/* 메시지 섹션 */}
-        <div className={styles.messageSection}>
-          {loading ? (
-            <div style={{ 
-              width: '100%', 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              minHeight: 200 
-            }}>
-              <div className="spinner" style={{ marginBottom: 18 }} />
-              <div style={{ fontSize: 16, color: '#636AE8', fontWeight: 600 }}>
-                메시지를 불러오는 중입니다...
-              </div>
-            </div>
-          ) : messages.length === 0 ? (
-            null
-          ) : (
-            messages.map((msg, idx) => {
-              const isUser = msg.sender === "user";
-              const isAI = msg.sender === "ai";
-              const msgTypeClass = isAI ? styles.bot : styles.user;
-
-              return (
-                <div key={msg.id} className={`${styles.msgWrapper} ${msgTypeClass}`}>
-                  <div className={styles.name}>
-                    {isAI ? profileInfo?.name : "You"}
-                  </div>
-                  <div
-                    className={styles.bubble}
-                    dangerouslySetInnerHTML={{
-                      __html: sanitizeHtml(
-                        typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)
-                      )
-                    }}
-                  ></div>
-                </div>
-              );
-            })
-          )}
-          {isWaitingForReply && (
-            <div className={styles.typingIndicator}>
-              <div className={styles.wave}>
-                <div className={styles.dot}></div>
-                <div className={styles.dot}></div>
-                <div className={styles.dot}></div>
-                <div className={styles.dot}></div>
-              </div>
-            </div>
-          )}
-          <div ref={scrollRef} />
-        </div>
-
+  
+        <MessageList
+          loading={loading}
+          messages={messages}
+          isWaitingForReply={isWaitingForReply}
+          profileName={profileInfo?.name ?? ""}
+          scrollRef={scrollRef}
+        />
+  
         {showNoChatModal && (
           <div style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.18)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.18)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
-            <div style={{ 
-              background: '#fff', 
-              borderRadius: 12, 
-              padding: '36px 48px', 
-              fontSize: 20, 
-              fontWeight: 700, 
-              color: '#636AE8', 
-              boxShadow: '0 4px 24px rgba(0,0,0,0.12)' 
+            <div style={{
+              background: '#fff', borderRadius: 12, padding: '36px 48px',
+              fontSize: 20, fontWeight: 700, color: '#636AE8',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.12)'
             }}>
               채팅을 시작해보세요
             </div>
           </div>
         )}
-
-        {/* 입력 섹션 */}
-        <div className={styles.inputSection}>
-          <textarea
-            ref={textareaRef}
-            className={styles.textarea}
-            value={input}
-            placeholder="메시지를 입력하세요."
-            onChange={(e) => dispatch(setInput(e.target.value))}
-            onInput={handleResize}
-            onKeyDown={handleKeyDown}
-            rows={1}
-            maxLength={500}
-            disabled={isWaitingForReply}
-          />
-          <button
-            className={styles.button}
-            onClick={isWaitingForReply ? cancelMessage : () => sendMessage()}
-            aria-label={isWaitingForReply ? "취소" : "전송"}
-            disabled={!input.trim() && !isWaitingForReply}
-            type="button"
-            style={{
-              borderRadius: isWaitingForReply ? '8px' : '50%',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {isWaitingForReply ? (
-              <FiX className="icon" style={{ color: '#fff' }} />
-            ) : (
-              <FiSend className="icon" />
-            )}
-          </button>
-        </div>
+  
+        <ChatInput
+          input={input}
+          onInputChange={val => dispatch(setInput(val))}
+          onResize={handleResize}
+          onKeyDown={handleKeyDown}
+          disabled={isWaitingForReply}
+          isWaitingForReply={isWaitingForReply}
+          onSend={() => sendMessage()}
+          onCancel={cancelMessage}
+          textareaRef={textareaRef}
+        />
       </div>
     </div>
   );
