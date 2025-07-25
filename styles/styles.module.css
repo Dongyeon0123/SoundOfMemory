@@ -71,6 +71,9 @@
   background: #ff0000;
   border: 1px solid #000000;
   color: white;
+  width: 12px;
+  height: 12px;
+  font-size: 11px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -171,7 +174,7 @@
   .plusBadge {
     width: 12px;
     height: 12px;
-    font-size: 9px;
+    font-size: 11px;
   }
   .mainHeader {
     width: 100vw;

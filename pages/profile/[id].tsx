@@ -73,6 +73,15 @@ const ProfilePage: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  // 프로필 수정 페이지로 이동
+  const handleEditProfile = () => {
+    if (myUid === id && typeof id === 'string') {
+      router.push(`/profile/${id}/profileEdit`);
+    } else {
+      setModal({ show: true, message: '자신의 프로필만 수정할 수 있습니다.', type: 'error' });
+    }
+  };  
+
   // 프로필 데이터 로딩
   useEffect(() => {
     if (typeof id === 'string') {
@@ -217,9 +226,7 @@ const ProfilePage: React.FC = () => {
             isFriend={isFriend}
             isFavorite={isFavorite}
             onToggleFavorite={handleToggleFavorite}
-            onEditProfile={() => {
-              /* 필요 시 구현 */
-            }}
+            onEditProfile={handleEditProfile}
             onScan={() => {
               /* 필요 시 구현 */
             }}
