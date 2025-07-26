@@ -199,6 +199,20 @@ const ProfileEditPage: React.FC = () => {
               placeholder="직업을 입력해주세요"
               className={profileStyles.inputField}
             />
+
+            {/* AI 소개 레이블 */}
+            <label htmlFor="descInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
+              AI 인사말
+            </label>
+            {/* AI 소개 인풋 */}
+            <input
+              id="descInput"
+              type="text"
+              value={profile.aiIntro}
+              onChange={e => setProfile(prev => prev ? { ...prev, aiIntro: e.target.value } : prev)}
+              placeholder="AI 소개말을 입력해주세요."
+              className={profileStyles.inputField}
+            />
           </div>
         </div>
   

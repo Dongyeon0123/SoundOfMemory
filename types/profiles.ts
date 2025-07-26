@@ -22,6 +22,7 @@ export type Profile = {
     months: number; // 재직개월
     role: string; // 직책
   }[];
+  aiIntro?: string; // AI 소개말
 };
 
 export async function fetchProfileById(id: string) {
