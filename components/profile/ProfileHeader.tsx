@@ -32,7 +32,7 @@ function ProfileHeader({
   onReport,
 }: ProfileHeaderProps) {
   return (
-    <div style={{ position: 'relative', justifyContent: 'center', display: 'flex', alignItems: 'center', height: 120 }}>
+    <div style={{ position: 'relative', justifyContent: 'center', display: 'flex', alignItems: 'center', height: 110 }}>
       {/* 뒤로가기 버튼 */}
       <button
         onClick={onBack}
