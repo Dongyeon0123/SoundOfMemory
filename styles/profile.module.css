@@ -1,6 +1,5 @@
-.mainProfile {
+.profileLine {
     position: relative;
-    margin-top: 60px;
     margin-left: auto;
     margin-right: auto;
     width: 80%;
@@ -17,6 +16,7 @@
     font-weight: 600;
     color: #222;
     background: #fff;
+    margin-bottom: 30px;
   }
   
   .profileImageWrapper {
@@ -39,8 +39,7 @@
     font-size: 14px;
     color: #666;
     font-weight: 600;
-    margin-bottom: 4px;
-    margin-top: 10px;
+    margin-left: 5px;
   }
   
   .inputField {
@@ -56,9 +55,32 @@
     background: #fff;
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 0;
+    margin-top: 5px;
+    margin-bottom: 15px;
   }
   .inputField:focus {
     border-color: #636AE8;
+  }
+
+  /* 상단 고정 헤더 */
+.profileFixedHeader {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 1;
+    box-sizing: border-box;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+  
+  /* 헤더 내부 레이아웃 */
+  .profileHeaderContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 70px;
+    position: relative;
+    margin-bottom: 18px;
   }
   

@@ -8,6 +8,7 @@ import type { Profile } from '../../types/profiles';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 import styles from '../../styles/styles.module.css';
+import profileStyles from '../../styles/profile.module.css';
 
 import MBTIModal from '../../components/profile/modal/MBTIModal';
 import IntroduceModal from '../../components/profile/modal/IntroduceModal';
@@ -219,7 +220,7 @@ const ProfilePage: React.FC = () => {
     <div className={styles.fullContainer}>
       <div className={styles.centerCard}>
         {/* 헤더 */}
-        <div className={styles.fixedHeader}>
+        <div className={profileStyles.profileFixedHeader}>
           <ProfileHeader
             isMyProfile={!!isMyProfile}
             onBack={() => router.back()}

@@ -97,124 +97,167 @@ const ProfileEditPage: React.FC = () => {
   return (
     <div className={styles.fullContainer}>
       <div className={styles.centerCard}>
-  
         {/* 상단 헤더(뒤로가기 + 저장 버튼) */}
-        <div style={{
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: 110,
-        }}>
-          <button
-            onClick={() => router.back()}
-            style={{
-              position: 'absolute', left: 10, top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer',
-              height: 40, width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}
-            aria-label="뒤로가기"
-          >
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <span style={{ fontWeight: 700, fontSize: 18 }}>프로필 편집</span>
-          <button
-            onClick={handleSaveProfile}
-            style={{
-              position: 'absolute', right: 16, top: '50%',
-              transform: 'translateY(-50%)',
-              background: '#636AE8', color: '#fff', border: 'none', borderRadius: 6,
-              padding: '7px 22px', fontWeight: 600, fontSize: 15, cursor: 'pointer'
-            }}
-          >
-            저장
-          </button>
+        <div className={profileStyles.profileFixedHeader}>
+          <div style={{ position: 'relative', justifyContent: 'center', display: 'flex', alignItems: 'center', height: 120 }}>
+            <button
+              onClick={() => router.back()}
+              style={{
+                position: 'absolute', left: 10, top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                height: 40, width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}
+              aria-label="뒤로가기"
+            >
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <span style={{ fontWeight: 700, fontSize: 18 }}>프로필 편집</span>
+            <button
+              onClick={handleSaveProfile}
+              style={{
+                position: 'absolute', right: 16, top: '50%',
+                transform: 'translateY(-50%)',
+                background: '#636AE8', color: '#fff', border: 'none', borderRadius: 6,
+                padding: '7px 22px', fontWeight: 600, fontSize: 15, cursor: 'pointer'
+              }}
+            >
+              저장
+            </button>
+          </div>
+          
         </div>
   
-        {/* 헤더 바로 아래 : 배경 이미지 */}
-        {profile?.backgroundImg && (
-          <div
-          style={{
-            width: '100%',
-            height: '70px',
-            overflow: 'hidden',
-            background: '#f2f3fa',
-            display: 'flex',
-            alignItems: 'flex-start',
-            padding: 0,
-            margin: 0
-          }}
-        >
-          <img
-            src={profile.backgroundImg}
-            alt="배경 이미지"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectPosition: 'center',
-              display: 'block'
-            }}
-          />
-        </div>
-        )}
-  
-        {/* 박스: 이미지 및 이름, 직업 input 포함 */}
-        {/* 프로필 이미지 + 이름 / 직업 입력 박스 */}
-        <div className={profileStyles.mainProfile}>
-          {/* 프로필 이미지 */}
-          <div className={profileStyles.profileImageWrapper}>
-            <img
-              src={profile.img || '/chat/profile.png'}
-              alt={profile.name}
-            />
+        <div className={`${styles.scrollMain} ${styles.scrollMainProfile}`}>
+
+          {/* 헤더 바로 아래 : 배경 이미지 */}
+          {profile?.backgroundImg && (
+            <div
+              style={{
+                width: '100%',
+                height: '100px',
+                background: '#f2f3fa',
+                display: 'flex',
+                alignItems: 'flex-start',
+                padding: 0,
+                margin: 0,
+                marginBottom: 30,
+              }}
+            >
+              <img
+                src={profile.backgroundImg}
+                alt="배경 이미지"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectPosition: 'center',
+                  display: 'block'
+                }}
+              />
+            </div>
+          )}
+          {/* 프로필 이미지 + 이름 / 직업 입력 박스 */}
+          <div className={profileStyles.profileLine}>
+            {/* 프로필 이미지 */}
+            <div className={profileStyles.profileImageWrapper}>
+              <img
+                src={profile.img || '/chat/profile.png'}
+                alt={profile.name}
+              />
+            </div>
+
+            {/* 이름, 직업 입력 그룹 */}
+            <div className={profileStyles.inputGroup}>
+              {/* 이름 레이블 */}
+              <label htmlFor="nameInput" className={profileStyles.inputLabel}>이름</label>
+              {/* 이름 인풋 */}
+              <input
+                id="nameInput"
+                type="text"
+                value={profile.name}
+                onChange={e => setProfile(prev => prev ? { ...prev, name: e.target.value } : prev)}
+                placeholder="이름을 입력하세요"
+                className={profileStyles.inputField}
+              />
+
+              {/* 직업 레이블 */}
+              <label htmlFor="descInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
+                직업
+              </label>
+              {/* 직업 인풋 */}
+              <input
+                id="descInput"
+                type="text"
+                value={profile.desc}
+                onChange={e => setProfile(prev => prev ? { ...prev, desc: e.target.value } : prev)}
+                placeholder="직업을 입력해주세요"
+                className={profileStyles.inputField}
+              />
+
+              {/* AI 소개 레이블 */}
+              <label htmlFor="aiIntroInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
+                AI 인사말
+              </label>
+              {/* AI 소개 인풋 */}
+              <input
+                id="aiIntroInput"
+                type="text"
+                value={profile.aiIntro}
+                onChange={e => setProfile(prev => prev ? { ...prev, aiIntro: e.target.value } : prev)}
+                placeholder="AI 소개말을 입력해주세요."
+                className={profileStyles.inputField}
+              />
+            </div>
           </div>
 
-          {/* 이름, 직업 입력 그룹 */}
-          <div className={profileStyles.inputGroup}>
-            {/* 이름 레이블 */}
-            <label htmlFor="nameInput" className={profileStyles.inputLabel}>이름</label>
-            {/* 이름 인풋 */}
-            <input
-              id="nameInput"
-              type="text"
-              value={profile.name}
-              onChange={e => setProfile(prev => prev ? { ...prev, name: e.target.value } : prev)}
-              placeholder="이름을 입력하세요"
-              className={profileStyles.inputField}
-            />
+          <div className={profileStyles.profileLine}>
+            <div className={profileStyles.inputGroup}>
+              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>소셜링크</div>
+              <label htmlFor="numberInput" className={profileStyles.inputLabel}>전화번호</label>
+              <input
+                id="numberInput"
+                type="text"
+                value={profile.number}
+                onChange={e => setProfile(prev => prev ? { ...prev, number: e.target.value } : prev)}
+                placeholder="전화번호 입력"
+                className={profileStyles.inputField}
+              />
 
-            {/* 직업 레이블 */}
-            <label htmlFor="descInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
-              직업
-            </label>
-            {/* 직업 인풋 */}
-            <input
-              id="descInput"
-              type="text"
-              value={profile.desc}
-              onChange={e => setProfile(prev => prev ? { ...prev, desc: e.target.value } : prev)}
-              placeholder="직업을 입력해주세요"
-              className={profileStyles.inputField}
-            />
+              <label htmlFor="emailInput" className={profileStyles.inputLabel}>이메일</label>
+              <input
+                id="emailInput"
+                type="text"
+                value={profile.email}
+                onChange={e => setProfile(prev => prev ? { ...prev, email: e.target.value } : prev)}
+                placeholder="전화번호 입력"
+                className={profileStyles.inputField}
+              />
 
-            {/* AI 소개 레이블 */}
-            <label htmlFor="descInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
-              AI 인사말
-            </label>
-            {/* AI 소개 인풋 */}
-            <input
-              id="descInput"
-              type="text"
-              value={profile.aiIntro}
-              onChange={e => setProfile(prev => prev ? { ...prev, aiIntro: e.target.value } : prev)}
-              placeholder="AI 소개말을 입력해주세요."
-              className={profileStyles.inputField}
-            />
+              <label htmlFor="personUrlInput" className={profileStyles.inputLabel}>개인주소</label>
+              <input
+                id="personUrlInput"
+                type="text"
+                value={profile.personUrl}
+                onChange={e => setProfile(prev => prev ? { ...prev, personUrl: e.target.value } : prev)}
+                placeholder="개인 웹사이트 url 입력"
+                className={profileStyles.inputField}
+              />
+              
+              <label htmlFor="youtubeUrlInput" className={profileStyles.inputLabel}>유튜브주소</label>
+              <input
+                id="youtubeUrlInput"
+                type="text"
+                value={profile.youtubeUrl}
+                onChange={e => setProfile(prev => prev ? { ...prev, youtubeUrl: e.target.value } : prev)}
+                placeholder="개인 웹사이트 url 입력"
+                className={profileStyles.inputField}
+              />
+            </div>
           </div>
         </div>
+        
   
         {/* 나머지 편집박스들 (MBTI, 소개 등)은 이전처럼 추가 가능 */}
         {/* ...생략... */}
