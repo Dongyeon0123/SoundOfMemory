@@ -10,6 +10,11 @@ import styles from '../../../styles/styles.module.css';
 import profileStyles from '../../../styles/profile.module.css';
 
 import SuccessFailModal from '../../../components/profile/modal/SuccessFailModal';
+import SocialModal from '../../../components/profile/modal/SocialModal';
+
+import { FiEdit2 } from 'react-icons/fi';
+
+const ICON_SIZE = 24;
 
 const ProfileEditPage: React.FC = () => {
   const router = useRouter();
@@ -23,6 +28,8 @@ const ProfileEditPage: React.FC = () => {
     message: '',
     type: 'success',
   });
+
+  const [showSocialModal, setShowSocialModal] = useState(false);
 
   // 권한 체크
   const isMyProfile = myUid && id === myUid;
@@ -45,13 +52,56 @@ const ProfileEditPage: React.FC = () => {
     }
   }, [id]);
 
-  // 저장 로직
-  const handleSaveProfile = async () => {
-    // 이후 확장 시, 값 저장 구현
-    setModal({ show: true, message: "프로필이 성공적으로 저장되었습니다.", type: "success" });
+  // 각각 소셜 링크 필드만 추출해 선택 배열로 변환 (초기값)
+  const initialSelectedSocial = React.useMemo(() => {
+    if (!profile) return [];
+    return Object.entries(profile)
+      .filter(([key, value]) => key.endsWith('Url') || key === 'email')
+      .filter(([key, value]) => !!value)
+      .map(([key]) => key);
+  }, [profile]);
+
+  // 저장 시 소셜모달에서 선택한 링크 키 목록
+  const [selectedSocial, setSelectedSocial] = useState<string[]>(initialSelectedSocial);
+
+  // 초기값 세팅 (선택 상태 동기화)
+  useEffect(() => {
+    setSelectedSocial(initialSelectedSocial);
+  }, [initialSelectedSocial]);
+
+  // 개별 필드용 상태 추천(생략: profile 직접 값 사용도 가능)
+  // 혹은 필요하면 각 필드별 분리 상태 관리
+
+  // Profile 객체 업데이트 헬퍼 (필드와 값 동기화)
+  const handleUpdateProfileField = (field: keyof Profile, value: any) => {
+    setProfile(prev => prev ? { ...prev, [field]: value } : prev);
   };
 
-  // 권한 or 로딩 처리
+  // 저장 함수 (모달에서 선택한 소셜 링크 키를 기준으로 빈 값은 ''로 세팅)
+  const handleSaveProfile = async () => {
+    if (!profile) return;
+
+    try {
+      // SocialLinks 중 선택한 것만 실제 프로필 필드 유지, 나머지는 빈 문자열 처리
+      const updatedSocialFields = Object.keys(profile).reduce((acc, key) => {
+        if ((key.endsWith('Url') || key === 'email') && !selectedSocial.includes(key)) {
+          acc[key] = ''; // 선택하지 않은 소셜 링크는 빈 값으로
+        }
+        return acc;
+      }, {} as Partial<Profile>);
+
+      await updateProfileField(profile.id, {
+        ...profile,
+        ...updatedSocialFields,
+      });
+
+      setModal({ show: true, message: '프로필이 성공적으로 저장되었습니다.', type: 'success' });
+      setShowSocialModal(false);
+    } catch (e: any) {
+      setModal({ show: true, message: '프로필 저장 중 오류가 발생했습니다.', type: 'error' });
+    }
+  };
+
   if (!isMyProfile) {
     return (
       <div className={styles.fullContainer}>
@@ -90,14 +140,12 @@ const ProfileEditPage: React.FC = () => {
     );
   }
 
-  if (!profile) {
-    return <div style={{ padding: 24 }}>존재하지 않는 프로필입니다.</div>;
-  }
+  if (!profile) return <div style={{ padding: 24 }}>존재하지 않는 프로필입니다.</div>;
 
   return (
     <div className={styles.fullContainer}>
       <div className={styles.centerCard}>
-        {/* 상단 헤더(뒤로가기 + 저장 버튼) */}
+        {/* 상단 헤더 */}
         <div className={profileStyles.profileFixedHeader}>
           <div style={{ position: 'relative', justifyContent: 'center', display: 'flex', alignItems: 'center', height: 120 }}>
             <button
@@ -127,11 +175,9 @@ const ProfileEditPage: React.FC = () => {
               저장
             </button>
           </div>
-          
         </div>
-  
-        <div className={`${styles.scrollMain} ${styles.scrollMainProfile}`}>
 
+        <div className={`${styles.scrollMain} ${styles.scrollMainProfile}`}>
           {/* 헤더 바로 아래 : 배경 이미지 */}
           {profile?.backgroundImg && (
             <div
@@ -139,10 +185,8 @@ const ProfileEditPage: React.FC = () => {
                 width: '100%',
                 height: '100px',
                 background: '#f2f3fa',
-                display: 'flex',
-                alignItems: 'flex-start',
+                position: 'relative',
                 padding: 0,
-                margin: 0,
                 marginBottom: 30,
               }}
             >
@@ -153,14 +197,14 @@ const ProfileEditPage: React.FC = () => {
                   width: '100%',
                   height: '100%',
                   objectPosition: 'center',
-                  display: 'block'
+                  display: 'block',
                 }}
               />
-            </div>
+          </div>          
           )}
-          {/* 프로필 이미지 + 이름 / 직업 입력 박스 */}
+
+          {/* 프로필 이미지 + 이름 / 직업 / AI 소개 입력 박스 */}
           <div className={profileStyles.profileLine}>
-            {/* 프로필 이미지 */}
             <div className={profileStyles.profileImageWrapper}>
               <img
                 src={profile.img || '/chat/profile.png'}
@@ -168,11 +212,9 @@ const ProfileEditPage: React.FC = () => {
               />
             </div>
 
-            {/* 이름, 직업 입력 그룹 */}
             <div className={profileStyles.inputGroup}>
-              {/* 이름 레이블 */}
+              {/* 이름 */}
               <label htmlFor="nameInput" className={profileStyles.inputLabel}>이름</label>
-              {/* 이름 인풋 */}
               <input
                 id="nameInput"
                 type="text"
@@ -182,11 +224,10 @@ const ProfileEditPage: React.FC = () => {
                 className={profileStyles.inputField}
               />
 
-              {/* 직업 레이블 */}
+              {/* 직업 */}
               <label htmlFor="descInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
                 직업
               </label>
-              {/* 직업 인풋 */}
               <input
                 id="descInput"
                 type="text"
@@ -196,11 +237,10 @@ const ProfileEditPage: React.FC = () => {
                 className={profileStyles.inputField}
               />
 
-              {/* AI 소개 레이블 */}
+              {/* AI 소개 */}
               <label htmlFor="aiIntroInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
                 AI 인사말
               </label>
-              {/* AI 소개 인풋 */}
               <input
                 id="aiIntroInput"
                 type="text"
@@ -212,63 +252,83 @@ const ProfileEditPage: React.FC = () => {
             </div>
           </div>
 
+          {/* 소셜링크 그룹 — 연필 아이콘과 모달 띄우기 */}
           <div className={profileStyles.profileLine}>
-            <div className={profileStyles.inputGroup}>
-              <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>소셜링크</div>
-              <label htmlFor="numberInput" className={profileStyles.inputLabel}>전화번호</label>
-              <input
-                id="numberInput"
-                type="text"
-                value={profile.number}
-                onChange={e => setProfile(prev => prev ? { ...prev, number: e.target.value } : prev)}
-                placeholder="전화번호 입력"
-                className={profileStyles.inputField}
-              />
-
-              <label htmlFor="emailInput" className={profileStyles.inputLabel}>이메일</label>
-              <input
-                id="emailInput"
-                type="text"
-                value={profile.email}
-                onChange={e => setProfile(prev => prev ? { ...prev, email: e.target.value } : prev)}
-                placeholder="전화번호 입력"
-                className={profileStyles.inputField}
-              />
-
-              <label htmlFor="personUrlInput" className={profileStyles.inputLabel}>개인주소</label>
-              <input
-                id="personUrlInput"
-                type="text"
-                value={profile.personUrl}
-                onChange={e => setProfile(prev => prev ? { ...prev, personUrl: e.target.value } : prev)}
-                placeholder="개인 웹사이트 url 입력"
-                className={profileStyles.inputField}
-              />
-              
-              <label htmlFor="youtubeUrlInput" className={profileStyles.inputLabel}>유튜브주소</label>
-              <input
-                id="youtubeUrlInput"
-                type="text"
-                value={profile.youtubeUrl}
-                onChange={e => setProfile(prev => prev ? { ...prev, youtubeUrl: e.target.value } : prev)}
-                placeholder="개인 웹사이트 url 입력"
-                className={profileStyles.inputField}
-              />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>소셜링크</div>
+              <FiEdit2 size={24} color="#222" style={{ cursor: 'pointer' }} onClick={() => setShowSocialModal(true)} />
             </div>
+
+            {/* 소셜 인풋들은 선택된 링크에 따라 conditionally 렌더링하거나 기본 UI 유지 */}
+            {/* 예를 들어, 단순히 모두 보여줄 수도 있음 */}
+
+            {/* 전화번호 */}
+            <label htmlFor="numberInput" className={profileStyles.inputLabel}>전화번호</label>
+            <input
+              id="numberInput"
+              type="text"
+              value={profile.number || ''}
+              onChange={e => setProfile(prev => prev ? { ...prev, number: e.target.value } : prev)}
+              placeholder="전화번호 입력"
+              className={profileStyles.inputField}
+            />
+
+            {/* 이메일 */}
+            <label htmlFor="emailInput" className={profileStyles.inputLabel}>이메일</label>
+            <input
+              id="emailInput"
+              type="text"
+              value={profile.email || ''}
+              onChange={e => setProfile(prev => prev ? { ...prev, email: e.target.value } : prev)}
+              placeholder="이메일 입력"
+              className={profileStyles.inputField}
+            />
+
+            {/* 개인 주소 */}
+            <label htmlFor="personUrlInput" className={profileStyles.inputLabel}>개인주소</label>
+            <input
+              id="personUrlInput"
+              type="text"
+              value={profile.personUrl || ''}
+              onChange={e => setProfile(prev => prev ? { ...prev, personUrl: e.target.value } : prev)}
+              placeholder="개인 웹사이트 URL 입력"
+              className={profileStyles.inputField}
+            />
+
+            {/* 유튜브 주소 */}
+            <label htmlFor="youtubeUrlInput" className={profileStyles.inputLabel}>유튜브주소</label>
+            <input
+              id="youtubeUrlInput"
+              type="text"
+              value={profile.youtubeUrl || ''}
+              onChange={e => setProfile(prev => prev ? { ...prev, youtubeUrl: e.target.value } : prev)}
+              placeholder="유튜브 URL 입력"
+              className={profileStyles.inputField}
+            />
           </div>
         </div>
-        
-  
-        {/* 나머지 편집박스들 (MBTI, 소개 등)은 이전처럼 추가 가능 */}
-        {/* ...생략... */}
-        
+
+        <SuccessFailModal
+          show={modal.show}
+          message={modal.message}
+          type={modal.type}
+          onClose={() => setModal({ ...modal, show: false })}
+        />
+
+        <SocialModal
+          visible={showSocialModal}
+          initialSelectedKeys={[] /* 초기 선택 상태 필요 시 profile 소셜 필드 기반으로 세팅해 주세요 */}
+          onClose={() => setShowSocialModal(false)}
+          onSave={(selectedKeys) => {
+            // 선택한 소셜 링크 키 배열을 기반으로 profile 상태 update 가능
+            // 예) 선택한 키가 아닌 필드는 '', 값 클리어 처리 등 필요시 구현
+            console.log('선택된 소셜링크:', selectedKeys);
+            setShowSocialModal(false);
+          }}
+        />
       </div>
     </div>
   );
 };
-
-export async function getServerSideProps() {
-  return { props: {} };
-}
 
 export default ProfileEditPage;

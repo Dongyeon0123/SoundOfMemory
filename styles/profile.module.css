@@ -83,4 +83,134 @@
     position: relative;
     margin-bottom: 18px;
   }
+
+  /* 소셜 링크 모달 */
+  .socialModalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .socialModalContainer {
+    background: white;
+    border-radius: 12px;
+    width: 370px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  }
+  
+  .socialModalHeader {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+    padding: 0 16px;
+    position: relative;
+  }
+  
+  .socialModalBack {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  .socialModalTitle {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #222;
+  }
+  
+  .socialModalSave {
+    background: #3f51b5;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .socialModalSave:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+  
+  
+  .socialModalGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 16px;
+    padding: 16px 24px;
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+  
+  .socialIconBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 10px;
+    background: #f0f0f0;
+    padding: 12px 8px;
+    border: 2px solid transparent;
+    position: relative;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  
+  .socialIconBox:hover {
+    background: #d8d8d8;
+  }
+  
+  .selected {
+    background: #3f51b5;
+    border-color: #3f51b5;
+    color: white;
+  }
+  
+  .iconWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  
+  .iconLabel {
+    font-size: 14px;
+    font-weight: 600;
+    user-select: none;
+  }
+  
+  .selectedDot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    border: 2px solid #3f51b5;
+  }
+  
+  .socialModalInfo {
+    padding: 8px 24px;
+    font-size: 13px;
+    color: #666;
+    text-align: right;
+  }
   
