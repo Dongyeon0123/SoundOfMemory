@@ -295,7 +295,7 @@ const ProfileEditPage: React.FC = () => {
                 type="text"
                 value={profile.aiIntro}
                 onChange={e => setProfile(prev => prev ? { ...prev, aiIntro: e.target.value } : prev)}
-                placeholder="AI 소개말을 입력해주세요."
+                placeholder="안녕! 정말 반가워! 무슨 얘기를 해볼까?"
                 className={profileStyles.inputField}
               />
             </div>
