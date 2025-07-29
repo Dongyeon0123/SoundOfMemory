@@ -12,7 +12,7 @@ import profileStyles from '../../../styles/profile.module.css';
 import SuccessFailModal from '../../../components/profile/modal/SuccessFailModal';
 import SocialModal from '../../../components/profile/modal/SocialModal';
 
-import { FiEdit2 } from 'react-icons/fi';
+import { FiEdit2, FiCamera } from 'react-icons/fi';
 
 const ICON_SIZE = 24;
 
@@ -239,33 +239,103 @@ const ProfileEditPage: React.FC = () => {
 
           {/* 백그라운드 이미지 */}
           {profile?.backgroundImg && (
-            <div
-              style={{
-                width: '100%',
-                height: '100px',
-                background: '#f2f3fa',
-                position: 'relative',
-                padding: 0,
-                marginBottom: 30,
-              }}
-            >
-              <img
-                src={profile.backgroundImg}
-                alt="배경 이미지"
+            <>
+              <div
                 style={{
                   width: '100%',
-                  height: '100%',
-                  objectPosition: 'center',
-                  display: 'block',
+                  height: '100px',
+                  background: '#f2f3fa',
+                  position: 'relative',
+                  padding: 0,
+                  marginBottom: 0,
                 }}
-              />
-            </div>          
+              >
+                <img
+                  src={profile.backgroundImg}
+                  alt="배경 이미지"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectPosition: 'center',
+                    display: 'block',
+                  }}
+                />
+              </div>
+              <div style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                marginTop: 6,
+                marginBottom: 24,
+              }}>
+                <button
+                  type="button"
+                  aria-label="배경 이미지 편집"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: '#222',
+                    padding: '4px 10px 4px 12px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                  }}
+                  onClick={() => alert('배경 편집 기능!')}
+                >
+                  <span style={{
+                    fontWeight: 500,
+                    letterSpacing: '0.01em',
+                    marginRight: 6,
+                  }}>
+                    배경 편집
+                  </span>
+                  <FiCamera size={16} />
+                </button>
+              </div>
+            </>
           )}
 
           {/* 프로필 이미지 및 정보 입력 */}
           <div className={profileStyles.profileLine}>
-            <div className={profileStyles.profileImageWrapper}>
-              <img src={profile.img || '/chat/profile.png'} alt={profile.name} />
+            <div className={profileStyles.profileImageWrapper} style={{ position: 'relative' }}>
+              {/* 프로필 이미지 */}
+              <img
+                src={profile.img || '/chat/profile.png'}
+                alt={profile.name}
+                style={{
+                  width: "90px", height: "90px", objectFit: "cover",
+                  borderRadius: "50%",
+                }}
+              />
+              {/* 프로필 편집 카메라 아이콘 - 버튼 배경 투명화 */}
+              <button
+                type="button"
+                aria-label="프로필 이미지 편집"
+                style={{
+                  position: "absolute",
+                  right: -4,
+                  bottom: -4,
+                  background: "transparent",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: 32,
+                  height: 32,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  outline: "none",
+                  zIndex: 1000000000,
+                }}
+                onClick={() => alert("프로필 이미지 편집 기능!")}
+              >
+                <FiCamera size={20} color="#222" />
+              </button>
             </div>
 
             <div className={profileStyles.inputGroup}>
@@ -309,21 +379,42 @@ const ProfileEditPage: React.FC = () => {
             </div>
 
             <div className={profileStyles.inputGroup}>
-              {socialLinks.map((link, idx) => (
-                <React.Fragment key={link.type}>
-                  <label htmlFor={`${link.type}Input`} className={profileStyles.inputLabel}>
-                    {SOCIAL_FIELDS.find(f => f.key === link.type)?.label}
-                  </label>
-                  <input
-                    id={`${link.type}Input`}
-                    type="text"
-                    value={link.url}
-                    onChange={e => handleSocialLinkChange(idx, e.target.value)}
-                    placeholder={SOCIAL_FIELDS.find(f => f.key === link.type)?.placeholder}
-                    className={profileStyles.inputField}
-                  />
-                </React.Fragment>
-              ))}
+              {socialLinks.length === 0 ? (
+                // 소셜링크가 하나도 없는 경우 안내 메시지
+                <div style={{
+                  textAlign: 'center',
+                  color: '#888',
+                  fontSize: 15,
+                  padding: '34px 18px 28px 18px',
+                  letterSpacing: '0.01em',
+                  fontWeight: 400,
+                  background: '#f8f8fb',
+                  borderRadius: 10,
+                  border: "1px dashed #d3d3e7",
+                }}>
+                  소셜링크를 넣어보세요!<br />
+                  <span style={{ fontSize: 13, color: "#b0b2c3" }}>
+                    상단의 <FiEdit2 style={{verticalAlign: 'middle', margin: '0 3px 3px 0'}} /> 아이콘을 눌러 플랫폼을 선택할 수 있습니다.
+                  </span>
+                </div>
+              ) : (
+                // 소셜링크가 있을 때 입력필드 렌더링
+                socialLinks.map((link, idx) => (
+                  <React.Fragment key={link.type}>
+                    <label htmlFor={`${link.type}Input`} className={profileStyles.inputLabel}>
+                      {SOCIAL_FIELDS.find(f => f.key === link.type)?.label}
+                    </label>
+                    <input
+                      id={`${link.type}Input`}
+                      type="text"
+                      value={link.url}
+                      onChange={e => handleSocialLinkChange(idx, e.target.value)}
+                      placeholder={SOCIAL_FIELDS.find(f => f.key === link.type)?.placeholder}
+                      className={profileStyles.inputField}
+                    />
+                  </React.Fragment>
+                ))
+              )}
             </div>
           </div>
         </div>
