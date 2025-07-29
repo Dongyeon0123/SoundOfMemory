@@ -23,7 +23,7 @@ export type Profile = {
     role: string; // 직책
   }[];
   aiIntro?: string; // AI 소개말
-  
+
   socialLinks?: {
     number?: string; // 전화번호
     email?: string; // 이메일
@@ -37,7 +37,7 @@ export type Profile = {
     githubUrl?: string; // 깃허브 주소
     cafeUrl?: string; // 카페 주소
     notionUrl?: string; // 노션 주소
-    xUrl?: string; // X 주소
+    tiktokUrl?: string; // X 주소
     blogUrl?: string; // 블로그 주소
     behanceUrl?: string; // 비잔스 주소
   }[];

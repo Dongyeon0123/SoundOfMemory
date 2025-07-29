@@ -1,31 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { FiEdit2 } from 'react-icons/fi';
 import { IoChevronBack } from 'react-icons/io5';
-import { FaPhone } from 'react-icons/fa';
-import { SiNotion } from 'react-icons/si';
+import { SiNotion, SiTiktok } from 'react-icons/si';
 import { 
   FaGithub, FaFacebook, FaInstagram, FaYoutube, FaTwitter, FaLinkedin, FaBlogger,
-  FaEnvelope, FaGlobe, FaBandcamp, FaCoffee, FaBehance, 
-  FaCalculator
+  FaEnvelope, FaGlobe, FaBandcamp, FaCoffee, FaBehance, FaPhone
 } from 'react-icons/fa';
 
 import styles from '../../../styles/profile.module.css';
 
 const SOCIAL_LINKS = [
-  { key: 'number', label: 'Phone', icon: <FaPhone /> },
-  { key: 'email', label: 'E-mail', icon: <FaEnvelope /> },
-  { key: 'personUrl', label: 'Person', icon: <FaGlobe /> },
-  { key: 'youtubeUrl', label: 'YouTube', icon: <FaYoutube /> },
-  { key: 'facebookUrl', label: 'Facebook', icon: <FaFacebook /> },
-  { key: 'instagramUrl', label: 'Instagram', icon: <FaInstagram /> },
-  { key: 'twitterUrl', label: 'Twitter', icon: <FaTwitter /> },
-  { key: 'bandUrl', label: 'Band', icon: <FaBandcamp /> },
-  { key: 'linkedinUrl', label: 'LinkedIn', icon: <FaLinkedin /> },
-  { key: 'githubUrl', label: 'GitHub', icon: <FaGithub /> },
-  { key: 'cafeUrl', label: 'Cafe', icon: <FaCoffee /> },
-  { key: 'notionUrl', label: 'Notion', icon: <SiNotion /> },
-  { key: 'xUrl', label: 'X', icon: <FaTwitter /> },
-  { key: 'blogUrl', label: 'Blogger', icon: <FaBlogger /> },
+  { key: 'number', label: '전화번호', icon: <FaPhone /> },
+  { key: 'email', label: '이메일', icon: <FaEnvelope /> },
+  { key: 'personUrl', label: '개인 웹', icon: <FaGlobe /> },
+  { key: 'youtubeUrl', label: '유튜브', icon: <FaYoutube /> },
+  { key: 'facebookUrl', label: '페이스북', icon: <FaFacebook /> },
+  { key: 'instagramUrl', label: '인스타그램', icon: <FaInstagram /> },
+  { key: 'twitterUrl', label: '트위터', icon: <FaTwitter /> },
+  { key: 'bandUrl', label: '밴드', icon: <FaBandcamp /> },
+  { key: 'linkedinUrl', label: '링크드인', icon: <FaLinkedin /> },
+  { key: 'githubUrl', label: '깃허브', icon: <FaGithub /> },
+  { key: 'cafeUrl', label: '카페', icon: <FaCoffee /> },
+  { key: 'notionUrl', label: '노션', icon: <SiNotion /> },
+  { key: 'tiktokUrl', label: '틱톡', icon: <SiTiktok /> },
+  { key: 'blogUrl', label: '블로그', icon: <FaBlogger /> },
   { key: 'behanceUrl', label: 'Behance', icon: <FaBehance /> },
 ];
 
@@ -95,7 +92,7 @@ const SocialModal: React.FC<SocialModalProps> = ({ visible, initialSelectedKeys,
                 className={`${styles.socialIconBox} ${isSelected ? styles.selected : ''}`}
               >
                 <div className={styles.iconWrapper} style={{ color: isSelected ? '#fff' : '#000' }}>
-                  {icon}
+                  {React.cloneElement(icon, { size: 20 })}
                 </div>
                 <span className={styles.iconLabel} style={{ color: isSelected ? '#fff' : '#000' }}>
                   {label}
@@ -109,7 +106,7 @@ const SocialModal: React.FC<SocialModalProps> = ({ visible, initialSelectedKeys,
 
         {/* Info */}
         <div className={styles.socialModalInfo}>
-          {`선택된 링크: ${selectedKeys.length} / ${MAX_SELECTION}개`}
+          {`선택된 링크: ${selectedKeys.length} / ${MAX_SELECTION}개 최대 8개`}
         </div>
 
       </div>
