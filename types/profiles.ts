@@ -23,21 +23,24 @@ export type Profile = {
     role: string; // 직책
   }[];
   aiIntro?: string; // AI 소개말
-  number?: string; // 전화번호
-  email?: string; // 이메일
-  personUrl?: string; // 개인 웹사이트 url
-  youtubeUrl?: string; // 유튜브 주소
-  facebookUrl?: string; // 페이스북 주소
-  instagramUrl?: string; // 인스타그램 주소
-  twitterUrl?: string; // 트위터 주소
-  bandUrl?: string; // 밴드 주소
-  linkedinUrl?: string; // 링크드인 주소
-  githubUrl?: string; // 깃허브 주소
-  cafeUrl?: string; // 카페 주소
-  notionUrl?: string; // 노션 주소
-  xUrl?: string; // X 주소
-  blogUrl?: string; // 블로그 주소
-  behanceUrl?: string; // 비잔스 주소
+  
+  socialLinks?: {
+    number?: string; // 전화번호
+    email?: string; // 이메일
+    personUrl?: string; // 개인 웹사이트 url
+    youtubeUrl?: string; // 유튜브 주소
+    facebookUrl?: string; // 페이스북 주소
+    instagramUrl?: string; // 인스타그램 주소
+    twitterUrl?: string; // 트위터 주소
+    bandUrl?: string; // 밴드 주소
+    linkedinUrl?: string; // 링크드인 주소
+    githubUrl?: string; // 깃허브 주소
+    cafeUrl?: string; // 카페 주소
+    notionUrl?: string; // 노션 주소
+    xUrl?: string; // X 주소
+    blogUrl?: string; // 블로그 주소
+    behanceUrl?: string; // 비잔스 주소
+  }[];
 };
 
 export async function fetchProfileById(id: string) {

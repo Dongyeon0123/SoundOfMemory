@@ -16,6 +16,34 @@ import { FiEdit2 } from 'react-icons/fi';
 
 const ICON_SIZE = 24;
 
+type SocialLink = { type: string; url: string };
+
+const SOCIAL_FIELDS = [
+  { key: 'number', label: '전화번호', placeholder: '전화번호 입력', inputType: 'text' },
+  { key: 'email', label: '이메일', placeholder: '이메일 입력', inputType: 'text' },
+  { key: 'personUrl', label: '개인 웹사이트', placeholder: '개인 웹사이트 주소 입력', inputType: 'text' },
+  { key: 'youtubeUrl', label: 'YouTube', placeholder: '유튜브 URL 입력', inputType: 'text' },
+  { key: 'facebookUrl', label: 'Facebook', placeholder: '페이스북 URL 입력', inputType: 'text' },
+  { key: 'instagramUrl', label: 'Instagram', placeholder: '인스타그램 URL 입력', inputType: 'text' },
+  { key: 'twitterUrl', label: '트위터', placeholder: '트위터 주소 입력', inputType: 'text' },
+  { key: 'bandUrl', label: '밴드', placeholder: '밴드 주소 입력', inputType: 'text' },
+  { key: 'linkedinUrl', label: '링크드인', placeholder: '링크드인 주소 입력', inputType: 'text' },
+  { key: 'githubUrl', label: '깃허브', placeholder: '깃허브 주소 입력', inputType: 'text' },
+  { key: 'cafeUrl', label: '카페', placeholder: '카페 주소 입력', inputType: 'text' },
+  { key: 'notionUrl', label: '노션', placeholder: '노션 주소 입력', inputType: 'text' },
+  { key: 'xUrl', label: 'X', placeholder: 'X 주소 입력', inputType: 'text' },
+  { key: 'blogUrl', label: '블로그', placeholder: '블로그 주소 입력', inputType: 'text' },
+  { key: 'behanceUrl', label: '비잔스', placeholder: '비잔스 주소 입력', inputType: 'text' },
+];
+
+// 소셜 링크 배열 → 객체 변환하여 Firestore 저장용
+function socialLinksArrayToObj(links: SocialLink[]) {
+  return links.reduce((acc, { type, url }) => {
+    acc[type] = url;
+    return acc;
+  }, {} as Record<string, string>);
+}
+
 const ProfileEditPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -30,6 +58,23 @@ const ProfileEditPage: React.FC = () => {
   });
 
   const [showSocialModal, setShowSocialModal] = useState(false);
+
+  // 소셜 링크들 배열로 관리
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+
+  // 모달에서 선택된 소셜 플랫폼 키 배열
+  const initialSelectedSocial = React.useMemo(() => {
+    if (!profile) return [];
+    return Object.entries(profile)
+      .filter(([key, value]) => (key.endsWith('Url') || key === 'email' || key === 'number') && !!value)
+      .map(([key]) => key);
+  }, [profile]);
+
+  const [selectedSocial, setSelectedSocial] = useState<string[]>(initialSelectedSocial);
+
+  useEffect(() => {
+    setSelectedSocial(initialSelectedSocial);
+  }, [initialSelectedSocial]);
 
   // 권한 체크
   const isMyProfile = myUid && id === myUid;
@@ -52,55 +97,67 @@ const ProfileEditPage: React.FC = () => {
     }
   }, [id]);
 
-  // 각각 소셜 링크 필드만 추출해 선택 배열로 변환 (초기값)
-  const initialSelectedSocial = React.useMemo(() => {
-    if (!profile) return [];
-    return Object.entries(profile)
-      .filter(([key, value]) => key.endsWith('Url') || key === 'email')
-      .filter(([key, value]) => !!value)
-      .map(([key]) => key);
+  const SOCIAL_KEYS = SOCIAL_FIELDS.map(f => f.key);
+
+  // 1) 초기 프로필 데이터에서 값이 있는 소셜key만 추출해서 상태화
+  useEffect(() => {
+    if (profile) {
+      // 값 있는 것만 남기기
+      const arr = SOCIAL_FIELDS
+        .filter(f => (profile[f.key as keyof Profile] ?? "") !== "")
+        .map(f => ({
+          type: f.key,
+          url: (profile[f.key as keyof Profile] as string) || '',
+        }));
+      setSocialLinks(arr);
+      setSelectedSocial(arr.map(item => item.type));
+    } else {
+      setSocialLinks([]);
+      setSelectedSocial([]);
+    }
   }, [profile]);
 
-  // 저장 시 소셜모달에서 선택한 링크 키 목록
-  const [selectedSocial, setSelectedSocial] = useState<string[]>(initialSelectedSocial);
-
-  // 초기값 세팅 (선택 상태 동기화)
-  useEffect(() => {
-    setSelectedSocial(initialSelectedSocial);
-  }, [initialSelectedSocial]);
-
-  // 개별 필드용 상태 추천(생략: profile 직접 값 사용도 가능)
-  // 혹은 필요하면 각 필드별 분리 상태 관리
-
-  // Profile 객체 업데이트 헬퍼 (필드와 값 동기화)
+  // 프로필 필드 업데이트 헬퍼
   const handleUpdateProfileField = (field: keyof Profile, value: any) => {
     setProfile(prev => prev ? { ...prev, [field]: value } : prev);
   };
 
-  // 저장 함수 (모달에서 선택한 소셜 링크 키를 기준으로 빈 값은 ''로 세팅)
+  // 소셜 링크 배열 내 URL 변경 시
+  const handleSocialLinkChange = (idx: number, newUrl: string) => {
+    setSocialLinks(prev => {
+      const clone = [...prev];
+      clone[idx] = { ...clone[idx], url: newUrl };
+      return clone;
+    });
+  };
+
+  // 저장 함수: socialLinks 배열 → 필드별 객체 변환 후 저장
   const handleSaveProfile = async () => {
     if (!profile) return;
-
     try {
-      // SocialLinks 중 선택한 것만 실제 프로필 필드 유지, 나머지는 빈 문자열 처리
-      const updatedSocialFields = Object.keys(profile).reduce((acc, key) => {
-        if ((key.endsWith('Url') || key === 'email') && !selectedSocial.includes(key)) {
-          acc[key] = ''; // 선택하지 않은 소셜 링크는 빈 값으로
-        }
+      const socialFieldsObject = socialLinks.reduce((acc, { type, url }) => {
+        acc[type] = url;
         return acc;
-      }, {} as Partial<Profile>);
-
+      }, {} as Record<string, string>);
+  
+      // 선택되지 않은 소셜은 ''로 만들어서 서버 반영
+      SOCIAL_KEYS.forEach(key => {
+        if (!socialLinks.find(l => l.type === key)) {
+          socialFieldsObject[key] = '';
+        }
+      });
+  
       await updateProfileField(profile.id, {
         ...profile,
-        ...updatedSocialFields,
+        ...socialFieldsObject,
       });
-
       setModal({ show: true, message: '프로필이 성공적으로 저장되었습니다.', type: 'success' });
       setShowSocialModal(false);
+      // 최신 상태 로드 필요시 fetchProfileById(profile.id).then(setProfile);
     } catch (e: any) {
       setModal({ show: true, message: '프로필 저장 중 오류가 발생했습니다.', type: 'error' });
     }
-  };
+  };  
 
   if (!isMyProfile) {
     return (
@@ -145,6 +202,7 @@ const ProfileEditPage: React.FC = () => {
   return (
     <div className={styles.fullContainer}>
       <div className={styles.centerCard}>
+
         {/* 상단 헤더 */}
         <div className={profileStyles.profileFixedHeader}>
           <div style={{ position: 'relative', justifyContent: 'center', display: 'flex', alignItems: 'center', height: 120 }}>
@@ -178,7 +236,8 @@ const ProfileEditPage: React.FC = () => {
         </div>
 
         <div className={`${styles.scrollMain} ${styles.scrollMainProfile}`}>
-          {/* 헤더 바로 아래 : 배경 이미지 */}
+
+          {/* 백그라운드 이미지 */}
           {profile?.backgroundImg && (
             <div
               style={{
@@ -200,20 +259,16 @@ const ProfileEditPage: React.FC = () => {
                   display: 'block',
                 }}
               />
-          </div>          
+            </div>          
           )}
 
-          {/* 프로필 이미지 + 이름 / 직업 / AI 소개 입력 박스 */}
+          {/* 프로필 이미지 및 정보 입력 */}
           <div className={profileStyles.profileLine}>
             <div className={profileStyles.profileImageWrapper}>
-              <img
-                src={profile.img || '/chat/profile.png'}
-                alt={profile.name}
-              />
+              <img src={profile.img || '/chat/profile.png'} alt={profile.name} />
             </div>
 
             <div className={profileStyles.inputGroup}>
-              {/* 이름 */}
               <label htmlFor="nameInput" className={profileStyles.inputLabel}>이름</label>
               <input
                 id="nameInput"
@@ -224,10 +279,7 @@ const ProfileEditPage: React.FC = () => {
                 className={profileStyles.inputField}
               />
 
-              {/* 직업 */}
-              <label htmlFor="descInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
-                직업
-              </label>
+              <label htmlFor="descInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>직업</label>
               <input
                 id="descInput"
                 type="text"
@@ -237,10 +289,7 @@ const ProfileEditPage: React.FC = () => {
                 className={profileStyles.inputField}
               />
 
-              {/* AI 소개 */}
-              <label htmlFor="aiIntroInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>
-                AI 인사말
-              </label>
+              <label htmlFor="aiIntroInput" className={profileStyles.inputLabel} style={{ marginTop: 16 }}>AI 인사말</label>
               <input
                 id="aiIntroInput"
                 type="text"
@@ -252,79 +301,55 @@ const ProfileEditPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 소셜링크 그룹 — 연필 아이콘과 모달 띄우기 */}
+          {/* 소셜링크 그룹 */}
           <div className={profileStyles.profileLine}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 20 }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>소셜링크</div>
               <FiEdit2 size={24} color="#222" style={{ cursor: 'pointer' }} onClick={() => setShowSocialModal(true)} />
             </div>
 
-            {/* 소셜 인풋들은 선택된 링크에 따라 conditionally 렌더링하거나 기본 UI 유지 */}
-            {/* 예를 들어, 단순히 모두 보여줄 수도 있음 */}
-
-            {/* 전화번호 */}
-            <label htmlFor="numberInput" className={profileStyles.inputLabel}>전화번호</label>
-            <input
-              id="numberInput"
-              type="text"
-              value={profile.number || ''}
-              onChange={e => setProfile(prev => prev ? { ...prev, number: e.target.value } : prev)}
-              placeholder="전화번호 입력"
-              className={profileStyles.inputField}
-            />
-
-            {/* 이메일 */}
-            <label htmlFor="emailInput" className={profileStyles.inputLabel}>이메일</label>
-            <input
-              id="emailInput"
-              type="text"
-              value={profile.email || ''}
-              onChange={e => setProfile(prev => prev ? { ...prev, email: e.target.value } : prev)}
-              placeholder="이메일 입력"
-              className={profileStyles.inputField}
-            />
-
-            {/* 개인 주소 */}
-            <label htmlFor="personUrlInput" className={profileStyles.inputLabel}>개인주소</label>
-            <input
-              id="personUrlInput"
-              type="text"
-              value={profile.personUrl || ''}
-              onChange={e => setProfile(prev => prev ? { ...prev, personUrl: e.target.value } : prev)}
-              placeholder="개인 웹사이트 URL 입력"
-              className={profileStyles.inputField}
-            />
-
-            {/* 유튜브 주소 */}
-            <label htmlFor="youtubeUrlInput" className={profileStyles.inputLabel}>유튜브주소</label>
-            <input
-              id="youtubeUrlInput"
-              type="text"
-              value={profile.youtubeUrl || ''}
-              onChange={e => setProfile(prev => prev ? { ...prev, youtubeUrl: e.target.value } : prev)}
-              placeholder="유튜브 URL 입력"
-              className={profileStyles.inputField}
-            />
+            <div className={profileStyles.inputGroup}>
+              {socialLinks.map((link, idx) => (
+                <React.Fragment key={link.type}>
+                  <label htmlFor={`${link.type}Input`} className={profileStyles.inputLabel}>
+                    {SOCIAL_FIELDS.find(f => f.key === link.type)?.label}
+                  </label>
+                  <input
+                    id={`${link.type}Input`}
+                    type="text"
+                    value={link.url}
+                    onChange={e => handleSocialLinkChange(idx, e.target.value)}
+                    placeholder={SOCIAL_FIELDS.find(f => f.key === link.type)?.placeholder}
+                    className={profileStyles.inputField}
+                  />
+                </React.Fragment>
+              ))}
+            </div>
           </div>
         </div>
+
+        <SocialModal
+          visible={showSocialModal}
+          initialSelectedKeys={selectedSocial}
+          onClose={() => setShowSocialModal(false)}
+          onSave={(keys) => {
+            setSelectedSocial(keys);
+
+            // 선택된 소셜링크만 socialLinks로 동기화
+            const updatedSocialLinks = keys.map(key => {
+              const prev = socialLinks.find(item => item.type === key);
+              return { type: key, url: prev?.url ?? '' };
+            });
+            setSocialLinks(updatedSocialLinks);
+            setShowSocialModal(false);
+          }}
+        />
 
         <SuccessFailModal
           show={modal.show}
           message={modal.message}
           type={modal.type}
           onClose={() => setModal({ ...modal, show: false })}
-        />
-
-        <SocialModal
-          visible={showSocialModal}
-          initialSelectedKeys={[] /* 초기 선택 상태 필요 시 profile 소셜 필드 기반으로 세팅해 주세요 */}
-          onClose={() => setShowSocialModal(false)}
-          onSave={(selectedKeys) => {
-            // 선택한 소셜 링크 키 배열을 기반으로 profile 상태 update 가능
-            // 예) 선택한 키가 아닌 필드는 '', 값 클리어 처리 등 필요시 구현
-            console.log('선택된 소셜링크:', selectedKeys);
-            setShowSocialModal(false);
-          }}
         />
       </div>
     </div>

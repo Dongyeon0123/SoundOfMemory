@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { FiEdit2 } from 'react-icons/fi';
 import { IoChevronBack } from 'react-icons/io5';
+import { FaPhone } from 'react-icons/fa';
+import { SiNotion } from 'react-icons/si';
 import { 
   FaGithub, FaFacebook, FaInstagram, FaYoutube, FaTwitter, FaLinkedin, FaBlogger,
-  FaEnvelope, FaGlobe, FaBandcamp, FaCoffee, FaBehance 
+  FaEnvelope, FaGlobe, FaBandcamp, FaCoffee, FaBehance, 
+  FaCalculator
 } from 'react-icons/fa';
 
 import styles from '../../../styles/profile.module.css';
 
 const SOCIAL_LINKS = [
-  { key: 'github', label: 'GitHub', icon: <FaGithub /> },
-  { key: 'facebook', label: 'Facebook', icon: <FaFacebook /> },
-  { key: 'instagram', label: 'Instagram', icon: <FaInstagram /> },
-  { key: 'youtube', label: 'YouTube', icon: <FaYoutube /> },
-  { key: 'twitter', label: 'Twitter', icon: <FaTwitter /> },
-  { key: 'linkedin', label: 'LinkedIn', icon: <FaLinkedin /> },
-  { key: 'blogger', label: 'Blogger', icon: <FaBlogger /> },
+  { key: 'number', label: 'Phone', icon: <FaPhone /> },
   { key: 'email', label: 'E-mail', icon: <FaEnvelope /> },
-  { key: 'website', label: 'Website', icon: <FaGlobe /> },
-  { key: 'band', label: 'Band', icon: <FaBandcamp /> },
-  { key: 'cafe', label: 'Cafe', icon: <FaCoffee /> },
-  { key: 'behance', label: 'Behance', icon: <FaBehance /> },
-  // 3 more placeholders to make 15 total
-  { key: 'notion', label: 'Notion', icon: <img src="/icons/notion.png" alt="Notion" width={28} height={28} /> },
-  { key: 'x', label: 'X', icon: <FaTwitter /> }, // substitute for X
-  { key: 'extra', label: 'Extra', icon: <FiEdit2 /> },
+  { key: 'personUrl', label: 'Person', icon: <FaGlobe /> },
+  { key: 'youtubeUrl', label: 'YouTube', icon: <FaYoutube /> },
+  { key: 'facebookUrl', label: 'Facebook', icon: <FaFacebook /> },
+  { key: 'instagramUrl', label: 'Instagram', icon: <FaInstagram /> },
+  { key: 'twitterUrl', label: 'Twitter', icon: <FaTwitter /> },
+  { key: 'bandUrl', label: 'Band', icon: <FaBandcamp /> },
+  { key: 'linkedinUrl', label: 'LinkedIn', icon: <FaLinkedin /> },
+  { key: 'githubUrl', label: 'GitHub', icon: <FaGithub /> },
+  { key: 'cafeUrl', label: 'Cafe', icon: <FaCoffee /> },
+  { key: 'notionUrl', label: 'Notion', icon: <SiNotion /> },
+  { key: 'xUrl', label: 'X', icon: <FaTwitter /> },
+  { key: 'blogUrl', label: 'Blogger', icon: <FaBlogger /> },
+  { key: 'behanceUrl', label: 'Behance', icon: <FaBehance /> },
 ];
 
 const MAX_SELECTION = 8;
