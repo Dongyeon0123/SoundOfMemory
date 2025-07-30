@@ -15,7 +15,6 @@ function ProfileImages({ backgroundImg, img, name }: ProfileImagesProps) {
           <img
             src={backgroundImg}
             alt={name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: 'inherit' }}
           />
         )}
       </div>

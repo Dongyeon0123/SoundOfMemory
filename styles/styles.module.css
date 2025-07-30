@@ -118,6 +118,12 @@
   height: 50%;
 }
 
+.bgImgWrap img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 /* 스크롤 가능한 본문 */
 .scrollMain {
   flex: 1;
