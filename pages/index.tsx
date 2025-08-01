@@ -12,6 +12,8 @@ import {
   sendFriendRequest,
   cleanupDuplicateFriendRequests
 } from '../types/profiles';
+import { onSnapshot, collection } from 'firebase/firestore';
+import { db } from '../types/firebase';
 
 import type { Profile } from '../types/profiles';
 
@@ -55,9 +57,19 @@ const Home: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // 모든 프로필 불러오기
+  // 모든 프로필 실시간 불러오기
   useEffect(() => {
-    fetchProfiles().then(setProfiles);
+    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+      const profilesData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Profile[];
+      setProfiles(profilesData);
+    }, (error) => {
+      console.error("프로필 실시간 업데이트 실패:", error);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // 전역으로 중복 정리 함수 등록 (개발용)

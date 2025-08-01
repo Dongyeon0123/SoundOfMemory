@@ -199,12 +199,12 @@ display: flex;
 align-items: center;
 justify-content: center;
 height: 48px;
-margin: 8px 0 8px 12px;
+margin: 8px 0 8px 2px;
 margin-bottom: 15px;
 width: 50px;
 border-radius: 24px;
 background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-padding: 18px 8px;
+padding: 16px 12px;
 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
