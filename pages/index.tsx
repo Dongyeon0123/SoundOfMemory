@@ -104,7 +104,18 @@ const Home: React.FC = () => {
 
     const loadFriendsAndRequests = async () => {
       const currentFriends = await fetchFriends(userId);
-      setFriends(currentFriends);
+      
+      // 친구 데이터에 프로필 정보 추가
+      const friendsWithProfiles = currentFriends.map(friend => {
+        const profile = profiles.find(p => p.id === friend.friendId);
+        return {
+          ...friend,
+          friendName: profile?.name || friend.friendName || 'Unknown',
+          friendAvatar: profile?.img || friend.friendAvatar || '/chat/profile.png',
+        };
+      });
+      
+      setFriends(friendsWithProfiles);
 
       const friendIds = new Set(currentFriends.map(f => f.friendId));
       const requestedSet = new Set<string>();
