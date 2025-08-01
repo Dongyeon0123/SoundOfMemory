@@ -99,18 +99,37 @@ const ProfileEditPage: React.FC = () => {
 
   const SOCIAL_KEYS = SOCIAL_FIELDS.map(f => f.key);
 
-  // 1) 초기 프로필 데이터에서 값이 있는 소셜key만 추출해서 상태화
+  // 1) 초기 프로필 데이터에서 socialLinks 객체를 배열로 변환
   useEffect(() => {
+    console.log('프로필 로딩 시 profile:', profile);
     if (profile) {
-      // 값 있는 것만 남기기
-      const arr = SOCIAL_FIELDS
-        .filter(f => (profile[f.key as keyof Profile] ?? "") !== "")
-        .map(f => ({
-          type: f.key,
-          url: (profile[f.key as keyof Profile] as string) || '',
-        }));
-      setSocialLinks(arr);
-      setSelectedSocial(arr.map(item => item.type));
+      console.log('profile.socialLinks:', profile.socialLinks);
+      if (profile.socialLinks) {
+        // socialLinks 객체에서 값이 있는 것만 배열로 변환
+        const arr = SOCIAL_FIELDS
+          .filter(f => profile.socialLinks && profile.socialLinks[f.key as keyof typeof profile.socialLinks])
+          .map(f => ({
+            type: f.key,
+            url: profile.socialLinks![f.key as keyof typeof profile.socialLinks] || '',
+          }));
+        console.log('socialLinks 객체에서 변환된 배열:', arr);
+        setSocialLinks(arr);
+        setSelectedSocial(arr.map(item => item.type));
+      } else {
+        // 기존 방식 (개별 필드에서 읽기)
+        const arr = SOCIAL_FIELDS
+          .filter(f => {
+            const value = profile[f.key as keyof Profile];
+            return value && typeof value === 'string' && value.trim() !== '';
+          })
+          .map(f => ({
+            type: f.key,
+            url: (profile[f.key as keyof Profile] as string) || '',
+          }));
+        console.log('개별 필드에서 변환된 배열:', arr);
+        setSocialLinks(arr);
+        setSelectedSocial(arr.map(item => item.type));
+      }
     } else {
       setSocialLinks([]);
       setSelectedSocial([]);
@@ -131,11 +150,13 @@ const ProfileEditPage: React.FC = () => {
     });
   };
 
-  // 저장 함수: socialLinks 배열 → 필드별 객체 변환 후 저장
+  // 저장 함수: socialLinks 배열 → 객체 변환 후 저장
   const handleSaveProfile = async () => {
     if (!profile) return;
     try {
-      const socialFieldsObject = socialLinks.reduce((acc, { type, url }) => {
+      console.log('저장 전 socialLinks:', socialLinks);
+      
+      const socialLinksObject = socialLinks.reduce((acc, { type, url }) => {
         acc[type] = url;
         return acc;
       }, {} as Record<string, string>);
@@ -143,18 +164,29 @@ const ProfileEditPage: React.FC = () => {
       // 선택되지 않은 소셜은 ''로 만들어서 서버 반영
       SOCIAL_KEYS.forEach(key => {
         if (!socialLinks.find(l => l.type === key)) {
-          socialFieldsObject[key] = '';
+          socialLinksObject[key] = '';
         }
       });
-  
-      await updateProfileField(profile.id, {
+      
+      console.log('저장할 socialLinksObject:', socialLinksObject);
+      
+      const updateData = {
         ...profile,
-        ...socialFieldsObject,
-      });
+        socialLinks: socialLinksObject,
+      };
+      
+      console.log('최종 저장 데이터:', updateData);
+  
+      await updateProfileField(profile.id, updateData);
       setModal({ show: true, message: '프로필이 성공적으로 저장되었습니다.', type: 'success' });
       setShowSocialModal(false);
-      // 최신 상태 로드 필요시 fetchProfileById(profile.id).then(setProfile);
+      
+      // 저장 후 프로필 페이지로 돌아가기
+      setTimeout(() => {
+        router.push(`/profile/${profile.id}`);
+      }, 1500);
     } catch (e: any) {
+      console.error('저장 중 오류:', e);
       setModal({ show: true, message: '프로필 저장 중 오류가 발생했습니다.', type: 'error' });
     }
   };  
@@ -221,15 +253,7 @@ const ProfileEditPage: React.FC = () => {
               </svg>
             </button>
             <span style={{ fontWeight: 700, fontSize: 18 }}>프로필 편집</span>
-            <button
-              onClick={handleSaveProfile}
-              style={{
-                position: 'absolute', right: 16, top: '50%',
-                transform: 'translateY(-50%)',
-                background: '#636AE8', color: '#fff', border: 'none', borderRadius: 6,
-                padding: '7px 22px', fontWeight: 600, fontSize: 15, cursor: 'pointer'
-              }}
-            >
+            <button onClick={handleSaveProfile} className={profileStyles.editSaveButton}>
               저장
             </button>
           </div>
@@ -423,17 +447,19 @@ const ProfileEditPage: React.FC = () => {
           visible={showSocialModal}
           initialSelectedKeys={selectedSocial}
           onClose={() => setShowSocialModal(false)}
-          onSave={(keys) => {
-            setSelectedSocial(keys);
+                      onSave={(keys) => {
+              console.log('SocialModal onSave keys:', keys);
+              setSelectedSocial(keys);
 
-            // 선택된 소셜링크만 socialLinks로 동기화
-            const updatedSocialLinks = keys.map(key => {
-              const prev = socialLinks.find(item => item.type === key);
-              return { type: key, url: prev?.url ?? '' };
-            });
-            setSocialLinks(updatedSocialLinks);
-            setShowSocialModal(false);
-          }}
+              // 선택된 소셜링크만 socialLinks로 동기화
+              const updatedSocialLinks = keys.map(key => {
+                const prev = socialLinks.find(item => item.type === key);
+                return { type: key, url: prev?.url ?? '' };
+              });
+              console.log('updatedSocialLinks:', updatedSocialLinks);
+              setSocialLinks(updatedSocialLinks);
+              setShowSocialModal(false);
+            }}
         />
 
         <SuccessFailModal

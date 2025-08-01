@@ -183,6 +183,35 @@
     border-color: #3f51b5;
     color: white;
   }
+
+  .editSaveButton {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #636AE8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 22px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+  }
+    /* Hover */
+  .editSaveButton:hover {
+    color: #FFFFFFFF;
+    background: #4850E4FF;
+  }
+    /* Pressed */
+  .editSaveButton:hover:active {
+    color: #FFFFFFFF;
+    background: #2C35E0FF;
+  }
+    /* Disabled */
+  .editSaveButton:disabled {
+    opacity: 0.4;
+  }
   
   .iconWrapper {
     display: flex;

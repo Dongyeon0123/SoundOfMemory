@@ -40,7 +40,7 @@ export type Profile = {
     tiktokUrl?: string; // X 주소
     blogUrl?: string; // 블로그 주소
     behanceUrl?: string; // 비잔스 주소
-  }[];
+  };
 };
 
 export async function fetchProfileById(id: string) {

@@ -259,7 +259,8 @@ const ProfilePage: React.FC = () => {
               onSendFriendRequest={handleSendFriendRequest}
             />
 
-            <ProfileLinks />
+            {(() => { console.log('Profile page socialLinks:', profile.socialLinks); return null; })()}
+            <ProfileLinks socialLinks={profile.socialLinks} />
 
             <ProfileMBTIBox mbti={mbti} isMyProfile={!!isMyProfile} onEdit={() => setShowMBTIModal(true)} />
             {isMyProfile && showMBTIModal && (
