@@ -183,7 +183,7 @@ export function ProfileCareerBox({ career, isMyProfile, onEdit }: ProfileCareerB
                 </span>
                 <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 2 }}>
                   {c.period}
-                  <span style={{ color: '#000', fontSize: 13, fontWeight: 600, marginLeft: 8 }}>{c.months}개월</span>
+                  <span style={{ color: '#000', fontSize: 13, fontWeight: 600 }}>{c.months}개월</span>
                 </span>
               </div>
               <span

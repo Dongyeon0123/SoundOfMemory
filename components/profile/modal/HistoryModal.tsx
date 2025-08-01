@@ -172,7 +172,7 @@ export default function HistoryModal({
                   aria-label="추가"
                   style={{ color: '#636AE8FF' }}
                 >
-                    <span>추가</span>
+                    <span>저장</span>
                 </button>
               </div>
             </div>

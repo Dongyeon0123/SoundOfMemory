@@ -194,7 +194,7 @@ export default function CareerModal({
                   aria-label="추가"
                   style={{ color: '#636AE8FF' }}
                 >
-                  <FiPlus size={17} />
+                  저장
                 </button>
               </div>
             </div>
