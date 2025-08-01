@@ -112,7 +112,14 @@ function ProfileLinks({ socialLinks }: ProfileLinksProps) {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginTop: 16 }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(4, 1fr)', 
+        gap: '30px', 
+        marginTop: 16,
+        maxWidth: 'fit-content',
+        margin: '16px auto 0'
+      }}>
         {activeLinks.map(([type, url]) => (
           <div 
             key={type} 
