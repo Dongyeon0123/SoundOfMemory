@@ -33,7 +33,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <title>SoundOfMemory</title>
         <meta name="description" content="AI와 함께하는 소리 기반 메모리 서비스" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/logo.png" />
       </Head>
       <Component {...pageProps} />
     </Provider>
