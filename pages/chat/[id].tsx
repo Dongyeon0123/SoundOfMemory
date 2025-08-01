@@ -100,7 +100,7 @@ const Chat = () => {
         dispatch(setMessages([]));
         
         // 채팅이 없으면 AI 인사말 보내기 (기본값 포함)
-        const aiIntro = profileInfo?.aiIntro?.trim() || "안녕! 정말 반가워! 무슨 얘기를 해볼까?";
+        const aiIntro = profileInfo?.aiIntro?.trim() || `안녕! 나는 ${profileInfo?.name}이야. 궁금한거 있으면 물어봐!`;
         
         const aiMessage = {
           id: `ai_intro_${Date.now()}`,

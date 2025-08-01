@@ -67,9 +67,7 @@ const SocialModal: React.FC<SocialModalProps> = ({ visible, initialSelectedKeys,
           <h2 id="social-modal-title" className={styles.socialModalTitle}>소셜 링크</h2>
           <button
             className={styles.socialModalSave}
-            disabled={selectedKeys.length === 0}
             onClick={() => onSave(selectedKeys)}
-            aria-disabled={selectedKeys.length === 0}
           >
             저장
           </button>

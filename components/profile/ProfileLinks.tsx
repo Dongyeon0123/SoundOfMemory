@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from '../../styles/styles.module.css';
 import { FiPhone, FiAtSign, FiMail, FiGlobe } from 'react-icons/fi';
 import { FaChrome, FaYoutube, FaFacebook, FaInstagram, FaTwitter, FaLinkedin, FaGithub, FaTiktok } from 'react-icons/fa';
 import { SiNotion, SiBehance } from 'react-icons/si';
+import CopyModal from './modal/CopyModal';
 
 interface ProfileLinksProps {
   socialLinks?: {
@@ -31,6 +32,17 @@ function ProfileLinks({ socialLinks }: ProfileLinksProps) {
   const activeLinks = socialLinks ? Object.entries(socialLinks).filter(([key, url]) => url && url.trim() !== '') : [];
   
   console.log('ProfileLinks activeLinks:', activeLinks);
+
+  // 복사 모달 상태
+  const [copyModal, setCopyModal] = useState<{
+    visible: boolean;
+    type: 'phone' | 'email';
+    value: string;
+  }>({
+    visible: false,
+    type: 'phone',
+    value: ''
+  });
 
   if (activeLinks.length === 0) {
     return null; // 링크가 없으면 아무것도 표시하지 않음
@@ -68,43 +80,58 @@ function ProfileLinks({ socialLinks }: ProfileLinksProps) {
   };
 
   const handleLinkClick = (type: string, url: string) => {
+    // 전화번호나 이메일인 경우 모달 표시
+    if (type === 'number') {
+      setCopyModal({
+        visible: true,
+        type: 'phone',
+        value: url
+      });
+      return;
+    }
+    
+    if (type === 'email') {
+      setCopyModal({
+        visible: true,
+        type: 'email',
+        value: url
+      });
+      return;
+    }
+    
+    // 다른 링크들은 기존 방식대로 처리
     let finalUrl = url;
     
-    // 전화번호인 경우 tel: 접두사 추가
-    if (type === 'number' && !url.startsWith('tel:')) {
-      finalUrl = `tel:${url}`;
-    }
-    
-    // 이메일인 경우 mailto: 접두사 추가
-    if (type === 'email' && !url.startsWith('mailto:')) {
-      finalUrl = `mailto:${url}`;
-    }
-    
     // URL이 http:// 또는 https://로 시작하지 않으면 https:// 추가
-    if (type !== 'number' && type !== 'email' && !url.startsWith('http://') && !url.startsWith('https://')) {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
       finalUrl = `https://${url}`;
     }
     
-    if (finalUrl.startsWith('tel:') || finalUrl.startsWith('mailto:')) {
-      window.location.href = finalUrl;
-    } else {
-      window.open(finalUrl, '_blank');
-    }
+    window.open(finalUrl, '_blank');
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginTop: 16 }}>
-      {activeLinks.map(([type, url]) => (
-        <div 
-          key={type} 
-          className={styles.profileIcons}
-          onClick={() => handleLinkClick(type, url)}
-          title={type}
-        >
-          {getIcon(type, url)}
-        </div>
-      ))}
-    </div>
+    <>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginTop: 16 }}>
+        {activeLinks.map(([type, url]) => (
+          <div 
+            key={type} 
+            className={styles.profileIcons}
+            onClick={() => handleLinkClick(type, url)}
+            title={type}
+          >
+            {getIcon(type, url)}
+          </div>
+        ))}
+      </div>
+      
+      <CopyModal
+        visible={copyModal.visible}
+        type={copyModal.type}
+        value={copyModal.value}
+        onClose={() => setCopyModal(prev => ({ ...prev, visible: false }))}
+      />
+    </>
   );
 }
 

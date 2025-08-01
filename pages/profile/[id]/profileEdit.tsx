@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { fetchProfileById, updateProfileField } from '../../../types/profiles';
 import type { Profile } from '../../../types/profiles';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { uploadProfileImage } from '../../../client/uploadProfileImage';
 
 import styles from '../../../styles/styles.module.css';
 import profileStyles from '../../../styles/profile.module.css';
@@ -14,35 +15,25 @@ import SocialModal from '../../../components/profile/modal/SocialModal';
 
 import { FiEdit2, FiCamera } from 'react-icons/fi';
 
-const ICON_SIZE = 24;
-
 type SocialLink = { type: string; url: string };
 
 const SOCIAL_FIELDS = [
-  { key: 'number', label: '전화번호', placeholder: '전화번호 입력', inputType: 'text' },
-  { key: 'email', label: '이메일', placeholder: 'ex) soundofmemory.gmail.com', inputType: 'text' },
-  { key: 'personUrl', label: '개인 웹사이트', placeholder: '커스텀 URL을 입력하세요', inputType: 'text' },
-  { key: 'youtubeUrl', label: 'YouTube', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'facebookUrl', label: 'Facebook', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'instagramUrl', label: 'Instagram', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'twitterUrl', label: '트위터', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'bandUrl', label: '밴드', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'linkedinUrl', label: '링크드인', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'githubUrl', label: '깃허브', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'cafeUrl', label: '카페', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'notionUrl', label: '노션', placeholder: '전체 URL을 입력하세요', inputType: 'text' },
-  { key: 'tiktokUrl', label: '틱톡', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'blogUrl', label: '블로그', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
-  { key: 'behanceUrl', label: '비잔스', placeholder: '사용자명 또는 프로필 URL을 입력하세요', inputType: 'text' },
+  { key: 'number', label: '전화번호', placeholder: '전화번호 입력', inputType: 'text', baseUrl: '' },
+  { key: 'email', label: '이메일', placeholder: '이메일 주소 입력', inputType: 'text', baseUrl: '' },
+  { key: 'personUrl', label: '개인 웹사이트', placeholder: '전체 URL을 입력하세요', inputType: 'text', baseUrl: '' },
+  { key: 'youtubeUrl', label: 'YouTube', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.youtube.com/' },
+  { key: 'facebookUrl', label: 'Facebook', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.facebook.com/' },
+  { key: 'instagramUrl', label: 'Instagram', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.instagram.com/' },
+  { key: 'twitterUrl', label: '트위터', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://x.com/' },
+  { key: 'bandUrl', label: '밴드', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.band.us/' },
+  { key: 'linkedinUrl', label: '링크드인', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.linkedin.com/in/' },
+  { key: 'githubUrl', label: '깃허브', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://github.com/' },
+  { key: 'cafeUrl', label: '카페', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://cafe.naver.com/' },
+  { key: 'notionUrl', label: '노션', placeholder: '전체 URL을 입력하세요', inputType: 'text', baseUrl: '' },
+  { key: 'tiktokUrl', label: '틱톡', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.tiktok.com/' },
+  { key: 'blogUrl', label: '블로그', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://blog.naver.com/' },
+  { key: 'behanceUrl', label: '비잔스', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.behance.net/' },
 ];
-
-// 소셜 링크 배열 → 객체 변환하여 Firestore 저장용
-function socialLinksArrayToObj(links: SocialLink[]) {
-  return links.reduce((acc, { type, url }) => {
-    acc[type] = url;
-    return acc;
-  }, {} as Record<string, string>);
-}
 
 const ProfileEditPage: React.FC = () => {
   const router = useRouter();
@@ -145,9 +136,66 @@ const ProfileEditPage: React.FC = () => {
   const handleSocialLinkChange = (idx: number, newUrl: string) => {
     setSocialLinks(prev => {
       const clone = [...prev];
-      clone[idx] = { ...clone[idx], url: newUrl };
+      const link = clone[idx];
+      const field = SOCIAL_FIELDS.find(f => f.key === link.type);
+      
+      // URL 처리 로직
+      let processedUrl = newUrl.trim();
+      
+      if (field?.baseUrl && processedUrl) {
+        // 기본 URL이 있는 경우 (소셜 미디어)
+        if (processedUrl.startsWith('http://') || processedUrl.startsWith('https://')) {
+          // 이미 전체 URL인 경우 그대로 사용
+          clone[idx] = { ...link, url: processedUrl };
+        } else {
+          // 사용자명만 입력한 경우 기본 URL과 결합
+          clone[idx] = { ...link, url: field.baseUrl + processedUrl };
+        }
+      } else {
+        // 기본 URL이 없는 경우 (전화번호, 이메일, 개인 웹사이트, 노션)
+        clone[idx] = { ...link, url: processedUrl };
+      }
+      
       return clone;
     });
+  };
+
+  // 프로필 이미지 변경 핸들러
+  const handleProfileImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        // 파일 확장자 확인
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
+          alert('지원하지 않는 파일 형식입니다. JPG, PNG, GIF, WEBP 파일만 업로드 가능합니다.');
+          return;
+        }
+
+        // 파일 크기 확인 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('파일 크기가 너무 큽니다. 5MB 이하의 파일만 업로드 가능합니다.');
+          return;
+        }
+
+        // Cloud Function을 통해 이미지 업로드
+        await uploadProfileImage(file);
+        
+        // Cloud Function이 자동으로 Firestore를 업데이트하므로
+        // 프로필을 다시 로드하여 최신 이미지 URL을 가져옴
+        if (typeof id === 'string') {
+          const updatedProfile = await fetchProfileById(id);
+          if (updatedProfile) {
+            setProfile(updatedProfile);
+          }
+        }
+        
+        console.log('프로필 이미지 업로드 완료. Cloud Function이 Firestore를 업데이트했습니다.');
+      } catch (error) {
+        console.error('프로필 이미지 업로드 실패:', error);
+        alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+      }
+    }
   };
 
   // 저장 함수: socialLinks 배열 → 객체 변환 후 저장
@@ -169,8 +217,8 @@ const ProfileEditPage: React.FC = () => {
       });
       
       console.log('저장할 socialLinksObject:', socialLinksObject);
-      // AI 인사말이 비어있으면 기본값 설정
-      const aiIntro = profile.aiIntro?.trim() || "안녕! 정말 반가워! 무슨 얘기를 해볼까?";
+      // AI 인사말이 비어있으면 기본값 설정 (사용자 이름 포함)
+      const aiIntro = profile.aiIntro?.trim() || `안녕! 나는 ${profile.name}이야. 궁금한거 있으면 물어봐!`;
       console.log('저장할 aiIntro:', aiIntro);
       
       const updateData = {
@@ -338,7 +386,15 @@ const ProfileEditPage: React.FC = () => {
                   borderRadius: "50%",
                 }}
               />
-              {/* 프로필 편집 카메라 아이콘 - 버튼 배경 투명화 */}
+              {/* 파일 업로드 input (숨김) */}
+              <input
+                type="file"
+                id="profileImageInput"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleProfileImageChange}
+              />
+              {/* 프로필 편집 카메라 아이콘 */}
               <button
                 type="button"
                 aria-label="프로필 이미지 편집"
@@ -360,7 +416,7 @@ const ProfileEditPage: React.FC = () => {
                   outline: "none",
                   zIndex: 1000000000,
                 }}
-                onClick={() => alert("프로필 이미지 편집 기능!")}
+                onClick={() => document.getElementById('profileImageInput')?.click()}
               >
                 <FiCamera size={20} color="#222" />
               </button>

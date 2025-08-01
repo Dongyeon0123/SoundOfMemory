@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDTXtMsBp2Fsd9nysD3Am-ZUfYBdkpVHuk",
@@ -15,6 +16,7 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const storage = getStorage(app);
 // 배열 → Firestore 필드 객체 변환
 function socialLinksArrayToFields(arr: { type: string; url: string }[]) {
   return arr.reduce((acc, { type, url }) => {
