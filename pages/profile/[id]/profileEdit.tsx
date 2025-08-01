@@ -93,7 +93,7 @@ const ProfileEditPage: React.FC = () => {
   // 1) 초기 프로필 데이터에서 socialLinks 객체를 배열로 변환
   useEffect(() => {
     console.log('프로필 로딩 시 profile:', profile);
-    if (profile) {
+    if (profile && socialLinks.length === 0) { // socialLinks가 비어있을 때만 초기화
       console.log('profile.socialLinks:', profile.socialLinks);
       if (profile.socialLinks) {
         // socialLinks 객체에서 값이 있는 것만 배열로 변환
@@ -121,11 +121,11 @@ const ProfileEditPage: React.FC = () => {
         setSocialLinks(arr);
         setSelectedSocial(arr.map(item => item.type));
       }
-    } else {
+    } else if (!profile) {
       setSocialLinks([]);
       setSelectedSocial([]);
     }
-  }, [profile]);
+  }, [profile, socialLinks.length]);
 
   // 프로필 필드 업데이트 헬퍼
   const handleUpdateProfileField = (field: keyof Profile, value: any) => {
@@ -133,16 +133,40 @@ const ProfileEditPage: React.FC = () => {
   };
 
   // 소셜 링크 배열 내 URL 변경 시
+  // 전화번호 포맷팅 함수
+  const formatPhoneNumber = (value: string): string => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '');
+    
+    // 11자리 이하로 제한
+    if (numbers.length <= 11) {
+      if (numbers.length <= 3) {
+        return numbers;
+      } else if (numbers.length <= 7) {
+        return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+      } else {
+        return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+      }
+    }
+    
+    // 11자리 초과시 마지막 11자리만 사용
+    const limitedNumbers = numbers.slice(-11);
+    return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3, 7)}-${limitedNumbers.slice(7)}`;
+  };
+
   const handleSocialLinkChange = (idx: number, newUrl: string) => {
     setSocialLinks(prev => {
       const clone = [...prev];
       const link = clone[idx];
       const field = SOCIAL_FIELDS.find(f => f.key === link.type);
       
-      // URL 처리 로직
       let processedUrl = newUrl.trim();
       
-      if (field?.baseUrl && processedUrl) {
+      // 전화번호인 경우 포맷팅 적용
+      if (link.type === 'number') {
+        processedUrl = formatPhoneNumber(newUrl);
+        clone[idx] = { ...link, url: processedUrl };
+      } else if (field?.baseUrl && processedUrl) {
         // 기본 URL이 있는 경우 (소셜 미디어)
         if (processedUrl.startsWith('http://') || processedUrl.startsWith('https://')) {
           // 이미 전체 URL인 경우 그대로 사용
@@ -152,7 +176,7 @@ const ProfileEditPage: React.FC = () => {
           clone[idx] = { ...link, url: field.baseUrl + processedUrl };
         }
       } else {
-        // 기본 URL이 없는 경우 (전화번호, 이메일, 개인 웹사이트, 노션)
+        // 기본 URL이 없는 경우 (이메일, 개인 웹사이트, 노션)
         clone[idx] = { ...link, url: processedUrl };
       }
       

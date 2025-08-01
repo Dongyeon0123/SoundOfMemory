@@ -37,7 +37,7 @@ export const uploadProfileImage = async (file: File): Promise<string> => {
     console.log("다운로드 URL:", downloadURL);
     
     // Firestore 업데이트
-    const profileRef = doc(db, "profiles", user.uid);
+    const profileRef = doc(db, "users", user.uid);
     await updateDoc(profileRef, {
       img: downloadURL
     });
