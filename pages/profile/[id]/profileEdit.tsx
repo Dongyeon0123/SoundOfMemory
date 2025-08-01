@@ -169,10 +169,14 @@ const ProfileEditPage: React.FC = () => {
       });
       
       console.log('저장할 socialLinksObject:', socialLinksObject);
+      // AI 인사말이 비어있으면 기본값 설정
+      const aiIntro = profile.aiIntro?.trim() || "안녕! 정말 반가워! 무슨 얘기를 해볼까?";
+      console.log('저장할 aiIntro:', aiIntro);
       
       const updateData = {
         ...profile,
         socialLinks: socialLinksObject,
+        aiIntro: aiIntro,
       };
       
       console.log('최종 저장 데이터:', updateData);
@@ -387,7 +391,7 @@ const ProfileEditPage: React.FC = () => {
               <input
                 id="aiIntroInput"
                 type="text"
-                value={profile.aiIntro}
+                value={profile.aiIntro || ""}
                 onChange={e => setProfile(prev => prev ? { ...prev, aiIntro: e.target.value } : prev)}
                 placeholder="안녕! 정말 반가워! 무슨 얘기를 해볼까?"
                 className={profileStyles.inputField}

@@ -23,7 +23,7 @@ const Chat = () => {
   const { messages, input, isProMode } = useSelector((state: RootState) => state.chat);
   const { id } = router.query;
 
-  const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string } | null>(null);
+  const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string; aiIntro?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
   const [showNoChatModal, setShowNoChatModal] = useState(false);
@@ -55,7 +55,12 @@ const Chat = () => {
   useEffect(() => {
     if (typeof id === "string") {
       fetchProfileById(id).then(profile => {
-        if (profile) setProfileInfo({ id: profile.id, name: profile.name, img: profile.img });
+        if (profile) setProfileInfo({ 
+          id: profile.id, 
+          name: profile.name, 
+          img: profile.img,
+          aiIntro: profile.aiIntro 
+        });
       });
     }
   }, [id]);
@@ -75,7 +80,7 @@ const Chat = () => {
     return messagesArray.map((msg: any, index: number) => ({
       id: `msg_${index}`,
       content: typeof msg === "string" ? msg : msg.content,
-      sender: msg?.sender || (index % 2 === 0 ? 'user' : 'ai'),
+      sender: msg?.sender || (index % 2 === 1 ? 'user' : 'ai'),
       timestamp: new Date(),
     }));
   };
@@ -87,18 +92,38 @@ const Chat = () => {
 
     setLoading(true);
 
-    const unsubscribe = onSnapshot(chatDocRef, (docSnap) => {
+    const unsubscribe = onSnapshot(chatDocRef, async (docSnap) => {
       if (docSnap.exists()) {
         const msgs = parseMessages(docSnap.data());
         dispatch(setMessages(msgs));
       } else {
         dispatch(setMessages([]));
+        
+        // 채팅이 없으면 AI 인사말 보내기 (기본값 포함)
+        const aiIntro = profileInfo?.aiIntro?.trim() || "안녕! 정말 반가워! 무슨 얘기를 해볼까?";
+        
+        const aiMessage = {
+          id: `ai_intro_${Date.now()}`,
+          content: aiIntro,
+          sender: 'ai' as const,
+          timestamp: new Date(),
+        };
+        
+        // AI 인사말을 Firebase에 저장
+        try {
+          await setDoc(chatDocRef, {
+            messages: [aiMessage.content],
+            lastUpdated: new Date(),
+          }, { merge: true });
+        } catch (error) {
+          console.error('AI 인사말 저장 중 오류:', error);
+        }
       }
       setLoading(false);
     }, () => setLoading(false));
 
     return () => unsubscribe();
-  }, [currentUserId, safeId, dispatch]);
+  }, [currentUserId, safeId, dispatch, profileInfo?.aiIntro]);
 
   useEffect(() => {
     if (messages.length > 0 || isWaitingForReply) {
