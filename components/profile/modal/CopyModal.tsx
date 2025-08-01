@@ -21,12 +21,12 @@ const CopyModal: React.FC<CopyModalProps> = ({ visible, type, value, onClose }) 
       
       // 전화번호인 경우 tel: 접두사 추가
       if (type === 'phone' && !value.startsWith('tel:')) {
-        textToCopy = `tel:${value}`;
+        textToCopy = `${value}`;
       }
       
       // 이메일인 경우 mailto: 접두사 추가
       if (type === 'email' && !value.startsWith('mailto:')) {
-        textToCopy = `mailto:${value}`;
+        textToCopy = `${value}`;
       }
 
       await navigator.clipboard.writeText(textToCopy);

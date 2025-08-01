@@ -66,7 +66,6 @@ const MessageList: React.FC<MessageListProps> = ({
           <div className={styles.dot}></div>
           <div className={styles.dot}></div>
           <div className={styles.dot}></div>
-          <div className={styles.dot}></div>
         </div>
       </div>
     )}

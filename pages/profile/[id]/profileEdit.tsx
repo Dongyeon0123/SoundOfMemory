@@ -178,22 +178,34 @@ const ProfileEditPage: React.FC = () => {
           return;
         }
 
-        // Cloud Function을 통해 이미지 업로드
-        await uploadProfileImage(file);
+        // 이미지 업로드 및 Firestore 업데이트
+        const downloadURL = await uploadProfileImage(file);
         
-        // Cloud Function이 자동으로 Firestore를 업데이트하므로
-        // 프로필을 다시 로드하여 최신 이미지 URL을 가져옴
-        if (typeof id === 'string') {
-          const updatedProfile = await fetchProfileById(id);
-          if (updatedProfile) {
-            setProfile(updatedProfile);
-          }
+        // 로컬 상태 업데이트
+        if (profile) {
+          setProfile({
+            ...profile,
+            img: downloadURL
+          });
         }
         
-        console.log('프로필 이미지 업로드 완료. Cloud Function이 Firestore를 업데이트했습니다.');
+        console.log('프로필 이미지 업로드 완료. UI가 업데이트되었습니다.');
       } catch (error) {
         console.error('프로필 이미지 업로드 실패:', error);
-        alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+        
+        // 더 자세한 에러 메시지 표시
+        let errorMessage = '이미지 업로드에 실패했습니다.';
+        if ((error as any).code === 'storage/unauthorized') {
+          errorMessage = '업로드 권한이 없습니다. 로그인 상태를 확인해주세요.';
+        } else if ((error as any).code === 'storage/quota-exceeded') {
+          errorMessage = '저장 공간이 부족합니다.';
+        } else if ((error as any).code === 'storage/network-request-failed') {
+          errorMessage = '네트워크 연결을 확인해주세요.';
+        } else if ((error as any).message) {
+          errorMessage = `업로드 실패: ${(error as any).message}`;
+        }
+        
+        alert(errorMessage);
       }
     }
   };
