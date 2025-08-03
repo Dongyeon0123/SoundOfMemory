@@ -30,12 +30,12 @@ const MessageList: React.FC<MessageListProps> = ({
   <div className={styles.messageSection}>
     {loading ? (
       <div style={{
-        width: '100%', height: '100%', display: 'flex',
+        width: '100%', display: 'flex',
         flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        minHeight: 200
+        padding: '10px 0'
       }}>
-        <div className="spinner" style={{ marginBottom: 18 }} />
-        <div style={{ fontSize: 16, color: '#636AE8', fontWeight: 600 }}>
+        <div className="spinner" style={{ marginBottom: 6, transform: 'scale(0.8)' }} />
+        <div style={{ fontSize: 12, color: '#636AE8', fontWeight: 500 }}>
           메시지를 불러오는 중입니다...
         </div>
       </div>
@@ -46,7 +46,7 @@ const MessageList: React.FC<MessageListProps> = ({
         return (
           <div key={msg.id} className={`${styles.msgWrapper} ${msgTypeClass}`}>
             <div className={styles.name}>
-              {isAI ? profileInfo?.name : "You"}
+              {isAI ? (profileInfo?.name || "AI") : "You"}
             </div>
             <div
               className={styles.bubble}
@@ -61,7 +61,10 @@ const MessageList: React.FC<MessageListProps> = ({
       })
     )}
     {isWaitingForReply && (
-      <div className={styles.typingIndicator}>
+      <div className={styles.typingIndicator} style={{ 
+        marginTop: messages.length === 0 ? '10px' : '8px',
+        marginBottom: messages.length === 0 ? '10px' : '8px'
+      }}>
         <div className={styles.wave}>
           <div className={styles.dot}></div>
           <div className={styles.dot}></div>

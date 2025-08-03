@@ -52,16 +52,31 @@ const Chat = () => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
+      useEffect(() => {
     if (typeof id === "string") {
       fetchProfileById(id).then(profile => {
-        if (profile) setProfileInfo({ 
-          id: profile.id, 
-          name: profile.name, 
-          img: profile.img,
-          aiIntro: profile.aiIntro 
+          
+          if (profile) {
+            
+            // Firebase에서 가져온 데이터의 구조를 안전하게 처리
+            console.log('원본 profile:', profile);
+            console.log('profile.name:', profile.name);
+            console.log('profile.name 타입:', typeof profile.name);
+            
+            const profileInfoData = {
+              id: profile.id || id, 
+              name: profile.name || '사용자', 
+              img: profile.img || '',
+              aiIntro: profile.aiIntro || ''
+            };
+            console.log('설정할 profileInfoData:', profileInfoData);
+            setProfileInfo(profileInfoData);
+          } else {
+            console.log('프로필이 null입니다');
+          }
+        }).catch(error => {
+          console.error('프로필 로딩 실패:', error);
         });
-      });
     }
   }, [id]);
 
@@ -85,7 +100,7 @@ const Chat = () => {
     }));
   };
 
-  useEffect(() => {
+    useEffect(() => {
     if (!currentUserId || typeof safeId !== "string") return;
     const chatDocRef = getChatDocRef();
     if (!chatDocRef) return;
@@ -99,31 +114,40 @@ const Chat = () => {
       } else {
         dispatch(setMessages([]));
         
-        // 채팅이 없으면 AI 인사말 보내기 (기본값 포함)
-        const aiIntro = profileInfo?.aiIntro?.trim() || `안녕! 나는 ${profileInfo?.name}이야. 궁금한거 있으면 물어봐!`;
-        
-        const aiMessage = {
-          id: `ai_intro_${Date.now()}`,
-          content: aiIntro,
-          sender: 'ai' as const,
-          timestamp: new Date(),
-        };
-        
-        // AI 인사말을 Firebase에 저장
-        try {
-          await setDoc(chatDocRef, {
-            messages: [aiMessage.content],
-            lastUpdated: new Date(),
-          }, { merge: true });
-        } catch (error) {
-          console.error('AI 인사말 저장 중 오류:', error);
+        // profileInfo가 로딩된 후에만 AI 인사말 생성
+        if (profileInfo) {
+          // aiIntro가 비어있거나 사용자가 입력하지 않았을 때만 기본 메시지 사용
+          const trimmedAiIntro = profileInfo.aiIntro?.trim();
+          const aiIntro = trimmedAiIntro && trimmedAiIntro.length > 0 
+            ? trimmedAiIntro 
+            : `안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!`;
+          
+          const aiMessage = {
+            id: `ai_intro_${Date.now()}`,
+            content: aiIntro,
+            sender: 'ai' as const,
+            timestamp: new Date(),
+          };
+          
+          // AI 인사말을 Firebase에 저장 (merge 대신 overwrite 사용)
+          try {
+            await setDoc(chatDocRef, {
+              messages: [aiMessage.content],
+              lastUpdated: new Date(),
+            });
+          } catch (error) {
+            console.error('AI 인사말 저장 중 오류:', error);
+          }
         }
       }
       setLoading(false);
-    }, () => setLoading(false));
+    }, (error) => {
+      console.error('Firebase 리스너 오류:', error);
+      setLoading(false);
+    });
 
     return () => unsubscribe();
-  }, [currentUserId, safeId, dispatch, profileInfo?.aiIntro]);
+  }, [currentUserId, safeId, dispatch, profileInfo]);
 
   useEffect(() => {
     if (messages.length > 0 || isWaitingForReply) {
@@ -195,8 +219,8 @@ const Chat = () => {
         : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/otherchat";
   
       const requestBody = isAvatarMine
-        ? { userId: profileInfo.id, message: text } // 내 아바타
-        : { userId: currentUserId, targetId: profileInfo.id, message: text }; // 타인
+        ? { userId: profileInfo?.id || safeId, message: text } // 내 아바타
+        : { userId: currentUserId, targetId: profileInfo?.id || safeId, message: text }; // 타인
   
       const response = await fetch(endpoint, {
         method: "POST",
@@ -259,7 +283,7 @@ const Chat = () => {
         <ChatHeader title="Sound Of Memory" />
   
         <ProfileSection
-          name={profileInfo?.name || ""}
+          name={profileInfo?.name || "AI"}
           img={profileInfo?.img}
           isProMode={isProMode}
           showProToggle={currentUserId === profileInfo?.id}

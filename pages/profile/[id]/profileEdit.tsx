@@ -21,7 +21,7 @@ const SOCIAL_FIELDS = [
   { key: 'number', label: '전화번호', placeholder: '전화번호 입력', inputType: 'text', baseUrl: '' },
   { key: 'email', label: '이메일', placeholder: '이메일 주소 입력', inputType: 'text', baseUrl: '' },
   { key: 'personUrl', label: '개인 웹사이트', placeholder: '전체 URL을 입력하세요', inputType: 'text', baseUrl: '' },
-  { key: 'youtubeUrl', label: 'YouTube', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.youtube.com/' },
+  { key: 'youtubeUrl', label: 'YouTube', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.youtube.com/@' },
   { key: 'facebookUrl', label: 'Facebook', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.facebook.com/' },
   { key: 'instagramUrl', label: 'Instagram', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://www.instagram.com/' },
   { key: 'twitterUrl', label: '트위터', placeholder: '사용자명 입력', inputType: 'text', baseUrl: 'https://x.com/' },
@@ -254,7 +254,7 @@ const ProfileEditPage: React.FC = () => {
       
       console.log('저장할 socialLinksObject:', socialLinksObject);
       // AI 인사말이 비어있으면 기본값 설정 (사용자 이름 포함)
-      const aiIntro = profile.aiIntro?.trim() || `안녕! 나는 ${profile.name}이야. 궁금한거 있으면 물어봐!`;
+      const aiIntro = profile.aiIntro?.trim() || `안녕! 나는 ${profile.name || '개인 AI 아바타 비서'}야. 궁금한거 있으면 물어봐!`;
       console.log('저장할 aiIntro:', aiIntro);
       
       const updateData = {
