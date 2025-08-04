@@ -16,22 +16,38 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
   onClose,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredInformation, setFilteredInformation] = useState<string[]>(information);
+  const [filteredInformation, setFilteredInformation] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // information 배열을 역순으로 정렬
+  const reversedInformation = [...information].reverse();
 
   useEffect(() => {
-    if (information) {
-      const filtered = information.filter(item =>
+    if (reversedInformation) {
+      const filtered = reversedInformation.filter(item =>
         item.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredInformation(filtered);
+      setCurrentPage(1); // 검색 시 첫 페이지로 리셋
     }
-  }, [searchTerm, information]);
+  }, [searchTerm, reversedInformation]);
+
+  // 현재 페이지의 항목들 계산
+  const totalPages = Math.ceil(filteredInformation.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredInformation.slice(startIndex, endIndex);
 
   const handleDeleteItem = (index: number) => {
     const newInformation = [...information];
     newInformation.splice(index, 1);
     // 여기서 실제 데이터베이스 업데이트 로직을 추가할 수 있습니다
     console.log('항목 삭제:', index);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (!visible) return null;
@@ -43,14 +59,18 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
         maxWidth: '600px',
         height: '80vh',
         maxHeight: '700px',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
       }}>
-        {/* 헤더 */}
+        {/* 헤더 - 고정 */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '24px 32px',
           borderBottom: '1px solid #e8e8f0',
+          flexShrink: 0,
         }}>
           <button
             onClick={onClose}
@@ -77,7 +97,8 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
           <button
             onClick={() => {
               setSearchTerm('');
-              setFilteredInformation(information);
+              setFilteredInformation(reversedInformation);
+              setCurrentPage(1);
             }}
             style={{
               background: '#636AE8',
@@ -94,102 +115,155 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
           </button>
         </div>
 
-        {/* 검색 입력 */}
-        <div style={{
-          padding: '24px 32px',
-          borderBottom: '1px solid #e8e8f0',
-        }}>
-          <div style={{
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-          }}>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '16px 48px 16px 20px',
-                border: '1px solid #e8e8f0',
-                borderRadius: 8,
-                fontSize: 16,
-                outline: 'none',
-              }}
-            />
-            <FiSearch
-              size={20}
-              color="#666"
-              style={{
-                position: 'absolute',
-                right: 16,
-                cursor: 'pointer',
-              }}
-            />
-          </div>
-        </div>
-
-        {/* 정보 목록 */}
+        {/* 스크롤 가능한 컨텐츠 영역 */}
         <div style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '24px 32px',
+          display: 'flex',
+          flexDirection: 'column',
         }}>
-          {filteredInformation.length === 0 ? (
+          {/* 검색 입력 */}
+          <div style={{
+            padding: '24px 32px',
+            borderBottom: '1px solid #e8e8f0',
+            flexShrink: 0,
+          }}>
             <div style={{
-              textAlign: 'center',
-              color: '#888',
-              fontSize: 16,
-              padding: '60px 20px',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
             }}>
-              검색 결과가 없습니다.
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '16px 48px 16px 20px',
+                  border: '1px solid #e8e8f0',
+                  borderRadius: 8,
+                  fontSize: 16,
+                  outline: 'none',
+                }}
+              />
+              <FiSearch
+                size={20}
+                color="#666"
+                style={{
+                  position: 'absolute',
+                  right: 16,
+                  cursor: 'pointer',
+                }}
+              />
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {filteredInformation.map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '20px 24px',
-                    background: '#f8f8fb',
-                    borderRadius: 12,
-                    border: '1px solid #e8e8f0',
-                    fontSize: 16,
-                    color: '#222',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  <div style={{ flex: 1, marginRight: 16 }}>
-                    {item}
-                  </div>
-                  <button
-                    onClick={() => handleDeleteItem(index)}
+          </div>
+
+          {/* 정보 목록 */}
+          <div style={{
+            flex: 1,
+            padding: '24px 32px',
+            overflowY: 'auto',
+          }}>
+            {currentItems.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                color: '#888',
+                fontSize: 16,
+                padding: '60px 20px',
+              }}>
+                검색 결과가 없습니다.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {currentItems.map((item, index) => (
+                  <div
+                    key={startIndex + index}
                     style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 32,
-                      height: 32,
-                      borderRadius: '50%',
-                      transition: 'background-color 0.2s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#ffebee';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
+                      justifyContent: 'space-between',
+                      padding: '20px 24px',
+                      background: '#f8f8fb',
+                      borderRadius: 12,
+                      border: '1px solid #e8e8f0',
+                      fontSize: 16,
+                      color: '#222',
+                      lineHeight: 1.5,
                     }}
                   >
-                    <FiTrash2 size={18} color="#e53e3e" />
-                  </button>
-                </div>
+                    <div style={{ flex: 1, marginRight: 16 }}>
+                      {item}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteItem(startIndex + index)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        transition: 'background-color 0.2s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#ffebee';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <FiTrash2 size={18} color="#e53e3e" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <div style={{
+              padding: '20px 32px',
+              borderTop: '1px solid #e8e8f0',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 8,
+              flexShrink: 0,
+            }}>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  style={{
+                    background: currentPage === page ? '#636AE8' : 'transparent',
+                    border: currentPage === page ? 'none' : '1px solid #e8e8f0',
+                    color: currentPage === page ? 'white' : '#666',
+                    cursor: 'pointer',
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    fontSize: 14,
+                    fontWeight: currentPage === page ? 600 : 400,
+                    minWidth: 32,
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentPage !== page) {
+                      e.currentTarget.style.backgroundColor = '#f0f0f0';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentPage !== page) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  {page}
+                </button>
               ))}
             </div>
           )}
