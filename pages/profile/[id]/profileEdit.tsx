@@ -12,6 +12,7 @@ import profileStyles from '../../../styles/profile.module.css';
 
 import SuccessFailModal from '../../../components/profile/modal/SuccessFailModal';
 import SocialModal from '../../../components/profile/modal/SocialModal';
+import ChatTopicModal from '../../../components/profile/modal/ChatTopicModal';
 
 import { FiEdit2, FiCamera, FiFolder } from 'react-icons/fi';
 
@@ -49,6 +50,8 @@ const ProfileEditPage: React.FC = () => {
   });
 
   const [showSocialModal, setShowSocialModal] = useState(false);
+  const [showChatTopicModal, setShowChatTopicModal] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState<ChatTopic | null>(null);
 
   // 소셜 링크들 배열로 관리
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
@@ -273,6 +276,13 @@ const ProfileEditPage: React.FC = () => {
     });
   };
 
+  // 폴더 아이콘 클릭 핸들러
+  const handleFolderClick = (topic: ChatTopic, e: React.MouseEvent) => {
+    e.stopPropagation(); // 부모 요소의 onClick 이벤트 방지
+    setSelectedTopic(topic);
+    setShowChatTopicModal(true);
+  };
+
   // 저장 함수: socialLinks 배열 → 객체 변환 후 저장
   const handleSaveProfile = async () => {
     if (!profile) return;
@@ -296,11 +306,11 @@ const ProfileEditPage: React.FC = () => {
         ...profile,
         socialLinks: socialLinksObject,
         aiIntro: aiIntro,
-        // 선택된 채팅 주제를 tag 필드에도 저장
+        // 선택된 채팅 주제를 tag 필드에 저장
         tag: selectedChatTopics,
       };
       
-      // 선택된 채팅 주제도 함께 저장
+      // 선택된 채팅 주제도 함께 저장 (기존 기능 유지)
       console.log('프로필 저장 시 selectedChatTopics:', selectedChatTopics);
       await saveSelectedChatTopics(profile.id, selectedChatTopics);
   
@@ -647,7 +657,12 @@ const ProfileEditPage: React.FC = () => {
                             </svg>
                           )}
                         </div>
-                        <FiFolder size={20} color="#666" style={{ cursor: 'pointer' }} />
+                        <FiFolder 
+                          size={20} 
+                          color="#666" 
+                          style={{ cursor: 'pointer' }} 
+                          onClick={(e) => handleFolderClick(topic, e)}
+                        />
                       </div>
                     </div>
                   ))}
@@ -681,6 +696,16 @@ const ProfileEditPage: React.FC = () => {
           message={modal.message}
           type={modal.type}
           onClose={() => setModal({ ...modal, show: false })}
+        />
+
+        <ChatTopicModal
+          visible={showChatTopicModal}
+          topicName={selectedTopic?.topicName || ''}
+          information={selectedTopic?.information || []}
+          onClose={() => {
+            setShowChatTopicModal(false);
+            setSelectedTopic(null);
+          }}
         />
       </div>
     </div>
