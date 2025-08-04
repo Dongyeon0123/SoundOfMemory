@@ -13,7 +13,7 @@ import profileStyles from '../../../styles/profile.module.css';
 import SuccessFailModal from '../../../components/profile/modal/SuccessFailModal';
 import SocialModal from '../../../components/profile/modal/SocialModal';
 
-import { FiEdit2, FiCamera } from 'react-icons/fi';
+import { FiEdit2, FiCamera, FiFolder } from 'react-icons/fi';
 
 type SocialLink = { type: string; url: string };
 
@@ -103,6 +103,19 @@ const ProfileEditPage: React.FC = () => {
       });
     }
   }, [id]);
+
+  // 프로필 로딩 후 기존 tag 필드를 selectedChatTopics에 반영
+  useEffect(() => {
+    if (profile && profile.tag && profile.tag.length > 0) {
+      console.log('기존 tag 필드 데이터:', profile.tag);
+      setSelectedChatTopics(prev => {
+        // 기존 selectedChatTopics와 profile.tag를 합치되 중복 제거
+        const combined = [...new Set([...prev, ...profile.tag])];
+        console.log('combined selectedChatTopics:', combined);
+        return combined;
+      });
+    }
+  }, [profile]);
 
   const SOCIAL_KEYS = SOCIAL_FIELDS.map(f => f.key);
 
@@ -568,7 +581,6 @@ const ProfileEditPage: React.FC = () => {
           <div className={profileStyles.profileLine}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 20 }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>채팅 주제 관리</div>
-              <FiEdit2 size={24} color="#222" style={{ cursor: 'pointer' }} onClick={() => alert('채팅 주제 관리 기능!')} />
             </div>
 
             <div className={profileStyles.inputGroup}>
@@ -587,7 +599,7 @@ const ProfileEditPage: React.FC = () => {
                 }}>
                   채팅 주제를 설정해보세요!<br />
                   <span style={{ fontSize: 13, color: "#b0b2c3" }}>
-                    상단의 <FiEdit2 style={{verticalAlign: 'middle', margin: '0 3px 3px 0'}} /> 아이콘을 눌러 주제를 관리할 수 있습니다.
+                    채팅 주제를 선택하여 관리할 수 있습니다.
                   </span>
                 </div>
               ) : (
@@ -609,20 +621,6 @@ const ProfileEditPage: React.FC = () => {
                       onClick={() => handleToggleChatTopic(topic.topicName)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: '50%',
-                          background: '#636AE8',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: 16,
-                          fontWeight: 600,
-                        }}>
-                          {topic.topicName.charAt(0)}
-                        </div>
                         <div>
                           <div style={{ fontSize: 16, fontWeight: 600, color: '#222', marginBottom: 4 }}>
                             {topic.topicName}
@@ -649,11 +647,7 @@ const ProfileEditPage: React.FC = () => {
                             </svg>
                           )}
                         </div>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ cursor: 'pointer' }}>
-                          <path d="M3 4H17V6H3V4Z" fill="#666"/>
-                          <path d="M3 9H17V11H3V9Z" fill="#666"/>
-                          <path d="M3 14H17V16H3V14Z" fill="#666"/>
-                        </svg>
+                        <FiFolder size={20} color="#666" style={{ cursor: 'pointer' }} />
                       </div>
                     </div>
                   ))}
