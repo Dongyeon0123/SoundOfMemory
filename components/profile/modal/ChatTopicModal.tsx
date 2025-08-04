@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FiSearch, FiX, FiTrash2 } from 'react-icons/fi';
 import styles from '../../../styles/styles.module.css';
+import { updateChatTopicInformation } from '../../../types/profiles';
 
 interface ChatTopicModalProps {
   visible: boolean;
   topicName: string;
   information: string[];
+  userId: string;
   onClose: () => void;
   onInformationChange?: (updatedInformation: string[]) => void;
 }
@@ -14,12 +16,13 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
   visible,
   topicName,
   information,
+  userId,
   onClose,
   onInformationChange,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [localInformation, setLocalInformation] = useState<string[]>([]);
-  const [filteredInformation, setFilteredInformation] = useState<string[]>([]);
+  const [filteredInformation, setFilteredInformation] = useState<{item: string, originalIndex: number}[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -30,13 +33,11 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
   }, [information]);
 
   useEffect(() => {
-    if (localInformation.length > 0) {
-      const filtered = localInformation.filter(item =>
-        item.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredInformation(filtered);
-      setCurrentPage(1); // 검색 시 첫 페이지로 리셋
-    }
+    const filtered = localInformation
+      .map((item, index) => ({ item, originalIndex: index }))
+      .filter(({ item }) => item.toLowerCase().includes(searchTerm.toLowerCase()));
+    setFilteredInformation(filtered);
+    setCurrentPage(1); // 검색 시 첫 페이지로 리셋
   }, [searchTerm, localInformation]);
 
   // 현재 페이지의 항목들 계산
@@ -45,12 +46,38 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredInformation.slice(startIndex, endIndex);
 
-  const handleDeleteItem = (originalIndex: number) => {
-    // originalIndex는 원본 배열에서의 인덱스
+  const handleDeleteItem = async (originalIndex: number) => {
     const newInformation = [...localInformation];
     newInformation.splice(originalIndex, 1);
     setLocalInformation(newInformation);
-    console.log('항목 삭제:', originalIndex);
+    
+    // 즉시 데이터베이스에 업데이트
+    try {
+      // localInformation이 역순이므로 다시 원래 순서로 뒤집어서 저장
+      const updatedInformation = [...newInformation].reverse();
+      await updateChatTopicInformation(userId, topicName, updatedInformation);
+      
+      // 부모 컴포넌트에도 변경사항 알림
+      if (onInformationChange) {
+        onInformationChange(updatedInformation);
+      }
+      
+      console.log('데이터베이스에서 항목 삭제 완료:', originalIndex);
+    } catch (error) {
+      console.error('항목 삭제 실패:', error);
+      // 에러 발생 시 로컬 상태 복원
+      setLocalInformation([...localInformation]);
+    }
+    
+    // 현재 페이지에 항목이 없으면 이전 페이지로 이동
+    const newFilteredLength = newInformation
+      .filter(item => item.toLowerCase().includes(searchTerm.toLowerCase()))
+      .length;
+    const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage);
+    
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -193,9 +220,7 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {currentItems.map((item, index) => {
-                  // 원본 배열에서의 실제 인덱스 계산
-                  const originalIndex = localInformation.indexOf(item);
+                {currentItems.map(({ item, originalIndex }, index) => {
                   return (
                     <div
                       key={`${originalIndex}-${item}`}

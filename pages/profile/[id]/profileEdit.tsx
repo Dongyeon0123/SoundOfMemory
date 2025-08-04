@@ -706,6 +706,7 @@ const ProfileEditPage: React.FC = () => {
           visible={showChatTopicModal}
           topicName={selectedTopic?.topicName || ''}
           information={selectedTopic?.information || []}
+          userId={profile?.id || ''}
           onClose={() => {
             setShowChatTopicModal(false);
             setSelectedTopic(null);
