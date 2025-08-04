@@ -1,4 +1,4 @@
-import { doc, getDoc, collection, getDocs, updateDoc, setDoc, addDoc, query, where, orderBy, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, updateDoc, setDoc, addDoc, query, where, orderBy, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
 export type Profile = {
@@ -453,5 +453,54 @@ export async function fetchSelectedChatTopics(userId: string): Promise<string[]>
   } catch (error) {
     console.error('선택된 채팅 주제 불러오기 실패:', error);
     return [];
+  }
+}
+
+// 임시 토큰 저장 (1분 유효)
+export async function saveTempToken(userId: string, token: string) {
+  try {
+    const tempTokenRef = doc(db, "tempTokens", token);
+    const expiryTime = new Date(Date.now() + 60 * 1000); // 1분 후 만료
+    
+    await setDoc(tempTokenRef, {
+      userId: userId,
+      expiryTime: expiryTime,
+      createdAt: serverTimestamp()
+    });
+    
+    console.log('임시 토큰 저장 완료:', token);
+  } catch (error) {
+    console.error('임시 토큰 저장 실패:', error);
+    throw error;
+  }
+}
+
+// 임시 토큰 검증 및 사용자 ID 반환
+export async function verifyTempToken(token: string): Promise<string | null> {
+  try {
+    const tempTokenRef = doc(db, "tempTokens", token);
+    const snap = await getDoc(tempTokenRef);
+    
+    if (!snap.exists()) {
+      console.log('토큰이 존재하지 않음');
+      return null;
+    }
+    
+    const data = snap.data();
+    const expiryTime = data.expiryTime.toDate();
+    const now = new Date();
+    
+    if (now > expiryTime) {
+      console.log('토큰이 만료됨');
+      // 만료된 토큰 삭제
+      await deleteDoc(tempTokenRef);
+      return null;
+    }
+    
+    console.log('토큰 검증 성공:', data.userId);
+    return data.userId;
+  } catch (error) {
+    console.error('토큰 검증 실패:', error);
+    return null;
   }
 } 

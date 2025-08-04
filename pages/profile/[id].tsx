@@ -15,6 +15,7 @@ import IntroduceModal from '../../components/profile/modal/IntroduceModal';
 import HistoryModal from '../../components/profile/modal/HistoryModal';
 import CareerModal from '../../components/profile/modal/CareerModal';
 import SuccessFailModal from '../../components/profile/modal/SuccessFailModal';
+import QRCodeModal from '../../components/profile/modal/QRCodeModal';
 import ProfileHeader from '../../components/profile/ProfileHeader';
 import ProfileImages from '../../components/profile/ProfileImages';
 import ProfileBasicInfo from '../../components/profile/ProfileBasicInfo';
@@ -48,6 +49,7 @@ const ProfilePage: React.FC = () => {
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCareerModal, setShowCareerModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   // 성공/실패 모달 상태
   const [modal, setModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({
@@ -267,9 +269,7 @@ const ProfilePage: React.FC = () => {
             onScan={() => {
               /* 필요 시 구현 */
             }}
-            onShowQR={() => {
-              /* 필요 시 구현 */
-            }}
+            onShowQR={() => setShowQRModal(true)}
             onBlock={() => {
               /* 필요 시 구현 */
             }}
@@ -345,6 +345,15 @@ const ProfilePage: React.FC = () => {
         message={modal.message}
         type={modal.type}
         onClose={() => setModal({ ...modal, show: false })}
+      />
+
+      {/* QR 코드 모달 */}
+      <QRCodeModal
+        visible={showQRModal}
+        profileUrl={typeof window !== 'undefined' ? window.location.href : `https://soundofmemory.com/profile/${id}`}
+        userName={profile?.name || '사용자'}
+        userId={profile?.id || ''}
+        onClose={() => setShowQRModal(false)}
       />
     </div>
   );
