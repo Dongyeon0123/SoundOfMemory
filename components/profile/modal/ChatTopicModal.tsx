@@ -7,6 +7,7 @@ interface ChatTopicModalProps {
   topicName: string;
   information: string[];
   onClose: () => void;
+  onInformationChange?: (updatedInformation: string[]) => void;
 }
 
 const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
@@ -14,24 +15,29 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
   topicName,
   information,
   onClose,
+  onInformationChange,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [localInformation, setLocalInformation] = useState<string[]>([]);
   const [filteredInformation, setFilteredInformation] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // information 배열을 역순으로 정렬
-  const reversedInformation = [...information].reverse();
+  // information 배열을 역순으로 정렬하고 로컬 상태에 저장
+  useEffect(() => {
+    const reversed = [...information].reverse();
+    setLocalInformation(reversed);
+  }, [information]);
 
   useEffect(() => {
-    if (reversedInformation) {
-      const filtered = reversedInformation.filter(item =>
+    if (localInformation.length > 0) {
+      const filtered = localInformation.filter(item =>
         item.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredInformation(filtered);
       setCurrentPage(1); // 검색 시 첫 페이지로 리셋
     }
-  }, [searchTerm, reversedInformation]);
+  }, [searchTerm, localInformation]);
 
   // 현재 페이지의 항목들 계산
   const totalPages = Math.ceil(filteredInformation.length / itemsPerPage);
@@ -39,21 +45,32 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredInformation.slice(startIndex, endIndex);
 
-  const handleDeleteItem = (index: number) => {
-    const newInformation = [...information];
-    newInformation.splice(index, 1);
-    // 여기서 실제 데이터베이스 업데이트 로직을 추가할 수 있습니다
-    console.log('항목 삭제:', index);
+  const handleDeleteItem = (originalIndex: number) => {
+    // originalIndex는 원본 배열에서의 인덱스
+    const newInformation = [...localInformation];
+    newInformation.splice(originalIndex, 1);
+    setLocalInformation(newInformation);
+    console.log('항목 삭제:', originalIndex);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
+  const handleClose = () => {
+    // 모달을 닫을 때 변경된 정보를 부모 컴포넌트에 전달
+    if (onInformationChange) {
+      // localInformation을 다시 원래 순서로 뒤집어서 전달
+      const updatedInformation = [...localInformation].reverse();
+      onInformationChange(updatedInformation);
+    }
+    onClose();
+  };
+
   if (!visible) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
+    <div className={styles.modalOverlay} onClick={handleClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{
         width: '90vw',
         maxWidth: '600px',
@@ -73,7 +90,7 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
           flexShrink: 0,
         }}>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             style={{
               background: 'none',
               border: 'none',
@@ -97,7 +114,7 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
           <button
             onClick={() => {
               setSearchTerm('');
-              setFilteredInformation(reversedInformation);
+              setLocalInformation([...information].reverse());
               setCurrentPage(1);
             }}
             style={{
@@ -176,50 +193,54 @@ const ChatTopicModal: React.FC<ChatTopicModalProps> = ({
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {currentItems.map((item, index) => (
-                  <div
-                    key={startIndex + index}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '20px 24px',
-                      background: '#f8f8fb',
-                      borderRadius: 12,
-                      border: '1px solid #e8e8f0',
-                      fontSize: 16,
-                      color: '#222',
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    <div style={{ flex: 1, marginRight: 16 }}>
-                      {item}
-                    </div>
-                    <button
-                      onClick={() => handleDeleteItem(startIndex + index)}
+                {currentItems.map((item, index) => {
+                  // 원본 배열에서의 실제 인덱스 계산
+                  const originalIndex = localInformation.indexOf(item);
+                  return (
+                    <div
+                      key={`${originalIndex}-${item}`}
                       style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        transition: 'background-color 0.2s',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#ffebee';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                        justifyContent: 'space-between',
+                        padding: '20px 24px',
+                        background: '#f8f8fb',
+                        borderRadius: 12,
+                        border: '1px solid #e8e8f0',
+                        fontSize: 16,
+                        color: '#222',
+                        lineHeight: 1.5,
                       }}
                     >
-                      <FiTrash2 size={18} color="#e53e3e" />
-                    </button>
-                  </div>
-                ))}
+                      <div style={{ flex: 1, marginRight: 16 }}>
+                        {item}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteItem(originalIndex)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          transition: 'background-color 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ffebee';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        <FiTrash2 size={18} color="#e53e3e" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

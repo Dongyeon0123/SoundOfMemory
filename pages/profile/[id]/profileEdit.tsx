@@ -706,6 +706,17 @@ const ProfileEditPage: React.FC = () => {
             setShowChatTopicModal(false);
             setSelectedTopic(null);
           }}
+          onInformationChange={(updatedInformation) => {
+            // 선택된 주제의 정보를 업데이트
+            if (selectedTopic) {
+              const updatedTopics = chatTopics.map(topic => 
+                topic.topicName === selectedTopic.topicName 
+                  ? { ...topic, information: updatedInformation }
+                  : topic
+              );
+              setChatTopics(updatedTopics);
+            }
+          }}
         />
       </div>
     </div>
