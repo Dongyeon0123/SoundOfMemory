@@ -315,6 +315,30 @@
   cursor: pointer;
 }
 
+/* 소셜링크 그리드 컨테이너 */
+.socialLinksGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-width: 300px;
+  margin: 16px auto 0;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 반응형: 화면이 좁을 때 */
+@media (max-width: 480px) {
+  .socialLinksGrid {
+    gap: 15px;
+    max-width: 280px;
+  }
+  
+  .profileIcons {
+    width: 55px;
+    height: 55px;
+  }
+}
+
 .mbtiBox {
   position: relative;
   margin-top: 10px;

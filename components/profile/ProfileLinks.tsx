@@ -26,12 +26,12 @@ interface ProfileLinksProps {
 }
 
 function ProfileLinks({ socialLinks }: ProfileLinksProps) {
-  console.log('ProfileLinks socialLinks:', socialLinks);
+
   
   // URL이 있는 링크만 필터링
   const activeLinks = socialLinks ? Object.entries(socialLinks).filter(([key, url]) => url && url.trim() !== '') : [];
   
-  console.log('ProfileLinks activeLinks:', activeLinks);
+
 
   // 복사 모달 상태
   const [copyModal, setCopyModal] = useState<{
@@ -112,7 +112,7 @@ function ProfileLinks({ socialLinks }: ProfileLinksProps) {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginTop: 16 }}>
+      <div className={styles.socialLinksGrid}>
         {activeLinks.map(([type, url]) => (
           <div 
             key={type} 

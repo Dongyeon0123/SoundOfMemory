@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-import { fetchProfileById, updateProfileField, fetchFriends, toggleFavorite } from '../../types/profiles';
-import type { Profile } from '../../types/profiles';
+import { fetchProfileById, updateProfileField, fetchFriends, toggleFavorite, fetchUserChatTopics, fetchSelectedChatTopics } from '../../types/profiles';
+import type { Profile, ChatTopic } from '../../types/profiles';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -62,6 +62,12 @@ const ProfilePage: React.FC = () => {
   const [history, setHistory] = useState<any[]>([]);
   const [career, setCareer] = useState<any[]>([]);
 
+  // 채팅 주제 데이터
+  const [chatTopics, setChatTopics] = useState<ChatTopic[]>([]);
+  
+  // 선택된 채팅 주제들
+  const [selectedChatTopics, setSelectedChatTopics] = useState<string[]>([]);
+
   // 내 프로필 여부
   const isMyProfile = myUid && id === myUid;
 
@@ -91,6 +97,20 @@ const ProfilePage: React.FC = () => {
         setProfile(profile);
         setLoading(false);
       });
+      
+      // 채팅 주제 데이터도 함께 불러오기
+      fetchUserChatTopics(id).then(topics => {
+        setChatTopics(topics);
+      });
+      
+      // 선택된 채팅 주제 불러오기
+      fetchSelectedChatTopics(id).then(selectedTopics => {
+        console.log('fetchSelectedChatTopics 결과:', selectedTopics);
+        setSelectedChatTopics(selectedTopics);
+      }).catch(error => {
+        console.error('fetchSelectedChatTopics 에러:', error);
+        setSelectedChatTopics([]);
+      });
     }
   }, [id]);
 
@@ -112,6 +132,22 @@ const ProfilePage: React.FC = () => {
     setHistory(profile?.history ?? []);
     setCareer(profile?.career ?? []);
   }, [profile]);
+
+  // 선택된 채팅 주제만 태그에 추가
+  const combinedTags = React.useMemo(() => {
+    console.log('selectedChatTopics:', selectedChatTopics);
+    console.log('profile.tag:', profile?.tag);
+    
+    // 기존 tag 필드와 선택된 채팅 주제를 합침
+    const existingTags = profile?.tag || [];
+    const chatTopicTags = selectedChatTopics || [];
+    
+    // 중복 제거하여 합치기
+    const allTags = [...new Set([...existingTags, ...chatTopicTags])];
+    console.log('combinedTags:', allTags);
+    
+    return allTags;
+  }, [selectedChatTopics, profile?.tag]);
 
   // 친구 요청 전송 핸들러
   const handleSendFriendRequest = async () => {
@@ -248,7 +284,7 @@ const ProfilePage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <ProfileImages backgroundImg={profile.backgroundImg} img={profile.img} name={profile.name} />
 
-            <ProfileBasicInfo name={profile.name} desc={profile.desc} tag={profile.tag} />
+            <ProfileBasicInfo name={profile.name} desc={profile.desc} tag={combinedTags} />
 
             <ProfileActionButton
               isMyProfile={!!isMyProfile}
@@ -259,7 +295,7 @@ const ProfilePage: React.FC = () => {
               onSendFriendRequest={handleSendFriendRequest}
             />
 
-            {(() => { console.log('Profile page socialLinks:', profile.socialLinks); return null; })()}
+
             <ProfileLinks socialLinks={profile.socialLinks} />
 
             <ProfileMBTIBox mbti={mbti} isMyProfile={!!isMyProfile} onEdit={() => setShowMBTIModal(true)} />

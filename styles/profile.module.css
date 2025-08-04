@@ -61,6 +61,13 @@
     border-color: #636AE8;
   }
 
+  .inputGroup {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   /* 상단 고정 헤더 */
 .profileFixedHeader {
     position: sticky;

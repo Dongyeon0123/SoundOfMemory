@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-import { fetchProfileById, updateProfileField } from '../../../types/profiles';
-import type { Profile } from '../../../types/profiles';
+import { fetchProfileById, updateProfileField, fetchUserChatTopics, saveSelectedChatTopics, fetchSelectedChatTopics } from '../../../types/profiles';
+import type { Profile, ChatTopic } from '../../../types/profiles';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { uploadProfileImage } from '../../../client/uploadProfileImage';
 
@@ -53,6 +53,12 @@ const ProfileEditPage: React.FC = () => {
   // 소셜 링크들 배열로 관리
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
 
+  // 채팅 주제 데이터
+  const [chatTopics, setChatTopics] = useState<ChatTopic[]>([]);
+  
+  // 선택된 채팅 주제들 (체크된 것들)
+  const [selectedChatTopics, setSelectedChatTopics] = useState<string[]>([]);
+
   // 모달에서 선택된 소셜 플랫폼 키 배열
   const initialSelectedSocial = React.useMemo(() => {
     if (!profile) return [];
@@ -84,6 +90,16 @@ const ProfileEditPage: React.FC = () => {
       fetchProfileById(id).then(profileObj => {
         setProfile(profileObj);
         setLoading(false);
+      });
+      
+      // 채팅 주제 데이터도 함께 불러오기
+      fetchUserChatTopics(id).then(topics => {
+        setChatTopics(topics);
+      });
+      
+      // 선택된 채팅 주제 불러오기
+      fetchSelectedChatTopics(id).then(selectedTopics => {
+        setSelectedChatTopics(selectedTopics);
       });
     }
   }, [id]);
@@ -234,12 +250,20 @@ const ProfileEditPage: React.FC = () => {
     }
   };
 
+  // 채팅 주제 체크/해제 핸들러
+  const handleToggleChatTopic = (topicName: string) => {
+    setSelectedChatTopics(prev => {
+      const newSelected = prev.includes(topicName) 
+        ? prev.filter(topic => topic !== topicName)
+        : [...prev, topicName];
+      return newSelected;
+    });
+  };
+
   // 저장 함수: socialLinks 배열 → 객체 변환 후 저장
   const handleSaveProfile = async () => {
     if (!profile) return;
     try {
-      console.log('저장 전 socialLinks:', socialLinks);
-      
       const socialLinksObject = socialLinks.reduce((acc, { type, url }) => {
         acc[type] = url;
         return acc;
@@ -252,18 +276,20 @@ const ProfileEditPage: React.FC = () => {
         }
       });
       
-      console.log('저장할 socialLinksObject:', socialLinksObject);
       // AI 인사말이 비어있으면 기본값 설정 (사용자 이름 포함)
       const aiIntro = profile.aiIntro?.trim() || `안녕! 나는 ${profile.name || '개인 AI 아바타 비서'}야. 궁금한거 있으면 물어봐!`;
-      console.log('저장할 aiIntro:', aiIntro);
       
       const updateData = {
         ...profile,
         socialLinks: socialLinksObject,
         aiIntro: aiIntro,
+        // 선택된 채팅 주제를 tag 필드에도 저장
+        tag: selectedChatTopics,
       };
       
-      console.log('최종 저장 데이터:', updateData);
+      // 선택된 채팅 주제도 함께 저장
+      console.log('프로필 저장 시 selectedChatTopics:', selectedChatTopics);
+      await saveSelectedChatTopics(profile.id, selectedChatTopics);
   
       await updateProfileField(profile.id, updateData);
       setModal({ show: true, message: '프로필이 성공적으로 저장되었습니다.', type: 'success' });
@@ -498,7 +524,7 @@ const ProfileEditPage: React.FC = () => {
               <FiEdit2 size={24} color="#222" style={{ cursor: 'pointer' }} onClick={() => setShowSocialModal(true)} />
             </div>
 
-            <div className={profileStyles.inputGroup}>
+                        <div className={profileStyles.inputGroup}>
               {socialLinks.length === 0 ? (
                 // 소셜링크가 하나도 없는 경우 안내 메시지
                 <div style={{
@@ -534,6 +560,104 @@ const ProfileEditPage: React.FC = () => {
                     />
                   </React.Fragment>
                 ))
+              )}
+            </div>
+          </div>
+
+          {/* 채팅 주제 관리 그룹 */}
+          <div className={profileStyles.profileLine}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 20 }}>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>채팅 주제 관리</div>
+              <FiEdit2 size={24} color="#222" style={{ cursor: 'pointer' }} onClick={() => alert('채팅 주제 관리 기능!')} />
+            </div>
+
+            <div className={profileStyles.inputGroup}>
+              {chatTopics.length === 0 ? (
+                // 채팅 주제가 없는 경우 안내 메시지
+                <div style={{
+                  textAlign: 'center',
+                  color: '#888',
+                  fontSize: 15,
+                  padding: '34px 18px 28px 18px',
+                  letterSpacing: '0.01em',
+                  fontWeight: 400,
+                  background: '#f8f8fb',
+                  borderRadius: 10,
+                  border: "1px dashed #d3d3e7",
+                }}>
+                  채팅 주제를 설정해보세요!<br />
+                  <span style={{ fontSize: 13, color: "#b0b2c3" }}>
+                    상단의 <FiEdit2 style={{verticalAlign: 'middle', margin: '0 3px 3px 0'}} /> 아이콘을 눌러 주제를 관리할 수 있습니다.
+                  </span>
+                </div>
+              ) : (
+                // 채팅 주제가 있을 때 목록 렌더링
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {chatTopics.map((topic, index) => (
+                    <div
+                      key={topic.topicName}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px 20px',
+                        background: '#f8f8fb',
+                        borderRadius: 10,
+                        border: '1px solid #e8e8f0',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => handleToggleChatTopic(topic.topicName)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: '50%',
+                          background: '#636AE8',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: 16,
+                          fontWeight: 600,
+                        }}>
+                          {topic.topicName.charAt(0)}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 600, color: '#222', marginBottom: 4 }}>
+                            {topic.topicName}
+                          </div>
+                          <div style={{ fontSize: 13, color: '#666' }}>
+                            {topic.information.length}개의 항목
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '50%',
+                          border: '2px solid #636AE8',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: selectedChatTopics.includes(topic.topicName) ? '#636AE8' : 'transparent',
+                        }}>
+                          {selectedChatTopics.includes(topic.topicName) && (
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                              <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </div>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ cursor: 'pointer' }}>
+                          <path d="M3 4H17V6H3V4Z" fill="#666"/>
+                          <path d="M3 9H17V11H3V9Z" fill="#666"/>
+                          <path d="M3 14H17V16H3V14Z" fill="#666"/>
+                        </svg>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>

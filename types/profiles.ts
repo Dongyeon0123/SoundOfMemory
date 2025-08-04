@@ -362,4 +362,96 @@ export async function fetchFriends(userId: string): Promise<any[]> {
 export async function toggleFavorite(userId: string, friendId: string, value: boolean) {
   const ref = doc(db, "users", userId, "friends", friendId);
   await updateDoc(ref, { favorite: value });
+}
+
+// 채팅 주제 데이터 타입
+export type ChatTopic = {
+  topicName: string;
+  information: string[];
+};
+
+// 사용자의 채팅 주제 목록 불러오기
+export async function fetchUserChatTopics(userId: string): Promise<ChatTopic[]> {
+  try {
+    const chatDataRef = collection(db, "users", userId, "chatData");
+    const querySnapshot = await getDocs(chatDataRef);
+    
+    const topics: ChatTopic[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.information && Array.isArray(data.information)) {
+        topics.push({
+          topicName: doc.id, // 문서 ID가 주제명
+          information: data.information
+        });
+      }
+    });
+    
+    return topics;
+  } catch (error) {
+    console.error('채팅 주제 조회 실패:', error);
+    return [];
+  }
+}
+
+// 선택된 채팅 주제 저장
+export async function saveSelectedChatTopics(userId: string, selectedTopics: string[]) {
+  try {
+    console.log('saveSelectedChatTopics 시작, userId:', userId, 'selectedTopics:', selectedTopics);
+    const ref = doc(db, "users", userId);
+    await updateDoc(ref, { selectedChatTopics: selectedTopics });
+    console.log('selectedChatTopics 저장 완료');
+  } catch (error) {
+    console.error('선택된 채팅 주제 저장 실패:', error);
+    throw error;
+  }
+}
+
+// 선택된 채팅 주제 불러오기
+export async function fetchSelectedChatTopics(userId: string): Promise<string[]> {
+  try {
+    console.log('fetchSelectedChatTopics 시작, userId:', userId);
+    const ref = doc(db, "users", userId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      console.log('사용자 문서가 존재하지 않음');
+      return [];
+    }
+    
+    const data = snap.data();
+    console.log('사용자 문서 데이터:', data);
+    console.log('selectedChatTopics 필드:', data.selectedChatTopics);
+    
+    // selectedChatTopics 필드가 없는 경우 빈 배열 반환
+    if (!data.selectedChatTopics) {
+      console.log('selectedChatTopics 필드가 없음');
+      return [];
+    }
+    
+    // 배열인 경우 그대로 반환
+    if (Array.isArray(data.selectedChatTopics)) {
+      console.log('selectedChatTopics가 배열임:', data.selectedChatTopics);
+      return data.selectedChatTopics;
+    }
+    
+    // 문자열인 경우 JSON 파싱 시도
+    if (typeof data.selectedChatTopics === 'string') {
+      try {
+        const parsed = JSON.parse(data.selectedChatTopics);
+        console.log('JSON 파싱 결과:', parsed);
+        return Array.isArray(parsed) ? parsed : [data.selectedChatTopics];
+      } catch {
+        console.log('JSON 파싱 실패, 문자열 그대로 반환');
+        return [data.selectedChatTopics];
+      }
+    }
+    
+    // 기타 타입의 경우 빈 배열 반환
+    console.log('기타 타입, 빈 배열 반환');
+    return [];
+  } catch (error) {
+    console.error('선택된 채팅 주제 불러오기 실패:', error);
+    return [];
+  }
 } 
