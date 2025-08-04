@@ -395,15 +395,15 @@ export async function fetchUserChatTopics(userId: string): Promise<ChatTopic[]> 
   }
 }
 
-// 선택된 채팅 주제 저장
-export async function saveSelectedChatTopics(userId: string, selectedTopics: string[]) {
+// 채팅 주제 정보 업데이트 (information 배열 저장)
+export async function updateChatTopicInformation(userId: string, topicName: string, information: string[]) {
   try {
-    console.log('saveSelectedChatTopics 시작, userId:', userId, 'selectedTopics:', selectedTopics);
-    const ref = doc(db, "users", userId);
-    await updateDoc(ref, { selectedChatTopics: selectedTopics });
-    console.log('selectedChatTopics 저장 완료');
+    console.log('updateChatTopicInformation 시작, userId:', userId, 'topicName:', topicName, 'information:', information);
+    const chatDataRef = doc(db, "users", userId, "chatData", topicName);
+    await updateDoc(chatDataRef, { information });
+    console.log('채팅 주제 정보 업데이트 완료');
   } catch (error) {
-    console.error('선택된 채팅 주제 저장 실패:', error);
+    console.error('채팅 주제 정보 업데이트 실패:', error);
     throw error;
   }
 }

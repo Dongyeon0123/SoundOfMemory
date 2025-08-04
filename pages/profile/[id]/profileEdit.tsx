@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-import { fetchProfileById, updateProfileField, fetchUserChatTopics, saveSelectedChatTopics, fetchSelectedChatTopics } from '../../../types/profiles';
+import { fetchProfileById, updateProfileField, fetchUserChatTopics, fetchSelectedChatTopics, updateChatTopicInformation } from '../../../types/profiles';
 import type { Profile, ChatTopic } from '../../../types/profiles';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { uploadProfileImage } from '../../../client/uploadProfileImage';
@@ -18,7 +18,7 @@ import { FiEdit2, FiCamera, FiFolder } from 'react-icons/fi';
 
 type SocialLink = { type: string; url: string };
 
-const SOCIAL_FIELDS = [
+const SOCIAL_FIELDS = [ 
   { key: 'number', label: '전화번호', placeholder: '전화번호 입력', inputType: 'text', baseUrl: '' },
   { key: 'email', label: '이메일', placeholder: '이메일 주소 입력', inputType: 'text', baseUrl: '' },
   { key: 'personUrl', label: '개인 웹사이트', placeholder: '전체 URL을 입력하세요', inputType: 'text', baseUrl: '' },
@@ -312,7 +312,11 @@ const ProfileEditPage: React.FC = () => {
       
       // 선택된 채팅 주제도 함께 저장 (기존 기능 유지)
       console.log('프로필 저장 시 selectedChatTopics:', selectedChatTopics);
-      await saveSelectedChatTopics(profile.id, selectedChatTopics);
+
+
+      for (const topic of chatTopics) {
+        await updateChatTopicInformation(profile.id, topic.topicName, topic.information);
+      }
   
       await updateProfileField(profile.id, updateData);
       setModal({ show: true, message: '프로필이 성공적으로 저장되었습니다.', type: 'success' });
