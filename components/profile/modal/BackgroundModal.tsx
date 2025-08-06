@@ -69,52 +69,52 @@ const BackgroundModal: React.FC<BackgroundModalProps> = ({
     setSelectedBackground(imageUrl);
   };
 
-  const handleCustomImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+//   const handleCustomImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = event.target.files?.[0];
+//     if (!file) return;
 
-    try {
-      setLoading(true);
+//     try {
+//       setLoading(true);
       
-      // 파일 확장자 확인
-      const fileExtension = file.name.split('.').pop()?.toLowerCase();
-      if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
-        alert('지원하지 않는 파일 형식입니다. JPG, PNG, GIF, WEBP 파일만 업로드 가능합니다.');
-        return;
-      }
+//       // 파일 확장자 확인
+//       const fileExtension = file.name.split('.').pop()?.toLowerCase();
+//       if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
+//         alert('지원하지 않는 파일 형식입니다. JPG, PNG, GIF, WEBP 파일만 업로드 가능합니다.');
+//         return;
+//       }
 
-      // 파일 크기 확인 (5MB 제한)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('파일 크기가 너무 큽니다. 5MB 이하의 파일만 업로드 가능합니다.');
-        return;
-      }
+//       // 파일 크기 확인 (5MB 제한)
+//       if (file.size > 5 * 1024 * 1024) {
+//         alert('파일 크기가 너무 큽니다. 5MB 이하의 파일만 업로드 가능합니다.');
+//         return;
+//       }
 
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
+//       const auth = getAuth();
+//       const user = auth.currentUser;
+//       if (!user) {
+//         alert('로그인이 필요합니다.');
+//         return;
+//       }
 
-      // Storage에 업로드
-      const timestamp = Date.now();
-      const storageRef = ref(storage, `background_images/${user.uid}/custom_${timestamp}`);
-      const snapshot = await uploadBytes(storageRef, file);
+//       // Storage에 업로드
+//       const timestamp = Date.now();
+//       const storageRef = ref(storage, `background_images/${user.uid}/custom_${timestamp}`);
+//       const snapshot = await uploadBytes(storageRef, file);
       
-      // 다운로드 URL 가져오기
-      const downloadURL = await getDownloadURL(storageRef);
+//       // 다운로드 URL 가져오기
+//       const downloadURL = await getDownloadURL(storageRef);
       
-      // 업로드된 이미지를 선택된 배경으로 설정
-      setSelectedBackground(downloadURL);
-      console.log('커스텀 배경 이미지 업로드 성공:', downloadURL);
+//       // 업로드된 이미지를 선택된 배경으로 설정
+//       setSelectedBackground(downloadURL);
+//       console.log('커스텀 배경 이미지 업로드 성공:', downloadURL);
       
-    } catch (error) {
-      console.error('배경 이미지 업로드 실패:', error);
-      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setLoading(false);
-    }
-  };
+//     } catch (error) {
+//       console.error('배경 이미지 업로드 실패:', error);
+//       alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
   const handleConfirm = () => {
     if (selectedBackground) {
@@ -228,13 +228,13 @@ const BackgroundModal: React.FC<BackgroundModalProps> = ({
                 alignItems: 'center',
                 gap: '4px',
               }}>
-                <span>+ Add New</span>
+                {/* <span>+ Add New</span>
                 <input
                   type="file"
                   accept="image/*"
                   style={{ display: 'none' }}
                   onChange={handleCustomImageUpload}
-                />
+                /> */}
               </label>
             </div>
             
