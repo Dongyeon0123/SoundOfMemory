@@ -380,12 +380,11 @@ export async function fetchUserChatTopics(userId: string): Promise<ChatTopic[]> 
     
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      if (data.information && Array.isArray(data.information)) {
-        topics.push({
-          topicName: doc.id, // 문서 ID가 주제명
-          information: data.information
-        });
-      }
+      // information 배열이 없거나 비어있어도 문서가 존재하면 포함
+      topics.push({
+        topicName: doc.id, // 문서 ID가 주제명
+        information: (data.information && Array.isArray(data.information)) ? data.information : []
+      });
     });
     
     return topics;

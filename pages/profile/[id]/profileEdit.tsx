@@ -107,7 +107,7 @@ const ProfileEditPage: React.FC = () => {
     }
   }, [id]);
 
-  // 프로필 로딩 후 기존 tag 필드를 selectedChatTopics에 반영
+  // 프로필 로딩 후 기존 tag 필드를 selectedChatTopics에 반영하고, 없는 주제는 chatTopics에 추가
   useEffect(() => {
     if (profile && profile.tag && profile.tag.length > 0) {
       console.log('기존 tag 필드 데이터:', profile.tag);
@@ -117,8 +117,22 @@ const ProfileEditPage: React.FC = () => {
         console.log('combined selectedChatTopics:', combined);
         return combined;
       });
+
+      // 기존 tag 필드에 있지만 chatTopics에 없는 주제들을 chatTopics에 추가
+      const existingTopicNames = chatTopics.map(topic => topic.topicName);
+      const missingTopics = profile.tag.filter(tag => !existingTopicNames.includes(tag));
+      
+      if (missingTopics.length > 0) {
+        console.log('chatTopics에 없는 기존 태그들:', missingTopics);
+        const newTopics: ChatTopic[] = missingTopics.map(topicName => ({
+          topicName,
+          information: [] // 빈 배열로 초기화
+        }));
+        
+        setChatTopics(prev => [...prev, ...newTopics]);
+      }
     }
-  }, [profile]);
+  }, [profile, chatTopics]);
 
   const SOCIAL_KEYS = SOCIAL_FIELDS.map(f => f.key);
 
