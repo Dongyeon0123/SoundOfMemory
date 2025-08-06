@@ -16,6 +16,7 @@ import HistoryModal from '../../components/profile/modal/HistoryModal';
 import CareerModal from '../../components/profile/modal/CareerModal';
 import SuccessFailModal from '../../components/profile/modal/SuccessFailModal';
 import QRCodeModal from '../../components/profile/modal/QRCodeModal';
+import LoginRequiredModal from '../../components/profile/modal/LoginRequiredModal';
 import ProfileHeader from '../../components/profile/ProfileHeader';
 import ProfileImages from '../../components/profile/ProfileImages';
 import ProfileBasicInfo from '../../components/profile/ProfileBasicInfo';
@@ -50,6 +51,8 @@ const ProfilePage: React.FC = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showCareerModal, setShowCareerModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginModalAction, setLoginModalAction] = useState('');
 
   // 성공/실패 모달 상태
   const [modal, setModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({
@@ -151,8 +154,19 @@ const ProfilePage: React.FC = () => {
     return allTags;
   }, [selectedChatTopics, profile?.tag]);
 
+  // 로그인 체크 함수
+  const requireLogin = (actionName: string) => {
+    if (!myUid) {
+      setLoginModalAction(actionName);
+      setShowLoginModal(true);
+      return false;
+    }
+    return true;
+  };
+
   // 친구 요청 전송 핸들러
   const handleSendFriendRequest = async () => {
+    if (!requireLogin('친구 추가')) return;
     if (!myUid || !id || typeof id !== 'string') return;
     setRequesting(true);
 
@@ -204,6 +218,7 @@ const ProfilePage: React.FC = () => {
 
   // 즐겨찾기 토글 핸들러
   const handleToggleFavorite = async () => {
+    if (!requireLogin('즐겨찾기')) return;
     if (!myUid || !id || typeof id !== 'string') return;
     try {
       await toggleFavorite(myUid, id, !isFavorite);
@@ -271,10 +286,16 @@ const ProfilePage: React.FC = () => {
             }}
             onShowQR={() => setShowQRModal(true)}
             onBlock={() => {
-              /* 필요 시 구현 */
+              if (requireLogin('차단')) {
+                // 차단 로직 구현
+                console.log('차단 기능 구현 필요');
+              }
             }}
             onReport={() => {
-              /* 필요 시 구현 */
+              if (requireLogin('신고')) {
+                // 신고 로직 구현
+                console.log('신고 기능 구현 필요');
+              }
             }}
           />
         </div>
@@ -354,6 +375,13 @@ const ProfilePage: React.FC = () => {
         userName={profile?.name || '사용자'}
         userId={profile?.id || ''}
         onClose={() => setShowQRModal(false)}
+      />
+
+      {/* 로그인 필요 모달 */}
+      <LoginRequiredModal
+        visible={showLoginModal}
+        actionName={loginModalAction}
+        onClose={() => setShowLoginModal(false)}
       />
     </div>
   );
