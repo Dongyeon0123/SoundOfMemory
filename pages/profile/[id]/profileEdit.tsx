@@ -13,8 +13,11 @@ import profileStyles from '../../../styles/profile.module.css';
 import SuccessFailModal from '../../../components/profile/modal/SuccessFailModal';
 import SocialModal from '../../../components/profile/modal/SocialModal';
 import ChatTopicModal from '../../../components/profile/modal/ChatTopicModal';
+import BackgroundModal from '../../../components/profile/modal/BackgroundModal';
 
 import { FiEdit2, FiCamera, FiFolder } from 'react-icons/fi';
+
+const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground3.png?alt=media&token=32951da6-22aa-4406-aa18-116e16828dc1';
 
 type SocialLink = { type: string; url: string };
 
@@ -51,6 +54,7 @@ const ProfileEditPage: React.FC = () => {
 
   const [showSocialModal, setShowSocialModal] = useState(false);
   const [showChatTopicModal, setShowChatTopicModal] = useState(false);
+  const [showBackgroundModal, setShowBackgroundModal] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<ChatTopic | null>(null);
 
   // 소셜 링크들 배열로 관리
@@ -297,6 +301,16 @@ const ProfileEditPage: React.FC = () => {
     setShowChatTopicModal(true);
   };
 
+  // 배경 이미지 선택 핸들러
+  const handleBackgroundSelect = (backgroundUrl: string) => {
+    if (profile) {
+      setProfile({
+        ...profile,
+        backgroundImg: backgroundUrl
+      });
+    }
+  };
+
   // 저장 함수: socialLinks 배열 → 객체 변환 후 저장
   const handleSaveProfile = async () => {
     if (!profile) return;
@@ -417,65 +431,61 @@ const ProfileEditPage: React.FC = () => {
         <div className={`${styles.scrollMain} ${styles.scrollMainProfile}`}>
 
           {/* 백그라운드 이미지 */}
-          {profile?.backgroundImg && (
-            <>
-              <div
-                style={{
-                  width: '100%',
-                  height: '100px',
-                  background: '#f2f3fa',
-                  position: 'relative',
-                  padding: 0,
-                  marginBottom: 0,
-                }}
-              >
-                <img
-                  src={profile.backgroundImg}
-                  alt="배경 이미지"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectPosition: 'center',
-                    display: 'block',
-                  }}
-                />
-              </div>
-              <div style={{
+          <div
+            style={{
+              width: '100%',
+              height: '120px',
+              background: '#f2f3fa',
+              position: 'relative',
+              padding: 0,
+              marginBottom: 0,
+            }}
+          >
+            <img
+              src={profile?.backgroundImg || DEFAULT_BACKGROUND_URL}
+              alt="배경 이미지"
+              style={{
                 width: '100%',
+                height: '100%',
+                objectPosition: 'center',
+                display: 'block',
+              }}
+            />
+          </div>
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            marginTop: 6,
+            marginBottom: 24,
+          }}>
+            <button
+              type="button"
+              aria-label="배경 이미지 편집"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
                 display: 'flex',
-                justifyContent: 'flex-end',
                 alignItems: 'center',
-                marginTop: 6,
-                marginBottom: 24,
+                color: '#222',
+                padding: '4px 10px 4px 12px',
+                borderRadius: 6,
+                fontSize: 12,
+              }}
+              onClick={() => setShowBackgroundModal(true)}
+            >
+              <span style={{
+                fontWeight: 500,
+                letterSpacing: '0.01em',
+                marginRight: 6,
               }}>
-                <button
-                  type="button"
-                  aria-label="배경 이미지 편집"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: '#222',
-                    padding: '4px 10px 4px 12px',
-                    borderRadius: 6,
-                    fontSize: 12,
-                  }}
-                  onClick={() => alert('배경 편집 기능!')}
-                >
-                  <span style={{
-                    fontWeight: 500,
-                    letterSpacing: '0.01em',
-                    marginRight: 6,
-                  }}>
-                    배경 편집
-                  </span>
-                  <FiCamera size={16} />
-                </button>
-              </div>
-            </>
-          )}
+                배경 편집
+              </span>
+              <FiCamera size={16} />
+            </button>
+          </div>
 
           {/* 프로필 이미지 및 정보 입력 */}
           <div className={profileStyles.profileLine}>
@@ -736,6 +746,13 @@ const ProfileEditPage: React.FC = () => {
               setChatTopics(updatedTopics);
             }
           }}
+        />
+
+        <BackgroundModal
+          visible={showBackgroundModal}
+          currentBackground={profile?.backgroundImg}
+          onClose={() => setShowBackgroundModal(false)}
+          onSelect={handleBackgroundSelect}
         />
       </div>
     </div>

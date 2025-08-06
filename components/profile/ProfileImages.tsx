@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styles from '../../styles/styles.module.css';
 import ImageModal from './modal/ImageModal';
 
+const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground3.png?alt=media&token=32951da6-22aa-4406-aa18-116e16828dc1';
+
 interface ProfileImagesProps {
   backgroundImg?: string;
   img?: string;
@@ -21,12 +23,15 @@ function ProfileImages({ backgroundImg, img, name }: ProfileImagesProps) {
     <>
       <div className={styles.mainHeader}>
         <div className={styles.bgImgWrap}>
-          {backgroundImg && (
-            <img
-              src={backgroundImg}
-              alt={name}
-            />
-          )}
+          <img
+            src={backgroundImg || DEFAULT_BACKGROUND_URL}
+            alt={name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectPosition: 'center'
+            }}
+          />
         </div>
         <div className={styles.avatarWrap}>
           {img && (
