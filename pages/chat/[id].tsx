@@ -23,7 +23,7 @@ const Chat = () => {
   const { messages, input, isProMode } = useSelector((state: RootState) => state.chat);
   const { id } = router.query;
 
-  const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string; aiIntro?: string } | null>(null);
+  const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string; tag?: string[]; aiIntro?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
   const [showNoChatModal, setShowNoChatModal] = useState(false);
@@ -67,6 +67,7 @@ const Chat = () => {
               id: profile.id || id, 
               name: profile.name || '사용자', 
               img: profile.img || '',
+              tag: profile.tag || [],
               aiIntro: profile.aiIntro || ''
             };
             console.log('설정할 profileInfoData:', profileInfoData);
@@ -285,6 +286,7 @@ const Chat = () => {
         <ProfileSection
           name={profileInfo?.name || "AI"}
           img={profileInfo?.img}
+          tag={profileInfo?.tag}
           isProMode={isProMode}
           showProToggle={currentUserId === profileInfo?.id}
           onToggleProMode={toggleProMode}
@@ -297,6 +299,7 @@ const Chat = () => {
           messages={messages}
           isWaitingForReply={isWaitingForReply}
           profileName={profileInfo?.name ?? ""}
+          profileInfo={profileInfo}
           scrollRef={scrollRef}
         />
   

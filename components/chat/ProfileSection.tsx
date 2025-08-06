@@ -4,6 +4,7 @@ import styles from '../../styles/chat.module.css';
 type ProfileSectionProps = {
   name: string;
   img?: string;
+  tag?: string[];
   isProMode?: boolean;
   showProToggle?: boolean;
   onToggleProMode?: () => void;
@@ -12,6 +13,7 @@ type ProfileSectionProps = {
 const ProfileSection: React.FC<ProfileSectionProps> = ({
   name,
   img,
+  tag,
   isProMode = false,
   showProToggle = false,
   onToggleProMode,
@@ -23,7 +25,33 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
     />
     <div className={styles.profileName}>
       {name}
-      <span style={{ fontSize: 14, color: '#999' }}><br/>AI</span>
+      <div style={{ 
+        fontSize: 14, 
+        color: '#999', 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '8px', 
+        flexWrap: 'wrap',
+        marginTop: '2px'
+      }}>
+        <span>AI</span>
+        {tag && tag.length > 0 && (
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {tag.map((tagItem, index) => (
+              <span 
+                key={index}
+                style={{
+                  fontSize: '12px',
+                  color: '#636AE8',
+                  fontWeight: '500'
+                }}
+              >
+                #{tagItem}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
     {showProToggle && (
       <div className={styles.toggleWrap}>
