@@ -407,6 +407,19 @@ export async function updateChatTopicInformation(userId: string, topicName: stri
   }
 }
 
+// 채팅 주제 삭제
+export async function deleteChatTopic(userId: string, topicName: string) {
+  try {
+    console.log('deleteChatTopic 시작, userId:', userId, 'topicName:', topicName);
+    const chatDataRef = doc(db, "users", userId, "chatData", topicName);
+    await deleteDoc(chatDataRef);
+    console.log('채팅 주제 삭제 완료');
+  } catch (error) {
+    console.error('채팅 주제 삭제 실패:', error);
+    throw error;
+  }
+}
+
 // 선택된 채팅 주제 불러오기
 export async function fetchSelectedChatTopics(userId: string): Promise<string[]> {
   try {

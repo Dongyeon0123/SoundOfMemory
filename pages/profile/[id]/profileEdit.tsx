@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-import { fetchProfileById, updateProfileField, fetchUserChatTopics, fetchSelectedChatTopics, updateChatTopicInformation } from '../../../types/profiles';
+import { fetchProfileById, updateProfileField, fetchUserChatTopics, fetchSelectedChatTopics, updateChatTopicInformation, deleteChatTopic } from '../../../types/profiles';
 import type { Profile, ChatTopic } from '../../../types/profiles';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { uploadProfileImage } from '../../../client/uploadProfileImage';
@@ -15,7 +15,7 @@ import SocialModal from '../../../components/profile/modal/SocialModal';
 import ChatTopicModal from '../../../components/profile/modal/ChatTopicModal';
 import BackgroundModal from '../../../components/profile/modal/BackgroundModal';
 
-import { FiEdit2, FiCamera, FiFolder } from 'react-icons/fi';
+import { FiEdit2, FiCamera, FiFolder, FiTrash2 } from 'react-icons/fi';
 
 const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground3.png?alt=media&token=32951da6-22aa-4406-aa18-116e16828dc1';
 
@@ -299,6 +299,25 @@ const ProfileEditPage: React.FC = () => {
     e.stopPropagation(); // 부모 요소의 onClick 이벤트 방지
     setSelectedTopic(topic);
     setShowChatTopicModal(true);
+  };
+
+  // 채팅 주제 삭제 핸들러 (확인 없이 바로 삭제)
+  const handleDeleteTopic = async (topicName: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // 부모 요소의 onClick 이벤트 방지
+    
+    if (!profile?.id) return;
+    
+    try {
+      // Firebase에서 채팅 주제 삭제
+      await deleteChatTopic(profile.id, topicName);
+      
+      // 로컬 상태에서 삭제
+      setChatTopics(prev => prev.filter(topic => topic.topicName !== topicName));
+      setSelectedChatTopics(prev => prev.filter(topic => topic !== topicName));
+      
+    } catch (error) {
+      console.error('채팅 주제 삭제 실패:', error);
+    }
   };
 
   // 배경 이미지 선택 핸들러
@@ -690,6 +709,12 @@ const ProfileEditPage: React.FC = () => {
                           color="#666" 
                           style={{ cursor: 'pointer' }} 
                           onClick={(e) => handleFolderClick(topic, e)}
+                        />
+                        <FiTrash2 
+                          size={20} 
+                          color="#ff4757" 
+                          style={{ cursor: 'pointer', marginLeft: 8 }} 
+                          onClick={(e) => handleDeleteTopic(topic.topicName, e)}
                         />
                       </div>
                     </div>
