@@ -399,7 +399,7 @@ export async function updateChatTopicInformation(userId: string, topicName: stri
   try {
     console.log('updateChatTopicInformation 시작, userId:', userId, 'topicName:', topicName, 'information:', information);
     const chatDataRef = doc(db, "users", userId, "chatData", topicName);
-    await updateDoc(chatDataRef, { information });
+    await setDoc(chatDataRef, { information }, { merge: true });
     console.log('채팅 주제 정보 업데이트 완료');
   } catch (error) {
     console.error('채팅 주제 정보 업데이트 실패:', error);

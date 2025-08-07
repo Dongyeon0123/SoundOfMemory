@@ -654,9 +654,9 @@ const ProfileEditPage: React.FC = () => {
                   borderRadius: 10,
                   border: "1px dashed #d3d3e7",
                 }}>
-                  채팅 주제를 설정해보세요!<br />
+                  채팅 주제를 추가해보세요!<br />
                   <span style={{ fontSize: 13, color: "#b0b2c3" }}>
-                    채팅 주제를 선택하여 관리할 수 있습니다.
+                    내 아바타와 채팅하면 채팅 주제가 쌓이게 됩니다!
                   </span>
                 </div>
               ) : (
