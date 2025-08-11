@@ -44,7 +44,9 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
               style={{ cursor: 'pointer' }}
               onClick={onSearchClick}
             />
-            <IoNotificationsOutline size={ICON_SIZE} color="#222" />
+            <Link href="/notifications">
+              <IoNotificationsOutline size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
+            </Link>
             <Link
               href="/friend/requests"
               style={{
