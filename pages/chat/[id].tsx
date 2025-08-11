@@ -22,6 +22,9 @@ const Chat = () => {
   const dispatch = useDispatch();
   const { messages, input, isProMode } = useSelector((state: RootState) => state.chat);
   const { id } = router.query;
+  
+  // 중복 전송 방지를 위한 디바운싱
+  const [lastSendTime, setLastSendTime] = useState(0);
 
   const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string; tag?: string[]; aiIntro?: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -184,6 +187,19 @@ const Chat = () => {
   };
 
   const sendMessage = async (msg?: string) => {
+    // 이미 전송 중이면 중복 전송 방지
+    if (isWaitingForReply) {
+      console.log('이미 전송 중입니다. 중복 전송을 방지합니다.');
+      return;
+    }
+    
+    // 디바운싱: 1초 내 중복 전송 방지
+    const now = Date.now();
+    if (now - lastSendTime < 1000) {
+      console.log('너무 빠른 전송입니다. 1초 후 다시 시도해주세요.');
+      return;
+    }
+    
     const text = (msg ?? input).trim();
     if (!text || !profileInfo?.id || !currentUserId || typeof safeId !== "string") return;
   
@@ -203,9 +219,11 @@ const Chat = () => {
       return;
     }
   
+    // 즉시 전송 중 상태로 변경하여 중복 전송 방지
+    setIsWaitingForReply(true);
+    
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
-    setIsWaitingForReply(true);
   
     const controller = new AbortController();
     setAbortController(controller);
@@ -236,6 +254,8 @@ const Chat = () => {
       if (data?.response) {
         messagesArr = [...messagesArr, data.response];
         await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
+        // 전송 성공 시 디바운싱 시간 업데이트
+        setLastSendTime(Date.now());
       }
     } catch (error: any) {
       if (error.name !== "AbortError") {
@@ -273,7 +293,10 @@ const Chat = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      // 이미 전송 중이면 Enter 키 전송 무시
+      if (!isWaitingForReply) {
+        sendMessage();
+      }
     }
   };
 
