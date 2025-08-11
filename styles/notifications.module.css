@@ -34,14 +34,131 @@
 .main {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: flex-start;
   padding: 0 20px;
-  text-align: center;
+  text-align: left;
   height: 100vh;
   background-color: white;
   padding-top: 100px;
   box-sizing: border-box;
+}
+
+/* System 섹션 (각 공지사항 내부) */
+.systemSection {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.systemText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #636AE8;
+}
+
+.systemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+/* 알림 목록 스타일 */
+.announcementsList {
+  width: 100%;
+  padding: 0;
+}
+
+.announcementItem {
+  margin-bottom: 24px;
+}
+
+.dateHeader {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.announcementContent {
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  transition: all 0.2s ease;
+}
+
+.announcementContent:hover {
+  border-color: #636AE8;
+  box-shadow: 0 2px 8px rgba(99, 106, 232, 0.1);
+}
+
+.announcementContent.unread {
+  border-color: #636AE8;
+  background-color: #f8f9ff;
+}
+
+.announcementInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+
+
+.announcementText {
+  flex: 1;
+}
+
+.announcementTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+
+
+.readButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.readStatus, .unreadStatus {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 80px;
+  white-space: nowrap;
+  text-align: center;
+  user-select: none;
+}
+
+.readStatus {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.unreadStatus {
+  background-color: #fff3e0;
+  color: #ef6c00;
+  border: 1px solid #ffcc02;
 }
 
 

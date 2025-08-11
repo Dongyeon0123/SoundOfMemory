@@ -9,6 +9,7 @@ const ICON_SIZE = 20;
 type HeaderBarProps = {
   userId: string | null;
   pendingRequestsCount: number;
+  unreadAnnouncementsCount: number;
   onLogout: () => void;
   onSearchClick: () => void;
 };
@@ -16,6 +17,7 @@ type HeaderBarProps = {
 const HeaderBar: React.FC<HeaderBarProps> = ({
   userId,
   pendingRequestsCount,
+  unreadAnnouncementsCount,
   onLogout,
   onSearchClick,
 }) => {
@@ -44,8 +46,15 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
               style={{ cursor: 'pointer' }}
               onClick={onSearchClick}
             />
-            <Link href="/notifications">
+            <Link href="/notifications" style={{ position: 'relative' }}>
               <IoNotificationsOutline size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
+              {unreadAnnouncementsCount > 0 && (
+                <div className={styles.plusBadge}>
+                  <span style={{ marginTop: 1 }}>
+                    {unreadAnnouncementsCount > 9 ? '9+' : unreadAnnouncementsCount}
+                  </span>
+                </div>
+              )}
             </Link>
             <Link
               href="/friend/requests"
@@ -55,7 +64,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 position: 'relative',
               }}
             >
-              <IoPersonOutline size={ICON_SIZE} color="#222" style={{ cursor: 'pointer' }} />
+              <IoPersonOutline size={ICON_SIZE} color="#222" style={{ cursor: 'pointer', marginBottom: 5 }} />
               {pendingRequestsCount > 0 && (
                 <div className={styles.plusBadge}>
                   <span style={{ marginTop: 1 }}>

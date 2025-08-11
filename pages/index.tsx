@@ -12,6 +12,7 @@ import {
   sendFriendRequest,
   cleanupDuplicateFriendRequests
 } from '../types/profiles';
+import { getAnnouncementsWithReadStatus } from '../types/announcements';
 import { onSnapshot, collection } from 'firebase/firestore';
 import { db } from '../types/firebase';
 
@@ -34,6 +35,7 @@ const Home: React.FC = () => {
   const [isCardMode, setIsCardMode] = useState(false);
   const [sendingRequests, setSendingRequests] = useState<Set<string>>(new Set());
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [unreadAnnouncementsCount, setUnreadAnnouncementsCount] = useState(0);
   const [successModal, setSuccessModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({ show: false, message: '', type: 'success' });
   const [requestedUsers, setRequestedUsers] = useState<Set<string>>(new Set());
   const [friends, setFriends] = useState<any[]>([]);
@@ -94,6 +96,25 @@ const Home: React.FC = () => {
 
       loadPendingRequests();
       const interval = setInterval(loadPendingRequests, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [userId]);
+
+  // 읽지 않은 알림 개수
+  useEffect(() => {
+    if (userId) {
+      const loadUnreadAnnouncements = async () => {
+        try {
+          const announcements = await getAnnouncementsWithReadStatus(userId);
+          const unreadCount = announcements.filter(announcement => !announcement.isRead).length;
+          setUnreadAnnouncementsCount(unreadCount);
+        } catch (err) {
+          console.error('알림 개수 불러오기 실패', err);
+        }
+      };
+
+      loadUnreadAnnouncements();
+      const interval = setInterval(loadUnreadAnnouncements, 10000); // 10초마다 업데이트
       return () => clearInterval(interval);
     }
   }, [userId]);
@@ -211,6 +232,7 @@ const Home: React.FC = () => {
         <HeaderBar
           userId={userId}
           pendingRequestsCount={pendingRequestsCount}
+          unreadAnnouncementsCount={unreadAnnouncementsCount}
           onLogout={async () => {
             const auth = getAuth();
             await signOut(auth);
