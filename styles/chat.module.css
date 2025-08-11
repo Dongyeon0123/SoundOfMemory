@@ -9,6 +9,7 @@
   font-family: "Apple SD Gothic Neo", sans-serif;
   position: relative;
   overflow: hidden;
+  min-height: 0; /* flex 컨테이너 높이 안정화 */
 }
 .header {
   display: flex;
@@ -102,6 +103,7 @@
   gap: 6px;
   overflow-y: auto;
   padding-bottom: 10px;
+  min-height: 0; /* flex 아이템이 제대로 축소되도록 */
 }
 
 .msgWrapper {
@@ -155,19 +157,18 @@
   margin-left: 50px;
 }
 .inputSection {
-  /* position: fixed; */
-  position: static;
+  position: sticky;
+  bottom: 0;
   width: 100%;
   border-top: 1px solid #ddd;
   padding: 10px 16px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 8px;
   background: #fff;
   z-index: 10;
   box-sizing: border-box;
-  align-items: center;
-  margin-top: auto;
+  flex-shrink: 0; /* 높이 고정 */
 }
 
 .textarea {
@@ -195,16 +196,17 @@
   cursor: pointer;
 }
 .typingIndicator {
-display: flex;
-align-items: center;
-justify-content: center;
-height: 24px;
-margin: 1px 0 1px 2px;
-width: 45px;
-border-radius: 12px;
-background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-padding: 6px 10px;
-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px; /* 높이 고정 */
+  margin: 8px 0; /* 위아래 마진 일정하게 */
+  width: 45px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 6px 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0; /* 높이 축소 방지 */
 }
 
 .typingIndicator .wave {
