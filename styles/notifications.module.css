@@ -92,7 +92,7 @@
 
 .announcementContent {
   background-color: white;
-  border: 1px solid #e9ecef;
+  border: 1px solid #b5b6b7;
   border-radius: 12px;
   padding: 24px;
   display: flex;
@@ -152,7 +152,7 @@
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  min-width: 80px;
+  min-width: 50px;
   white-space: nowrap;
   text-align: center;
   user-select: none;
@@ -165,7 +165,7 @@
 }
 
 .unreadStatus {
-  background-color: #fff3e0;
-  color: #ef6c00;
-  border: 1px solid #ffcc02;
+  background-color: White;
+  color: #000;
+  border: 1px solid #b5b6b7;
 }
