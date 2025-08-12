@@ -244,7 +244,13 @@ const NotificationsPage: React.FC = () => {
       {/* 메인 콘텐츠 */}
       <main className={styles.main}>
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: '80vh',
+          }}>
             <div className="spinner" style={{ marginBottom: 16 }} />
             <span style={{ color: '#636AE8', fontSize: 16, fontWeight: 500 }}>알림을 불러오는 중...</span>
           </div>

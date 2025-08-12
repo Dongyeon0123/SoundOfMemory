@@ -45,7 +45,13 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
       return '';
     }
     
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? '오후' : '오전';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${ampm} ${displayHours}:${displayMinutes}`;
   };
 
   const getTypeIcon = (type: string) => {
@@ -71,27 +77,24 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        {/* 헤더 */}
+        {/* 헤더 - 공지 제목과 닫기 버튼 */}
         <div className={styles.modalHeader}>
           <div className={styles.modalTitle}>
-            <span className={styles.systemText}>System</span>
-            <div className={styles.titleIcon}>
-              <IoMegaphoneOutline size={24} color="#000" />
-            </div>
+            {announcement.title}
           </div>
           <button className={styles.closeButton} onClick={onClose}>
             <IoClose size={24} />
           </button>
         </div>
 
-        {/* 날짜 */}
-        <div className={styles.modalDate}>
-          {formatDate(announcement.publishedAt)}
+        {/* 작성자 ID */}
+        <div className={styles.modalAuthor}>
+          작성자: {announcement.authorId}
         </div>
 
-        {/* 제목 */}
-        <div className={styles.modalAnnouncementTitle}>
-          {announcement.title}
+        {/* 타임스탬프 */}
+        <div className={styles.modalTimestamp}>
+          {formatDate(announcement.publishedAt)}
         </div>
 
         {/* 내용 */}
@@ -100,10 +103,6 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
             {announcement.content}
           </div>
         )}
-
-
-
-
       </div>
     </div>
   );

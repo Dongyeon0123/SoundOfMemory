@@ -28,35 +28,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 28px 28px 20px 28px;
-  border-bottom: 2px solid #f8f9fa;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
   border-radius: 20px 20px 0 0;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 20px;
 }
 
 .modalTitle {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 22px;
-  font-weight: 800;
-  color: #1a1a1a;
-}
-
-.systemText {
-  color: #000;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
-.titleIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 2px solid #e9ecef;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1.3;
+  flex: 1;
+  padding-right: 20px;
 }
 
 .closeButton {
@@ -76,50 +59,48 @@
   transform: scale(1.05);
 }
 
-.modalDate {
-  padding: 16px 28px;
-  color: #636AE8;
-  font-size: 15px;
-  font-weight: 600;
-  background-color: #f0f4ff;
-  margin: 0 16px 16px 16px;
-  border-radius: 10px;
-  text-align: center;
-  border: 1px solid #e1e8ff;
+.modalAuthor {
+  padding: 0 28px 20px 28px;
+  color: #000000;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 0;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.modalAnnouncementTitle {
-  padding: 0 28px 24px 28px;
-  font-size: 22px;
-  font-weight: 800;
-  color: #1a1a1a;
-  line-height: 1.4;
-  text-align: center;
-  letter-spacing: -0.5px;
+.modalTimestamp {
+  padding: 0 28px 20px 28px;
+  color: #000000;
+  font-size: 13px;
+  font-weight: 400;
+  margin-top: 16px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
 }
 
 .modalContent {
-  padding: 24px 28px;
-  color: #495057;
-  line-height: 1.8;
+  color: #000000;
+  line-height: 1.7;
   font-size: 16px;
-  background-color: #ffffff;
-  margin: 0 28px 16px 28px;
+  background-color: #f9fafb;
+  padding: 20px 0px 20px 0px;
   border-radius: 12px;
-  border: 1px solid #e9ecef;
+  margin-left: 25px;
+  border: none;
   min-height: 100px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+  text-align: left;
 }
-
-
-
 
 
 /* 반응형 */
 @media (max-width: 600px) {
   .modalContent {
-    max-width: 95vw;
-    margin: 20px;
+    max-width: 80vw;
+    margin-left: 5px;
   }
   
   .modalHeader {
