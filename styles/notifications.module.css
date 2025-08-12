@@ -73,7 +73,7 @@
 }
 
 .announcementItem {
-  margin-bottom: 24px;
+  margin-top: 40px;
 }
 
 .dateHeader {
@@ -97,6 +97,7 @@
   align-items: flex-start;
   gap: 16px;
   transition: all 0.2s ease;
+  margin-bottom: -30px;
 }
 
 .announcementContent:hover {

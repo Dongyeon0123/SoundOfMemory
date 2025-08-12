@@ -75,14 +75,22 @@ export const getActiveAnnouncements = async (): Promise<Announcement[]> => {
 // 사용자별 읽음 상태 가져오기
 export const getUserAnnouncementReads = async (userId: string): Promise<UserAnnouncementRead[]> => {
   try {
+    console.log('getUserAnnouncementReads 시작, userId:', userId);
     const readsRef = collection(db, 'userAnnouncementReads');
     const q = query(readsRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as unknown as UserAnnouncementRead[];
+    const reads = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      console.log('읽음 상태 문서:', doc.id, data);
+      return {
+        id: doc.id,
+        ...data
+      };
+    }) as unknown as UserAnnouncementRead[];
+    
+    console.log('매핑된 읽음 상태:', reads);
+    return reads;
   } catch (error) {
     console.error('사용자 읽음 상태 가져오기 실패:', error);
     return [];
@@ -92,13 +100,18 @@ export const getUserAnnouncementReads = async (userId: string): Promise<UserAnno
 // 알림 읽음 상태 업데이트
 export const markAnnouncementAsRead = async (userId: string, announcementId: string): Promise<void> => {
   try {
+    console.log('markAnnouncementAsRead 시작:', { userId, announcementId });
     const readRef = doc(db, 'userAnnouncementReads', `${userId}_${announcementId}`);
-    await setDoc(readRef, {
+    const readData = {
       userId,
       announcementId,
       readAt: Timestamp.now(),
       isRead: true
-    });
+    };
+    console.log('저장할 읽음 상태 데이터:', readData);
+    
+    await setDoc(readRef, readData);
+    console.log('읽음 상태 저장 완료');
   } catch (error) {
     console.error('알림 읽음 상태 업데이트 실패:', error);
   }
@@ -134,8 +147,15 @@ export const getAnnouncementsWithReadStatus = async (userId: string): Promise<An
       userReads.map(read => [read.announcementId, read])
     );
 
+    console.log('읽음 상태 맵:', Array.from(readMap.entries()));
+
     const result = announcements.map(announcement => {
       const userRead = readMap.get(announcement.id);
+      console.log(`공지사항 ${announcement.id} (${announcement.title}):`, {
+        userRead: userRead,
+        isRead: userRead?.isRead || false,
+        readAt: userRead?.readAt
+      });
       return {
         ...announcement,
         isRead: userRead?.isRead || false,
