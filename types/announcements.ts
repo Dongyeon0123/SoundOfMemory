@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
-import { collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export interface Announcement {
   id: string;
@@ -19,6 +19,7 @@ export interface Announcement {
 export interface UserAnnouncementRead {
   userId: string;
   announcementId: string;
+  noticeId: string; // 문서 ID (noticeId)
   readAt: Timestamp;
   isRead: boolean;
 }
@@ -76,16 +77,23 @@ export const getActiveAnnouncements = async (): Promise<Announcement[]> => {
 export const getUserAnnouncementReads = async (userId: string): Promise<UserAnnouncementRead[]> => {
   try {
     console.log('getUserAnnouncementReads 시작, userId:', userId);
-    const readsRef = collection(db, 'userAnnouncementReads');
-    const q = query(readsRef, where('userId', '==', userId));
-    const querySnapshot = await getDocs(q);
+    
+    // users/{userId}/readNotices 컬렉션에서 읽음 상태 가져오기
+    const readsRef = collection(db, 'users', userId, 'readNotices');
+    const querySnapshot = await getDocs(readsRef);
+    
+    console.log('읽음 상태 문서 개수:', querySnapshot.docs.length);
     
     const reads = querySnapshot.docs.map(doc => {
       const data = doc.data();
       console.log('읽음 상태 문서:', doc.id, data);
       return {
         id: doc.id,
-        ...data
+        announcementId: doc.id, // announcementId도 설정
+        noticeId: doc.id, // 문서 ID가 noticeId
+        userId: userId, // userId 추가
+        readAt: data.readAt,
+        isRead: true // 이 컬렉션에 존재하면 읽음
       };
     }) as unknown as UserAnnouncementRead[];
     
@@ -101,14 +109,17 @@ export const getUserAnnouncementReads = async (userId: string): Promise<UserAnno
 export const markAnnouncementAsRead = async (userId: string, announcementId: string): Promise<void> => {
   try {
     console.log('markAnnouncementAsRead 시작:', { userId, announcementId });
-    const readRef = doc(db, 'userAnnouncementReads', `${userId}_${announcementId}`);
+    
+    // users/{userId}/readNotices/{noticeId} 경로에 문서 생성
+    const readRef = doc(db, 'users', userId, 'readNotices', announcementId);
     const readData = {
-      userId,
-      announcementId,
       readAt: Timestamp.now(),
-      isRead: true
+      noticeId: announcementId,
+      announcementId: announcementId, // announcementId도 함께 저장
+      userId: userId // userId도 함께 저장
     };
     console.log('저장할 읽음 상태 데이터:', readData);
+    console.log('저장 경로:', `users/${userId}/readNotices/${announcementId}`);
     
     await setDoc(readRef, readData);
     console.log('읽음 상태 저장 완료');
@@ -120,11 +131,12 @@ export const markAnnouncementAsRead = async (userId: string, announcementId: str
 // 알림 읽음 상태 해제
 export const markAnnouncementAsUnread = async (userId: string, announcementId: string): Promise<void> => {
   try {
-    const readRef = doc(db, 'userAnnouncementReads', `${userId}_${announcementId}`);
-    await updateDoc(readRef, {
-      isRead: false,
-      readAt: null
-    });
+    console.log('markAnnouncementAsUnread 시작:', { userId, announcementId });
+    
+    // users/{userId}/readNotices/{noticeId} 문서 삭제
+    const readRef = doc(db, 'users', userId, 'readNotices', announcementId);
+    await deleteDoc(readRef);
+    console.log('읽음 상태 해제 완료');
   } catch (error) {
     console.error('알림 읽음 상태 해제 실패:', error);
   }
@@ -143,22 +155,28 @@ export const getAnnouncementsWithReadStatus = async (userId: string): Promise<An
     console.log('가져온 공지사항:', announcements);
     console.log('가져온 읽음 상태:', userReads);
 
+    // 읽음 상태 맵 생성 (announcement.id를 키로 사용)
     const readMap = new Map(
       userReads.map(read => [read.announcementId, read])
     );
 
     console.log('읽음 상태 맵:', Array.from(readMap.entries()));
+    console.log('공지사항 ID들:', announcements.map(a => a.id));
 
     const result = announcements.map(announcement => {
       const userRead = readMap.get(announcement.id);
+      const isRead = !!userRead; // 문서가 존재하면 읽음, 없으면 안읽음
+      
       console.log(`공지사항 ${announcement.id} (${announcement.title}):`, {
+        announcementId: announcement.id,
         userRead: userRead,
-        isRead: userRead?.isRead || false,
+        isRead: isRead,
         readAt: userRead?.readAt
       });
+      
       return {
         ...announcement,
-        isRead: userRead?.isRead || false,
+        isRead: isRead,
         readAt: userRead?.readAt
       };
     });
