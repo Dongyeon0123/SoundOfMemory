@@ -49,21 +49,22 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .systemText {
-  font-size: 14px;
-  font-weight: 600;
-  color: #636AE8;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
 }
 
 .systemIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 3px;
 }
 
 /* 알림 목록 스타일 */
@@ -77,8 +78,10 @@
 }
 
 .dateHeader {
-  background-color: #f8f9fa;
-  color: #6c757d;
+  width: 20%;
+  margin: 0 auto;
+  background-color: #e0e0e0;
+  color: #696969;
   font-size: 14px;
   font-weight: 500;
   padding: 8px 16px;
@@ -91,10 +94,10 @@
   background-color: white;
   border: 1px solid #e9ecef;
   border-radius: 12px;
-  padding: 16px;
+  padding: 24px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
   transition: all 0.2s ease;
   margin-bottom: -30px;
@@ -112,22 +115,27 @@
 
 .announcementInfo {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
+  gap: 12px;
   flex: 1;
+  margin-top: 4px;
 }
-
-
 
 .announcementText {
   flex: 1;
+  display: flex;
+  justify-content: center;
+  margin-top: 5px;
 }
 
 .announcementTitle {
   font-size: 16px;
   font-weight: 600;
-  color: #212529;
+  color: #444444;
   margin-bottom: 4px;
   line-height: 1.4;
+  text-align: center;
 }
 
 
@@ -151,9 +159,9 @@
 }
 
 .readStatus {
-  background-color: #e8f5e8;
-  color: #2e7d32;
-  border: 1px solid #c8e6c9;
+  background-color: #636AE8;
+  color: White;
+  border: 1px solid #ffffff;
 }
 
 .unreadStatus {
@@ -161,5 +169,3 @@
   color: #ef6c00;
   border: 1px solid #ffcc02;
 }
-
-

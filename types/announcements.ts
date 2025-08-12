@@ -53,8 +53,9 @@ export const getActiveAnnouncements = async (): Promise<Announcement[]> => {
     
     console.log('매핑된 공지사항:', announcements);
     
-    // 클라이언트 사이드에서 정렬
+    // 클라이언트 사이드에서 정렬 (최신순)
     const sortedAnnouncements = announcements.sort((a, b) => {
+      // publishedAt 기준으로 정렬
       if (a.publishedAt && b.publishedAt) {
         if (a.publishedAt.toDate && b.publishedAt.toDate) {
           return b.publishedAt.toDate().getTime() - a.publishedAt.toDate().getTime();
@@ -62,10 +63,25 @@ export const getActiveAnnouncements = async (): Promise<Announcement[]> => {
           return b.publishedAt.seconds - a.publishedAt.seconds;
         }
       }
+      
+      // publishedAt이 없으면 createdAt 기준으로 정렬
+      if (a.createdAt && b.createdAt) {
+        if (a.createdAt.toDate && b.createdAt.toDate) {
+          return b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime();
+        } else if (a.createdAt.seconds && b.createdAt.seconds) {
+          return b.createdAt.seconds - a.createdAt.seconds;
+        }
+      }
+      
       return 0;
     });
     
-    console.log('정렬된 공지사항:', sortedAnnouncements);
+    console.log('정렬된 공지사항:', sortedAnnouncements.map(a => ({
+      id: a.id,
+      title: a.title,
+      publishedAt: a.publishedAt,
+      createdAt: a.createdAt
+    })));
     return sortedAnnouncements;
   } catch (error) {
     console.error('알림 목록 가져오기 실패:', error);

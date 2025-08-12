@@ -273,7 +273,7 @@ const NotificationsPage: React.FC = () => {
                     <div className={styles.systemSection}>
                       <span className={styles.systemText}>System</span>
                       <div className={styles.systemIcon}>
-                        <IoMegaphoneOutline size={16} color="#000" />
+                        <IoMegaphoneOutline size={24} color="#000" />
                       </div>
                     </div>
                     
