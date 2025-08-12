@@ -90,6 +90,37 @@
   text-align: center;
 }
 
+@media (max-width: 600px) {
+  .dateHeader {
+    width: 100px;
+    margin: 0 auto;
+    background-color: #e0e0e0;
+    color: #696969;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .systemText {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .systemIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .readStatus, .unreadStatus {
+    padding: 6px 12px;
+    font-size: 12px;
+    min-width: 25px;
+  }
+}
+
 .announcementContent {
   background-color: white;
   border: 1px solid #b5b6b7;

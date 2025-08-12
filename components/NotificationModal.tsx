@@ -66,4 +66,4 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ show, message, ty
   );
 };
 
-export default NotificationModal; 
+export default NotificationModal;

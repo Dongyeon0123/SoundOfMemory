@@ -101,6 +101,7 @@
   .modalContent {
     max-width: 80vw;
     margin-left: 5px;
+    padding-right: 10px;
   }
   
   .modalHeader {
