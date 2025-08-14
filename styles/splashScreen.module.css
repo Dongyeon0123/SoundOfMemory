@@ -82,12 +82,12 @@
   }
   
   .logo {
-    width: 2400px;
-    height: 550px;
+    width: 2500px;
+    height: 600px;
     object-fit: contain;
     position: absolute;
-    bottom: 160px;
-    margin-left: -320px;
+    bottom: 170px;
+    margin-left: -280px;
   }
   
   .titleContainer {
