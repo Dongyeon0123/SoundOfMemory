@@ -1,14 +1,70 @@
-import React, { useState } from 'react';
-import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithCustomToken } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { IoChatbubble } from 'react-icons/io5';
 import cardStyles from '../../styles/styles.module.css';
 import styles from '../../styles/login.module.css';
 
+// 카카오 SDK 타입 선언
+declare global {
+  interface Window {
+    Kakao: any;
+  }
+}
+
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // 카카오 SDK 초기화
+  useEffect(() => {
+    const initKakao = () => {
+      if (typeof window !== 'undefined' && window.Kakao) {
+        // 환경 변수에서 키를 가져오기
+        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+        
+        console.log('환경 변수에서 가져온 카카오 키:', kakaoKey);
+        console.log('카카오 키 길이:', kakaoKey?.length);
+        console.log('카카오 SDK 존재 여부:', !!window.Kakao);
+        
+        if (!kakaoKey) {
+          console.error('카카오 JavaScript 키가 설정되지 않았습니다. 환경 변수에 NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY를 설정해주세요.');
+          return;
+        }
+        
+        try {
+          window.Kakao.init(kakaoKey);
+          console.log("Kakao init 성공:", window.Kakao.isInitialized());
+        } catch (error) {
+          console.error("Kakao init 실패:", error);
+        }
+      } else {
+        console.log('카카오 SDK가 아직 로드되지 않았습니다.');
+      }
+    };
+
+    // SDK가 로드될 때까지 대기
+    if (typeof window !== 'undefined') {
+      if (window.Kakao) {
+        initKakao();
+      } else {
+        // SDK 로딩 대기
+        const checkKakao = setInterval(() => {
+          if (window.Kakao) {
+            clearInterval(checkKakao);
+            initKakao();
+          }
+        }, 100);
+        
+        // 10초 후 타임아웃
+        setTimeout(() => {
+          clearInterval(checkKakao);
+          console.error('카카오 SDK 로딩 타임아웃');
+        }, 10000);
+      }
+    }
+  }, []);
 
   const handleGoogleLogin = async () => {
     try {
@@ -22,6 +78,65 @@ export default function Login() {
       }
     } catch (error) {
       console.error('Google 로그인 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKakaoLogin = async () => {
+    try {
+      setLoading(true);
+      
+      console.log('카카오 로그인 시작');
+      console.log('Kakao 객체 존재:', !!window.Kakao);
+      console.log('Kakao 초기화 상태:', window.Kakao?.isInitialized?.());
+      
+      if (!window.Kakao) {
+        throw new Error('카카오 SDK가 로드되지 않았습니다.');
+      }
+      
+      if (!window.Kakao.isInitialized()) {
+        throw new Error('카카오 SDK가 초기화되지 않았습니다. 페이지를 새로고침해보세요.');
+      }
+
+      // 1) Kakao 로그인(동의 항목은 콘솔에서 활성화한 범위만 요청)
+      await new Promise((resolve, reject) => {
+        window.Kakao.Auth.login({
+          scope: "profile_nickname,profile_image", // 필요 시 조정
+          success: resolve,
+          fail: reject,
+        });
+      });
+
+      // 2) access_token 확보
+      const accessToken = window.Kakao.Auth.getAccessToken();
+      if (!accessToken) throw new Error("카카오 액세스 토큰을 가져올 수 없습니다.");
+
+      // 3) 서버(Function)에 전달 → custom token 수신
+      const FUNCTIONS_URL = "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/createFirebaseToken";
+      
+      const resp = await fetch(FUNCTIONS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_token: accessToken }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        console.error("서버 에러:", data);
+        throw new Error(data.error || "서버 에러");
+      }
+
+      // 4) Firebase 로그인
+      const auth = getAuth();
+      const result = await signInWithCustomToken(auth, data.token);
+      console.log("Firebase 로그인 성공:", result.user?.uid);
+
+      // 5) 라우팅
+      router.push('/');
+    } catch (error) {
+      console.error('카카오 로그인 실패:', error);
+      alert("카카오 로그인에 실패했습니다. 설정(도메인/Redirect/키)을 다시 확인하세요.");
     } finally {
       setLoading(false);
     }
@@ -52,12 +167,12 @@ export default function Login() {
           
           {/* 카카오 로그인 버튼 */}
           <button
-            onClick={() => console.log('카카오 로그인')}
+            onClick={handleKakaoLogin}
             className={styles.kakaoLoginButton}
             disabled={loading}
           >
             <IoChatbubble size={24} className={styles.kakaoIcon} />
-            카카오로 시작하기
+            {loading ? '진행 중...' : '카카오로 시작하기'}
           </button>
           
           {/* 이용약관 및 개인정보처리방침 */}
