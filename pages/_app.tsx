@@ -13,18 +13,26 @@ function MyApp({ Component, pageProps }: AppProps) {
   const store = makeStore();
   const router = useRouter();
   const [showSplash, setShowSplash] = useState(true);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       // 온보딩 페이지에서는 검사하지 않음
       if (router.pathname === '/profile/Onboarding') return;
+      
       if (user) {
         const profile = await fetchProfileById(user.uid);
         if (!profile) {
           router.replace('/profile/Onboarding');
         }
+      } else {
+        // 로그인 상태가 아니라면 로그인페이지로 이동
+        if (router.pathname !== '/register/login') {
+          router.replace('/register/login');
+        }
       }
+      setIsAuthChecked(true);
     });
     return () => unsubscribe();
   }, [router.pathname]);
@@ -32,6 +40,25 @@ function MyApp({ Component, pageProps }: AppProps) {
   const handleSplashFinish = () => {
     setShowSplash(false);
   };
+
+  // 스플래시 화면이 끝나고 인증 체크가 완료된 후에만 컴포넌트 렌더링
+  if (showSplash || !isAuthChecked) {
+    return (
+      <Provider store={store}>
+        <Head>
+          <title>SoundOfMemory</title>
+          <meta name="description" content="AI와 함께하는 소리 기반 메모리 서비스" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link rel="icon" href="/logo.png" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+          <link href="https://fonts.googleapis.com/css2?family=S-Core+Dream:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        </Head>
+        
+        {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+      </Provider>
+    );
+  }
 
   return (
     <Provider store={store}>
@@ -45,7 +72,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         <link href="https://fonts.googleapis.com/css2?family=S-Core+Dream:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </Head>
       
-      {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
       <Component {...pageProps} />
     </Provider>
   );
