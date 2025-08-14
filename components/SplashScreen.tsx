@@ -29,10 +29,10 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           />
           <div className={styles.titleContainer}>
             <div className={styles.titleLine}>
-              Sound +f
+              SOUND +f
             </div>
             <div className={`${styles.titleLine} ${styles.second}`}>
-              Memory
+              MEMORY
             </div>
             <div className={styles.subtitle}>
               사운드 오브 메모리
