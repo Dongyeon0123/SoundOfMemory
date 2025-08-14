@@ -83,7 +83,7 @@
   position: relative;
   border: none;
   transition: background 0.18s;
-  margin-bottom: 40px;
+  margin-bottom: 15px;
 }
 
 .loginButton:hover {
@@ -101,7 +101,50 @@
   cursor: not-allowed;
 }
 
+.kakaoLoginButton {
+  width: 320px;
+  max-width: 100%;
+  background: #FEE500;
+  margin: 0 auto;
+  padding: 14px 0;
+  border-radius: 8px;
+  color: #000000;
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  opacity: 1;
+  position: relative;
+  border: none;
+  transition: all 0.18s;
+  margin-bottom: 40px;
+}
+
+.kakaoLoginButton:hover {
+  background: #FDD835;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(254, 229, 0, 0.3);
+}
+
+.kakaoLoginButton:active {
+  background: #FBC02D;
+  transform: translateY(0);
+}
+
+.kakaoLoginButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .googleIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.kakaoIcon {
   width: 24px;
   height: 24px;
 }

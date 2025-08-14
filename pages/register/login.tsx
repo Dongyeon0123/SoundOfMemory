@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useRouter } from 'next/router';
+import { IoChatbubble } from 'react-icons/io5';
 import cardStyles from '../../styles/styles.module.css';
 import styles from '../../styles/login.module.css';
 
@@ -47,6 +48,16 @@ export default function Login() {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
             {loading ? '진행 중...' : 'Sign in with Google'}
+          </button>
+          
+          {/* 카카오 로그인 버튼 */}
+          <button
+            onClick={() => console.log('카카오 로그인')}
+            className={styles.kakaoLoginButton}
+            disabled={loading}
+          >
+            <IoChatbubble size={24} className={styles.kakaoIcon} />
+            카카오로 시작하기
           </button>
           
           {/* 이용약관 및 개인정보처리방침 */}
