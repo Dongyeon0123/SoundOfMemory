@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { getAuth } from 'firebase/auth';
 import { setProfileField } from '../../types/profiles';
 import cardStyles from '../../styles/styles.module.css';
 import mbtiStyles from '../../styles/MbtiModal.module.css';
+import styles from '../../styles/login.module.css';
 
 const MBTI_LETTERS = [
   ['E', 'I'],
@@ -22,8 +23,26 @@ export default function Onboarding() {
   const [introduce, setIntroduce] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showTyping, setShowTyping] = useState(false);
   const router = useRouter();
   const [mbtiSelection, setMbtiSelection] = useState<string[]>(['E','N','T','J']);
+
+  // 타이핑 애니메이션 효과
+  useEffect(() => {
+    if (step === 0) {
+      const timer = setTimeout(() => setShowTyping(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  // 뒤로가기 핸들러
+  const handleBack = () => {
+    if (step > 0) {
+      setStep(step - 1);
+    } else {
+      router.push('/register/login');
+    }
+  };
 
   // 이미지 업로드 핸들러 (base64 변환)
   const handleImgChange = (e: React.ChangeEvent<HTMLInputElement>) => {

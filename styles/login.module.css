@@ -154,3 +154,84 @@
     box-shadow: 0 4px 24px rgba(0,0,0,0.08);
   }
 }
+
+/* 온보딩 첫 번째 단계 스타일 */
+.onboardingStep1 {
+  width: 100%;
+  height: 100%;
+  background: #257EFEFF !important;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  min-height: 500px;
+}
+
+.backButton {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  padding: 8px;
+}
+
+.backIcon {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.moriImage {
+  position: absolute;
+  top: 120px;
+  left: 40px;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  display: block;
+}
+
+.greetingContainer {
+  position: absolute;
+  top: 200px;
+  right: 40px;
+  text-align: right;
+  color: white;
+  font-family: 'S-Core Dream', sans-serif;
+  z-index: 5;
+}
+
+.greetingText {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.greetingSubtext {
+  font-size: 18px;
+  font-weight: 500;
+  opacity: 0.9;
+  color: white;
+}
+
+/* 애니메이션 클래스 */
+.typingAnimation {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid white;
+  animation: typing 3s steps(20, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: white; }
+}
