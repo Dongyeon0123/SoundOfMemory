@@ -82,11 +82,11 @@
   }
   
   .logo {
-    width: 1600px;
-    height: 450px;
+    width: 2400px;
+    height: 700px;
     object-fit: contain;
     position: absolute;
-    bottom: 60px;
+    bottom: 180px;
     margin-left: -320px;
   }
   
@@ -100,7 +100,7 @@
   }
   
   .titleLine {
-    font-size: 40px;
+    font-size: 60px;
     font-weight: 530;
     margin-bottom: 2px;
     font-family: 'S-Core Dream', sans-serif;
@@ -111,9 +111,9 @@
   }
   
   .subtitle {
-    font-size: 20px;
+    font-size: 45px;
     font-weight: 250;
     font-family: 'S-Core Dream', sans-serif;
-    margin-bottom: 30px;
+    margin-bottom: 120px;
   }
 }
