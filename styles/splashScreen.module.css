@@ -82,38 +82,38 @@
   }
   
   .logo {
-    width: 3200px;
-    height: 900px;
+    width: 1600px;
+    height: 450px;
     object-fit: contain;
     position: absolute;
-    bottom: 120px;
-    margin-left: -280px;
+    bottom: 60px;
+    margin-left: -320px;
   }
   
   .titleContainer {
     text-align: left;
     color: white;
     position: absolute;
-    bottom: 40px;
-    left: 20px;
+    bottom: 20px;
+    left: 10px;
     z-index: 2;
   }
   
   .titleLine {
-    font-size: 80px;
+    font-size: 40px;
     font-weight: 530;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     font-family: 'S-Core Dream', sans-serif;
   }
   
   .titleLine.second {
-    margin-bottom: 15px;
+    margin-bottom: 7px;
   }
   
   .subtitle {
-    font-size: 40px;
+    font-size: 20px;
     font-weight: 250;
     font-family: 'S-Core Dream', sans-serif;
-    margin-bottom: 60px;
+    margin-bottom: 30px;
   }
 }
