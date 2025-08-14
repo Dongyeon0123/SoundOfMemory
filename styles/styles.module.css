@@ -177,6 +177,22 @@
   }
 }
 
+/* 데스크탑과 태블릿에서는 항상 카드형으로 표시 */
+@media (min-width: 601px) {
+  .centerCard {
+    width: 370px;
+    max-width: 95vw;
+    height: 780px;
+    max-height: 95vh;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  
+  .fullscreenToggle {
+    display: none;
+  }
+}
+
 .fullscreenToggle {
   position: absolute;
   right: 24px;
@@ -273,7 +289,7 @@
 .chatButton {
   cursor: pointer;
   margin-top: 10px;
-  width: 358px;
+  width: 290px;
   height: 44px;
   padding: 0 12px;
   display: flex;

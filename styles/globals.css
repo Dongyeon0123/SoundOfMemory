@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=S-Core+Dream:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 body {
-  font-family: 'Inter', 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', Arial, sans-serif;
+  font-family: 'S-Core Dream', 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', Arial, sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;

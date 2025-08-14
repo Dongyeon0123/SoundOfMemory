@@ -32,7 +32,7 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [search, setSearch] = useState('');
-  const [isCardMode, setIsCardMode] = useState(false);
+  const [isCardMode, setIsCardMode] = useState(true); // 기본값을 true로 변경
   const [sendingRequests, setSendingRequests] = useState<Set<string>>(new Set());
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [unreadAnnouncementsCount, setUnreadAnnouncementsCount] = useState(0);
@@ -41,6 +41,25 @@ const Home: React.FC = () => {
   const [friends, setFriends] = useState<any[]>([]);
 
   const router = useRouter();
+
+  // 화면 크기에 따라 카드 모드 자동 설정
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 600) {
+        setIsCardMode(true); // 데스크탑/태블릿에서는 항상 카드형
+      } else {
+        setIsCardMode(false); // 모바일에서는 풀화면
+      }
+    };
+
+    // 초기 설정
+    handleResize();
+    
+    // 리사이즈 이벤트 리스너
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // 인증 상태 감지
   useEffect(() => {

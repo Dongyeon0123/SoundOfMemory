@@ -1,0 +1,119 @@
+.splashOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+.splashOverlay.fadeOut {
+  opacity: 0;
+}
+
+.splashCard {
+  width: 291px;
+  height: 700px;
+  border-radius: 15px;
+  background: #257EFEFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  max-width: 95vw;
+  max-height: 95vh;
+  overflow: hidden;
+}
+
+.logo {
+  width: 2400px;
+  height: 680px;
+  object-fit: contain;
+  position: absolute;
+  bottom: 40px;
+  margin-left: -200px;
+}
+
+.titleContainer {
+  text-align: left;
+  color: white;
+  position: absolute;
+  bottom: 40px;
+  left: 20px;
+  z-index: 2;
+}
+
+.titleLine {
+  font-size: 60px;
+  font-weight: 530;
+  font-family: 'S-Core Dream', sans-serif;
+}
+
+.titleLine.second {
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 24px;
+  font-weight: 300;
+  font-family: 'S-Core Dream', sans-serif;
+}
+
+/* 반응형: 모바일 환경 최적화 */
+@media (max-width: 600px) {
+  .splashCard {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    max-width: 100vw;
+    max-height: 100vh;
+    box-shadow: none;
+    padding: 20px;
+    overflow: hidden;
+  }
+  
+  .logo {
+    width: 3200px;
+    height: 900px;
+    object-fit: contain;
+    position: absolute;
+    bottom: 120px;
+    margin-left: -280px;
+  }
+  
+  .titleContainer {
+    text-align: left;
+    color: white;
+    position: absolute;
+    bottom: 40px;
+    left: 20px;
+    z-index: 2;
+  }
+  
+  .titleLine {
+    font-size: 80px;
+    font-weight: 530;
+    margin-bottom: 5px;
+    font-family: 'S-Core Dream', sans-serif;
+  }
+  
+  .titleLine.second {
+    margin-bottom: 15px;
+  }
+  
+  .subtitle {
+    font-size: 40px;
+    font-weight: 250;
+    font-family: 'S-Core Dream', sans-serif;
+    margin-bottom: 60px;
+  }
+}

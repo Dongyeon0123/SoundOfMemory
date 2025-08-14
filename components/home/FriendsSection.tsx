@@ -17,12 +17,38 @@ type Props = {
 const FriendsSection: React.FC<Props> = ({ title, friends, loading }) => {
   return (
     <div className={styles.sectionBlock}>
-      <h4 className={styles.sectionTitle}>{title}</h4>
+      <h4 className={styles.sectionTitle} style={{ 
+        marginBottom: loading ? '10px' : '20px' 
+      }}>
+        {title}
+      </h4>
 
       {loading ? (
-        <div style={{ textAlign: 'center', color: '#636AE8', margin: 24 }}>불러오는 중...</div>
+        <div style={{ 
+          textAlign: 'center', 
+          color: '#636AE8', 
+          margin: '0',
+          padding: '15px 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '50px',
+          fontSize: '14px',
+          fontWeight: '500'
+        }}>
+          불러오는 중...
+        </div>
       ) : friends.length === 0 ? (
-        <div style={{ color: '#888', padding: '12px 0', fontSize: 14, textAlign: 'center' }}>
+        <div style={{ 
+          color: '#888', 
+          padding: '15px 0', 
+          fontSize: 14, 
+          textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '50px'
+        }}>
           친구가 없습니다.
         </div>
       ) : (

@@ -19,25 +19,36 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ show, message, ty
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{
-        background: '#fff', borderRadius: 18, padding: '32px 28px 24px 28px', minWidth: 320, boxShadow: '0 8px 32px 0 rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: 18, maxWidth: '90%', position: 'relative',
+        width: '370px',
+        height: '780px',
+        background: '#fff', 
+        borderRadius: 20, 
+        padding: '40px', 
+        boxShadow: '0 4px 24px rgba(0,0,0,0.08)', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 24,
+        position: 'relative',
       }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{
-            width: 60, height: 60, borderRadius: '50%', margin: '0 auto 16px auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 80, height: 80, borderRadius: '50%', margin: '0 auto 24px auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: type === 'success' ? '#636AE8' : '#FF4757',
             color: '#fff',
-            fontSize: 24,
+            fontSize: 32,
             fontWeight: 700,
           }}>
             {type === 'success' ? '✓' : '✕'}
           </div>
           <div style={{
-            fontSize: 18, fontWeight: 700, color: '#222', marginBottom: 8,
+            fontSize: 24, fontWeight: 700, color: '#222', marginBottom: 12,
           }}>
             {type === 'success' ? '성공!' : '알림'}
           </div>
           <div style={{
-            fontSize: 16, color: '#666', lineHeight: 1.4,
+            fontSize: 18, color: '#666', lineHeight: 1.5, maxWidth: '280px',
           }}>
             {message}
           </div>
@@ -48,13 +59,14 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ show, message, ty
             background: type === 'success' ? '#636AE8' : '#FF4757',
             color: '#fff',
             border: 'none',
-            borderRadius: 10,
-            padding: '12px 24px',
+            borderRadius: 12,
+            padding: '16px 32px',
             fontWeight: 700,
-            fontSize: 16,
+            fontSize: 18,
             cursor: 'pointer',
             transition: 'background 0.18s',
-            marginTop: 8,
+            width: '100%',
+            maxWidth: '280px',
           }}
           onMouseOver={e => e.currentTarget.style.background = type === 'success' ? '#4850E4' : '#e63946'}
           onMouseOut={e => e.currentTarget.style.background = type === 'success' ? '#636AE8' : '#FF4757'}

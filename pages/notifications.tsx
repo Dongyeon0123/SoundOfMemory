@@ -183,139 +183,135 @@ const NotificationsPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
-      {/* 헤더 */}
-      <header className={styles.header}>
-        <div className={styles.headerContent} style={{ position: 'relative', justifyContent: 'center' }}>
-          {/* 왼쪽 상단 뒤로가기 버튼 */}
-          <button
-            onClick={handleBack}
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              height: 40,
-              width: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            aria-label="뒤로가기"
-          >
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          {/* 가운데 텍스트 */}
-          <span style={{ fontWeight: 700, fontSize: 18, textAlign: 'center' }}>
-            알림
-          </span>
-          {/* 오른쪽 환경설정 버튼 */}
-          <button
-            onClick={handleSettings}
-            style={{
-              position: 'absolute',
-              right: 10,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              height: 40,
-              width: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            aria-label="환경설정"
-          >
-            <FiSettings size={24} color="#222" />
-          </button>
-        </div>
-        <div className={styles.grayLine} />
-      </header>
+    <div className={styles.fullContainer}>
+      <div className={`${styles.centerCard} ${styles.cardMode}`}>
+        {/* 헤더 */}
+        <header className={styles.header}>
+          <div className={styles.headerContent} style={{ position: 'relative', justifyContent: 'center' }}>
+            {/* 왼쪽 상단 뒤로가기 버튼 */}
+            <button
+              onClick={handleBack}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                height: 40,
+                width: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              aria-label="뒤로가기"
+            >
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            {/* 가운데 텍스트 */}
+            <span style={{ fontWeight: 700, fontSize: 18, textAlign: 'center' }}>
+              알림
+            </span>
+            {/* 오른쪽 환경설정 버튼 */}
+            <button
+              onClick={handleSettings}
+              style={{
+                position: 'absolute',
+                right: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                height: 40,
+                width: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              aria-label="환경설정"
+            >
+              <FiSettings size={24} color="#222" />
+            </button>
+          </div>
+          <div className={styles.grayLine} />
+        </header>
 
-      {/* 메인 콘텐츠 */}
-      <main className={styles.main}>
-        {loading ? (
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            height: '80vh',
-          }}>
-            <div className="spinner" style={{ marginBottom: 16 }} />
-            <span style={{ color: '#636AE8', fontSize: 16, fontWeight: 500 }}>알림을 불러오는 중...</span>
-          </div>
-        ) : announcements.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
-            <img src="/char.png" alt="캐릭터" style={{ width: 120, height: 120, marginBottom: 16 }} />
-            <span style={{ color: '#888', fontSize: 16 }}>받은 알림이 없어요!</span>
-          </div>
-        ) : (
-          <div className={styles.announcementsList}>
-            {announcements.map((announcement) => (
-              <div key={announcement.id} className={styles.announcementItem}>
-                {/* 날짜 헤더 */}
-                <div className={styles.dateHeader}>
-                  {formatDate(announcement.publishedAt)}
-                </div>
-                
-                {/* 알림 내용 - 클릭 가능 */}
-                <div 
-                  className={`${styles.announcementContent} ${!announcement.isRead ? styles.unread : ''}`}
-                  onClick={() => handleOpenModal(announcement)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className={styles.announcementInfo}>
-                    {/* System + 확성기 아이콘 */}
-                    <div className={styles.systemSection}>
-                      <span className={styles.systemText}>System</span>
-                      <div className={styles.systemIcon}>
-                        <IoMegaphoneOutline size={24} color="#000" />
+        {/* 메인 콘텐츠 */}
+        <main className={styles.main}>
+          {loading ? (
+            <div className={styles.loadingContainer}>
+              <div className="spinner" style={{ marginBottom: 16 }} />
+              <span style={{ color: '#636AE8', fontSize: 16, fontWeight: 500 }}>알림을 불러오는 중...</span>
+            </div>
+          ) : announcements.length === 0 ? (
+            <div className={styles.emptyContainer}>
+              <img src="/char.png" alt="캐릭터" style={{ width: 120, height: 120, marginBottom: 16 }} />
+              <span style={{ color: '#888', fontSize: 16 }}>받은 알림이 없어요!</span>
+            </div>
+          ) : (
+            <div className={styles.announcementsList}>
+              {announcements.map((announcement) => (
+                <div key={announcement.id} className={styles.announcementItem}>
+                  {/* 날짜 헤더 */}
+                  <div className={styles.dateHeader}>
+                    {formatDate(announcement.publishedAt)}
+                  </div>
+                  
+                  {/* 알림 내용 - 클릭 가능 */}
+                  <div 
+                    className={`${styles.announcementContent} ${!announcement.isRead ? styles.unread : ''}`}
+                    onClick={() => handleOpenModal(announcement)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className={styles.announcementInfo}>
+                      {/* System + 확성기 아이콘 */}
+                      <div className={styles.systemSection}>
+                        <span className={styles.systemText}>System</span>
+                        <div className={styles.systemIcon}>
+                          <IoMegaphoneOutline size={24} color="#000" />
+                        </div>
+                      </div>
+                      
+                      <div className={styles.announcementText}>
+                        <div className={styles.announcementTitle}>
+                          {announcement.title}
+                        </div>
                       </div>
                     </div>
                     
-                    <div className={styles.announcementText}>
-                      <div className={styles.announcementTitle}>
-                        {announcement.title}
-                      </div>
+                    {/* 읽음/안읽음 상태 표시 (클릭 불가) */}
+                    <div className={styles.readButtons}>
+                      {announcement.isRead ? (
+                        <div className={styles.readStatus}>
+                          읽음
+                        </div>
+                      ) : (
+                        <div className={styles.unreadStatus}>
+                          안읽음
+                        </div>
+                      )}
                     </div>
                   </div>
-                  
-                  {/* 읽음/안읽음 상태 표시 (클릭 불가) */}
-                  <div className={styles.readButtons}>
-                    {announcement.isRead ? (
-                      <div className={styles.readStatus}>
-                        읽음
-                      </div>
-                    ) : (
-                      <div className={styles.unreadStatus}>
-                        안읽음
-                      </div>
-                    )}
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+              ))}
+            </div>
+          )}
+        </main>
 
-      {/* 알림 모달 */}
-      <AnnouncementModal
-        announcement={selectedAnnouncement}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onMarkAsRead={handleMarkAsRead}
-      />
+        {/* 알림 모달 */}
+        <AnnouncementModal
+          announcement={selectedAnnouncement}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onMarkAsRead={handleMarkAsRead}
+        />
+      </div>
     </div>
   );
 };
