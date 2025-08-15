@@ -76,7 +76,14 @@ export default function TestOnboarding() {
   // 이름 입력 완료 핸들러
   const handleNameSubmit = () => {
     if (name.trim()) {
-      setStep(2); // 다음 단계로 이동
+      setStep(2); // AI 아바타 이름 입력 단계로 이동
+    }
+  };
+
+  // AI 아바타 이름 입력 완료 핸들러
+  const handleAvatarNameSubmit = () => {
+    if (avatarName.trim()) {
+      setStep(3); // 완료 단계로 이동
     }
   };
 
@@ -115,6 +122,9 @@ export default function TestOnboarding() {
     }
     return firstText;
   };
+
+  // AI 아바타 이름 상태 추가
+  const [avatarName, setAvatarName] = useState('');
 
   return (
     <div className={globalStyles.fullContainer}>
@@ -180,7 +190,7 @@ export default function TestOnboarding() {
                 <div className={styles.progressContainer}>
                   <div 
                     className={styles.progressFill} 
-                    style={{ width: `${(1 / 3) * 100}%` }}
+                    style={{ width: `${(2 / 4) * 100}%` }}
                   />
                 </div>
               </div>
@@ -196,7 +206,7 @@ export default function TestOnboarding() {
               />
               
               {/* 제목과 부제목 */}
-              <h1 className={styles.title}>이름을 알려주세요!</h1>
+              <h1 className={styles.title}>저의 이름을 지어주세요!</h1>
 
               {/* 이름 입력 폼 */}
               <div className={styles.inputContainer}>
@@ -204,7 +214,7 @@ export default function TestOnboarding() {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="내 이름 입력하기"
+                  placeholder="AI 아바타 이름 입력하기"
                   className={styles.input}
                   maxLength={20}
                   autoFocus
@@ -219,7 +229,7 @@ export default function TestOnboarding() {
                 )}
               </div>
 
-              <p className={styles.subtitle}>신뢰할 수 있는 커뮤니티를 만들어가요.</p>
+              <p className={styles.subtitle}>다른 사람과 소통할 AI의 이름이에요.</p>
               
               {/* 다음 버튼 */}
               <button 
@@ -231,11 +241,81 @@ export default function TestOnboarding() {
               </button>
             </div>
           </div>
+        ) : step === 2 ? (
+          // 세 번째 단계: AI 아바타 이름 입력
+          <div className={styles.nameInputContent}>
+            {/* 헤더 - 뒤로가기 버튼과 진행상황 바 */}
+            <div className={styles.header}>
+              <button 
+                onClick={handleBack} 
+                className={styles.backButton}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              
+              <div className={styles.progressBar}>
+                <div className={styles.progressContainer}>
+                  <div 
+                    className={styles.progressFill} 
+                    style={{ width: `${(3 / 4) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* 메인 콘텐츠 */}
+            <div className={styles.content}>
+              {/* mori.png 이미지 */}
+              <img 
+                src="/mori.png" 
+                alt="모리" 
+                className={styles.moriImage}
+              />
+              
+              {/* 제목과 부제목 */}
+              <h1 className={styles.title}>저의 이름을 지어주세요!</h1>
+
+              {/* AI 아바타 이름 입력 폼 */}
+              <div className={styles.inputContainer}>
+                <input
+                  type="text"
+                  value={avatarName}
+                  onChange={e => setAvatarName(e.target.value)}
+                  placeholder="AI 아바타 이름 입력하기"
+                  className={styles.input}
+                  maxLength={20}
+                  autoFocus
+                />
+                {avatarName && (
+                  <button 
+                    className={styles.clearButton}
+                    onClick={() => setAvatarName('')}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+
+              <p className={styles.subtitle}>다른 사람과 소통할 AI의 이름이에요.</p>
+              
+              {/* 다음 버튼 */}
+              <button 
+                className={styles.nextButton}
+                onClick={handleAvatarNameSubmit}
+                disabled={!avatarName.trim()}
+              >
+                다음
+              </button>
+            </div>
+          </div>
         ) : (
-          // 세 번째 단계: 완료 메시지
+          // 네 번째 단계: 완료 메시지
           <div className={styles.completionContent}>
             <h1 className={styles.title}>완료되었습니다!</h1>
-            <p className={styles.subtitle}>이름: {name}</p>
+            <p className={styles.subtitle}>사용자 이름: {name}</p>
+            <p className={styles.subtitle}>AI 아바타 이름: {avatarName}</p>
           </div>
         )}
       </div>
