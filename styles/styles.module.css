@@ -23,6 +23,17 @@
   transition: all 0.25s;
 }
 
+/* 모바일 크기 고정 (iPhone 15 기준) */
+@media (min-width: 768px) {
+  .centerCard {
+    width: 393px; /* iPhone 15 width */
+    height: 852px; /* iPhone 15 height */
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    margin: 20px auto;
+  }
+}
+
 /* 카드형 (카카오톡 스타일) */
 .cardMode {
   width: 370px;
