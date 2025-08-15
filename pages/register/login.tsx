@@ -24,6 +24,7 @@ export default function Login() {
         // 환경 변수에서 키를 가져오기
         const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
         
+        console.log('=== 카카오 SDK 초기화 ===');
         console.log('환경 변수에서 가져온 카카오 키:', kakaoKey);
         console.log('카카오 키 길이:', kakaoKey?.length);
         console.log('카카오 SDK 존재 여부:', !!window.Kakao);
@@ -53,6 +54,7 @@ export default function Login() {
     const timer = setInterval(() => {
       if (typeof window !== 'undefined' && window.Kakao) {
         clearInterval(timer);
+        console.log('카카오 SDK 로드 완료, 초기화 시작');
         initKakao();
       }
     }, 100);
@@ -67,6 +69,22 @@ export default function Login() {
 
     return () => clearInterval(timer);
   }, []);
+
+  // 카카오 SDK 강제 초기화 함수
+  const forceInitKakao = () => {
+    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+    if (kakaoKey && window.Kakao) {
+      try {
+        window.Kakao.init(kakaoKey);
+        console.log("강제 초기화 성공:", window.Kakao.isInitialized());
+        return true;
+      } catch (error) {
+        console.error("강제 초기화 실패:", error);
+        return false;
+      }
+    }
+    return false;
+  };
 
   const handleGoogleLogin = async () => {
     try {
@@ -89,7 +107,10 @@ export default function Login() {
     try {
       setLoading(true);
       
-      console.log('카카오 로그인 시작');
+      console.log('=== 카카오 로그인 시작 ===');
+      console.log('환경변수 확인:');
+      console.log('- KAKAO_JAVASCRIPT_KEY:', process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY);
+      console.log('- FIREBASE_FUNCTIONS_URL:', process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL);
       console.log('Kakao 객체 존재:', !!window.Kakao);
       console.log('Kakao 초기화 상태:', window.Kakao?.isInitialized?.());
       
@@ -98,47 +119,86 @@ export default function Login() {
       }
       
       if (!window.Kakao.isInitialized()) {
-        throw new Error('카카오 SDK가 초기화되지 않았습니다. 페이지를 새로고침해보세요.');
+        console.log('카카오 SDK 초기화되지 않음, 강제 초기화 시도...');
+        if (!forceInitKakao()) {
+          throw new Error('카카오 SDK 초기화에 실패했습니다. 환경변수를 확인해주세요.');
+        }
       }
 
+      console.log('=== 카카오 로그인 요청 ===');
       // 1) Kakao 로그인(동의 항목은 콘솔에서 활성화한 범위만 요청)
       await new Promise((resolve, reject) => {
+        const redirectUri = process.env.NODE_ENV === 'production' 
+          ? 'https://yourdomain.com/auth/kakao/callback'  // 배포용 도메인으로 변경
+          : 'http://localhost:3000/auth/kakao/callback';  // 개발용
+        
+        console.log('리다이렉트 URI:', redirectUri);
+        
         window.Kakao.Auth.login({
           scope: "profile_nickname,profile_image", // 필요 시 조정
-          success: resolve,
-          fail: reject,
+          redirectUri: redirectUri,
+          success: (response: any) => {
+            console.log('카카오 로그인 성공:', response);
+            resolve(response);
+          },
+          fail: (error: any) => {
+            console.error('카카오 로그인 실패:', error);
+            reject(error);
+          }
         });
       });
 
+      console.log('=== 액세스 토큰 획득 ===');
       // 2) access_token 확보
       const accessToken = window.Kakao.Auth.getAccessToken();
       if (!accessToken) throw new Error("카카오 액세스 토큰을 가져올 수 없습니다.");
+      
+      console.log('액세스 토큰 길이:', accessToken.length);
 
+      console.log('=== Firebase Functions 호출 ===');
       // 3) 서버(Function)에 전달 → custom token 수신
-      const FUNCTIONS_URL = "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/createFirebaseToken";
+      const FUNCTIONS_URL = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || 
+        "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/createFirebaseToken";
+      
+      console.log('Firebase Functions URL:', FUNCTIONS_URL);
       
       const resp = await fetch(FUNCTIONS_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({ access_token: accessToken }),
       });
 
+      console.log('Firebase Functions 응답 상태:', resp.status);
+      console.log('Firebase Functions 응답 헤더:', Object.fromEntries(resp.headers.entries()));
+
       const data = await resp.json();
+      console.log('Firebase Functions 응답 데이터:', data);
+      
       if (!resp.ok) {
         console.error("서버 에러:", data);
-        throw new Error(data.error || "서버 에러");
+        throw new Error(data.error || `서버 에러: ${resp.status}`);
       }
 
+      console.log('=== Firebase 로그인 ===');
       // 4) Firebase 로그인
       const auth = getAuth();
       const result = await signInWithCustomToken(auth, data.token);
       console.log("Firebase 로그인 성공:", result.user?.uid);
 
+      console.log('=== 라우팅 ===');
       // 5) 라우팅
       router.push('/');
     } catch (error) {
-      console.error('카카오 로그인 실패:', error);
-      alert("카카오 로그인에 실패했습니다. 설정(도메인/Redirect/키)을 다시 확인하세요.");
+      console.error('=== 카카오 로그인 실패 ===');
+      console.error('에러 타입:', error.constructor.name);
+      console.error('에러 메시지:', error.message);
+      console.error('에러 스택:', error.stack);
+      
+      // 사용자에게 에러 메시지 표시
+      alert(`카카오 로그인 실패: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -168,13 +228,12 @@ export default function Login() {
           </button>
           
           {/* 카카오 로그인 버튼 */}
-          <button
-            onClick={handleKakaoLogin}
+          <button 
             className={styles.kakaoLoginButton}
+            onClick={handleKakaoLogin}
             disabled={loading}
           >
-            <IoChatbubble size={24} className={styles.kakaoIcon} />
-            {loading ? '진행 중...' : '카카오로 시작하기'}
+            {loading ? '로그인 중...' : '카카오로 시작하기'}
           </button>
           
           {/* 이용약관 및 개인정보처리방침 */}
