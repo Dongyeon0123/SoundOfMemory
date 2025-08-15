@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithCustomToken } from 'firebase/auth';
 import { useRouter } from 'next/router';
-import { IoChatbubble } from 'react-icons/io5';
-import cardStyles from '../../styles/styles.module.css';
 import styles from '../../styles/login.module.css';
 
 // 카카오 SDK 타입 선언
