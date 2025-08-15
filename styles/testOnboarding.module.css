@@ -42,7 +42,7 @@
 .greeting {
   position: absolute;
   top: 20%;
-  right: 80px;
+  right: 65px;
   text-align: right;
   color: white;
   font-family: 'S-Core Dream', sans-serif;
@@ -73,7 +73,7 @@
 
 .continueButton {
   position: absolute;
-  bottom: 40px;
+  bottom: 120px;
   right: 40px;
   padding: 16px 32px;
   background: white;
