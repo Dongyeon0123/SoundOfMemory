@@ -22,8 +22,8 @@
   }
   
   .onboardingContent {
-    width: 393px; /* iPhone 15 width */
-    height: 852px; /* iPhone 15 height */
+    width: 375px; /* iPhone 15 width에서 실제 모바일 크기로 조정 */
+    height: 812px; /* iPhone 15 height에서 실제 모바일 크기로 조정 */
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     margin: 0 auto;
@@ -31,8 +31,8 @@
   }
   
   .nameInputContent {
-    width: 393px; /* iPhone 15 width */
-    height: 852px; /* iPhone 15 height */
+    width: 375px; /* iPhone 15 width에서 실제 모바일 크기로 조정 */
+    height: 812px; /* iPhone 15 height에서 실제 모바일 크기로 조정 */
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     margin: 0 auto;
@@ -117,7 +117,7 @@
 
 .continueButton {
   position: absolute;
-  bottom: 120px;
+  bottom: 60px;
   right: 40px;
   padding: 16px 32px;
   background: white;
