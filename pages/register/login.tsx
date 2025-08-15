@@ -255,7 +255,7 @@ export default function Login() {
       console.error('에러 메시지:', error.message);
       console.error('에러 스택:', error.stack);
       
-      // 사용자에게 에러 메시지 표시
+      // 사용자에게 에러 메시지 표시//
       alert(`카카오 로그인 실패: ${error.message}`);
     } finally {
       setLoading(false);
