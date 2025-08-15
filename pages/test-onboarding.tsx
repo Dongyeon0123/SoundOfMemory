@@ -11,13 +11,11 @@ export default function TestOnboarding() {
   const [cursorBlinkCount, setCursorBlinkCount] = useState(0);
   const [showSecondText, setShowSecondText] = useState(false);
   const [showContinueButton, setShowContinueButton] = useState(false);
-  const [showThirdText, setShowThirdText] = useState(false);
   const [name, setName] = useState('');
   const router = useRouter();
 
   const firstText = "안녕하세요!\n저는 모리입니다!";
   const secondText = "당신에게 딱 맞는\nAI를 생성하기 위해\n몇 가지 궁금한 게 있어요!";
-  const thirdText = "간단한 질문에 답해주시면\n맞춤형 AI를 만들어드릴게요!";
 
   // 타이핑 애니메이션 효과
   useEffect(() => {
@@ -190,7 +188,7 @@ export default function TestOnboarding() {
                 <div className={styles.progressContainer}>
                   <div 
                     className={styles.progressFill} 
-                    style={{ width: `${(2 / 4) * 100}%` }}
+                    style={{ width: `${(1 / 4) * 100}%` }}
                   />
                 </div>
               </div>
@@ -206,7 +204,7 @@ export default function TestOnboarding() {
               />
               
               {/* 제목과 부제목 */}
-              <h1 className={styles.title}>저의 이름을 지어주세요!</h1>
+              <h1 className={styles.title}>이름을 알려주세요!</h1>
 
               {/* 이름 입력 폼 */}
               <div className={styles.inputContainer}>
@@ -214,7 +212,7 @@ export default function TestOnboarding() {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="AI 아바타 이름 입력하기"
+                  placeholder="내 이름 입력하기"
                   className={styles.input}
                   maxLength={20}
                   autoFocus
@@ -229,7 +227,7 @@ export default function TestOnboarding() {
                 )}
               </div>
 
-              <p className={styles.subtitle}>다른 사람과 소통할 AI의 이름이에요.</p>
+              <p className={styles.subtitle}>신뢰할 수 있는 커뮤니티를 만들어가요</p>
               
               {/* 다음 버튼 */}
               <button 
@@ -259,7 +257,7 @@ export default function TestOnboarding() {
                 <div className={styles.progressContainer}>
                   <div 
                     className={styles.progressFill} 
-                    style={{ width: `${(3 / 4) * 100}%` }}
+                    style={{ width: `${(2 / 4) * 100}%` }}
                   />
                 </div>
               </div>

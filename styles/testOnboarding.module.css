@@ -12,6 +12,7 @@
   background: #257EFEFF;
   position: relative;
   overflow: hidden;
+  animation: fadeIn 0.8s ease-out;
 }
 
 /* 데스크탑에서 모바일 크기 고정 (실제 모바일과 동일하게) */
@@ -81,15 +82,17 @@
   width: 160px;
   height: 160px;
   object-fit: contain;
+  animation: floatIn 1s ease-out 0.3s both;
 }
 
 .greeting {
   position: absolute;
-  top: 16%;
-  right: 45px;
+  top: 20%;
+  right: 65px;
   text-align: right;
   color: white;
   font-family: 'S-Core Dream', sans-serif;
+  animation: slideInLeft 0.8s ease-out 0.5s both;
 }
 
 .greetingText {
@@ -129,7 +132,7 @@
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
-  animation: fadeInUp 0.5s ease-out;
+  animation: slideInUp 0.6s ease-out 1.2s both;
 }
 
 .continueButton:hover {
@@ -220,7 +223,7 @@
 /* 진행상황 바 스타일 */
 .progressBar {
   flex: 1;
-  margin-left: 10px;
+  margin-left: 5px; /* 10px에서 5px로 줄여서 왼쪽으로 당김 */
   margin-right: 40px;
   margin-top: 9px;
 }
@@ -287,12 +290,21 @@
   border-radius: 12px;
   font-size: 18px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.3s ease;
   box-sizing: border-box;
+  background: #fafafa;
 }
 
 .input:focus {
   border-color: #257EFEFF;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(37, 126, 254, 0.1);
+  transform: translateY(-1px);
+}
+
+.input:hover {
+  border-color: #c0c0c0;
+  background: white;
 }
 
 .input::placeholder {
@@ -349,7 +361,13 @@
 
 .nextButton:not(:disabled):hover {
   background: #1e6ee8;
-  box-shadow: 0 6px 20px rgba(37, 126, 254, 0.4);
+  box-shadow: 0 8px 25px rgba(37, 126, 254, 0.4);
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.nextButton:not(:disabled):active {
+  transform: translateX(-50%) translateY(0);
+  box-shadow: 0 4px 15px rgba(37, 126, 254, 0.3);
 }
 
 /* 완료 단계 스타일 */
@@ -365,4 +383,142 @@
   justify-content: center;
   padding: 0 40px;
   text-align: center;
+}
+
+/* 페이지 전환 애니메이션 */
+.nameInputContent {
+  width: 100%;
+  height: 100dvh;
+  background: white;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.completionContent {
+  width: 100%;
+  height: 100dvh;
+  background: white;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  text-align: center;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* 슬라이드 인 애니메이션 제거하고 더 자연스러운 효과로 변경 */
+
+/* 요소 등장 애니메이션 */
+.moriImage {
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  margin-bottom: -20px;
+  animation: bounceIn 0.8s ease-out 0.2s both;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 60px;
+  color: #333;
+  animation: slideInUp 0.6s ease-out 0.4s both;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.5;
+  animation: slideInUp 0.6s ease-out 0.6s both;
+}
+
+.inputContainer {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  animation: slideInUp 0.6s ease-out 0.8s both;
+}
+
+.nextButton {
+  width: 100%;
+  max-width: 480px;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 auto;
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  transform: none;
+  animation: slideInUp 0.6s ease-out 1s both;
+}
+
+/* 요소 등장 애니메이션 */
+@keyframes bounceIn {
+  from {
+    opacity: 0;
+    transform: scale(0.3) translateY(-50px);
+  }
+  50% {
+    transform: scale(1.05) translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 첫 번째 폼 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translate(-30%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-30%, -50%) scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
