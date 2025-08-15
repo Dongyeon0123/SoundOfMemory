@@ -128,17 +128,12 @@ export default function Login() {
       console.log('=== 카카오 로그인 요청 ===');
       // 1) Kakao 로그인(동의 항목은 콘솔에서 활성화한 범위만 요청)
       await new Promise((resolve, reject) => {
-        const redirectUri = process.env.NODE_ENV === 'production' 
-          ? 'https://yourdomain.com/auth/kakao/callback'  // 배포용 도메인으로 변경
-          : 'http://localhost:3000/auth/kakao/callback';  // 개발용
-        
-        console.log('리다이렉트 URI:', redirectUri);
+        console.log('팝업 방식으로 카카오 로그인 시작');
         
         window.Kakao.Auth.login({
           scope: "profile_nickname,profile_image", // 필요 시 조정
-          redirectUri: redirectUri,
           success: (response: any) => {
-            console.log('카카오 로그인 성공:', response);
+            console.log('카카오 로그인 성공 응답:', response);
             resolve(response);
           },
           fail: (error: any) => {
@@ -154,6 +149,7 @@ export default function Login() {
       if (!accessToken) throw new Error("카카오 액세스 토큰을 가져올 수 없습니다.");
       
       console.log('액세스 토큰 길이:', accessToken.length);
+      console.log('액세스 토큰 일부:', accessToken.substring(0, 20) + '...');
 
       console.log('=== Firebase Functions 호출 ===');
       // 3) 서버(Function)에 전달 → custom token 수신
@@ -161,36 +157,98 @@ export default function Login() {
         "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/createFirebaseToken";
       
       console.log('Firebase Functions URL:', FUNCTIONS_URL);
+      console.log('액세스 토큰 길이:', accessToken.length);
+      console.log('액세스 토큰 일부:', accessToken.substring(0, 20) + '...');
       
-      const resp = await fetch(FUNCTIONS_URL, {
-        method: "POST",
-        headers: { 
+      // URL 유효성 검사
+      try {
+        new URL(FUNCTIONS_URL);
+        console.log('URL 형식 유효함');
+      } catch (e) {
+        throw new Error(`잘못된 Firebase Functions URL: ${FUNCTIONS_URL}`);
+      }
+      
+      try {
+        console.log('Firebase Functions 요청 시작...');
+        
+        const requestBody = { access_token: accessToken };
+        console.log('요청 본문:', requestBody);
+        
+        // 요청 전송 전 확인
+        console.log('요청 메서드:', 'POST');
+        console.log('요청 헤더:', { 
           "Content-Type": "application/json",
           "Accept": "application/json"
-        },
-        body: JSON.stringify({ access_token: accessToken }),
-      });
+        });
+        
+        const resp = await fetch(FUNCTIONS_URL, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(requestBody),
+        });
 
-      console.log('Firebase Functions 응답 상태:', resp.status);
-      console.log('Firebase Functions 응답 헤더:', Object.fromEntries(resp.headers.entries()));
+        console.log('Firebase Functions 응답 상태:', resp.status);
+        console.log('Firebase Functions 응답 헤더:', Object.fromEntries(resp.headers.entries()));
 
-      const data = await resp.json();
-      console.log('Firebase Functions 응답 데이터:', data);
-      
-      if (!resp.ok) {
-        console.error("서버 에러:", data);
-        throw new Error(data.error || `서버 에러: ${resp.status}`);
+        if (!resp.ok) {
+          const errorText = await resp.text();
+          console.error('Firebase Functions 에러 응답:', errorText);
+          
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch (e) {
+            errorData = { error: '응답을 파싱할 수 없습니다.' };
+          }
+          
+          throw new Error(errorData.error || `서버 에러: ${resp.status} - ${errorText}`);
+        }
+
+        const data = await resp.json();
+        console.log('Firebase Functions 응답 데이터:', data);
+        
+        if (!data.token) {
+          throw new Error('Firebase Custom Token이 응답에 없습니다.');
+        }
+
+        console.log('=== Firebase 로그인 ===');
+        // 4) Firebase 로그인
+        const auth = getAuth();
+        const result = await signInWithCustomToken(auth, data.token);
+        console.log("Firebase 로그인 성공:", result.user?.uid);
+        console.log("Firebase 사용자 정보:", result.user);
+
+        console.log('=== 라우팅 ===');
+        // 5) 라우팅 - 현재 페이지가 로그인 페이지인지 확인
+        console.log('현재 경로:', router.pathname);
+        console.log('라우팅 전 사용자 상태:', auth.currentUser);
+        
+        if (router.pathname === '/register/login') {
+          console.log('로그인 페이지에서 홈으로 이동');
+          router.push('/');
+        } else {
+          console.log('이미 다른 페이지에 있음, 라우팅 생략');
+        }
+        
+      } catch (fetchError: any) {
+        console.error('Firebase Functions 호출 실패:', fetchError);
+        console.error('에러 타입:', fetchError.constructor.name);
+        console.error('에러 메시지:', fetchError.message);
+        console.error('에러 스택:', fetchError.stack);
+        
+        if (fetchError.message.includes('CORS') || fetchError.message.includes('Preflight')) {
+          throw new Error('CORS 에러: 백엔드 CORS 설정을 확인해주세요. OPTIONS 요청을 200으로 응답해야 합니다.');
+        } else if (fetchError.message.includes('500')) {
+          throw new Error('서버 에러: 백엔드 로그를 확인해주세요. Firebase Functions에서 500 에러가 발생하고 있습니다.');
+        } else if (fetchError.message.includes('Load failed')) {
+          throw new Error('네트워크 에러: Firebase Functions URL과 연결을 확인해주세요. 백엔드가 실행 중인지 확인하세요.');
+        } else {
+          throw new Error(`Firebase Functions 호출 실패: ${fetchError.message}`);
+        }
       }
-
-      console.log('=== Firebase 로그인 ===');
-      // 4) Firebase 로그인
-      const auth = getAuth();
-      const result = await signInWithCustomToken(auth, data.token);
-      console.log("Firebase 로그인 성공:", result.user?.uid);
-
-      console.log('=== 라우팅 ===');
-      // 5) 라우팅
-      router.push('/');
     } catch (error) {
       console.error('=== 카카오 로그인 실패 ===');
       console.error('에러 타입:', error.constructor.name);
