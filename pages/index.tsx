@@ -45,11 +45,8 @@ const Home: React.FC = () => {
   // 화면 크기에 따라 카드 모드 자동 설정
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 600) {
-        setIsCardMode(true); // 데스크탑/태블릿에서는 항상 카드형
-      } else {
-        setIsCardMode(false); // 모바일에서는 풀화면
-      }
+      // 모든 화면 크기에서 카드형 유지
+      setIsCardMode(true);
     };
 
     // 초기 설정

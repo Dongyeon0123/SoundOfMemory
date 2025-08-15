@@ -34,8 +34,13 @@ export default function Login() {
         }
         
         try {
-          window.Kakao.init(kakaoKey);
-          console.log("Kakao init 성공:", window.Kakao.isInitialized());
+          // 이미 초기화되었는지 확인
+          if (!window.Kakao.isInitialized()) {
+            window.Kakao.init(kakaoKey);
+            console.log("Kakao init 성공:", window.Kakao.isInitialized());
+          } else {
+            console.log("Kakao 이미 초기화됨");
+          }
         } catch (error) {
           console.error("Kakao init 실패:", error);
         }
@@ -45,25 +50,22 @@ export default function Login() {
     };
 
     // SDK가 로드될 때까지 대기
-    if (typeof window !== 'undefined') {
-      if (window.Kakao) {
+    const timer = setInterval(() => {
+      if (typeof window !== 'undefined' && window.Kakao) {
+        clearInterval(timer);
         initKakao();
-      } else {
-        // SDK 로딩 대기
-        const checkKakao = setInterval(() => {
-          if (window.Kakao) {
-            clearInterval(checkKakao);
-            initKakao();
-          }
-        }, 100);
-        
-        // 10초 후 타임아웃
-        setTimeout(() => {
-          clearInterval(checkKakao);
-          console.error('카카오 SDK 로딩 타임아웃');
-        }, 10000);
       }
-    }
+    }, 100);
+
+    // 10초 후 타임아웃
+    setTimeout(() => {
+      clearInterval(timer);
+      if (typeof window !== 'undefined' && !window.Kakao) {
+        console.error('카카오 SDK 로드 타임아웃');
+      }
+    }, 10000);
+
+    return () => clearInterval(timer);
   }, []);
 
   const handleGoogleLogin = async () => {
