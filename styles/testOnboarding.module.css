@@ -241,7 +241,7 @@
   cursor: pointer;
   transition: all 0.2s;
   margin: 0 auto;
-  bottom: 160px;
+  bottom: 140px;
   left: 10%;
   transform: translateX(-50%);
   background: white;
@@ -442,9 +442,16 @@
   transition: all 0.2s;
   margin: 0 auto;
   position: absolute;
-  bottom: -50px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* 데스크탑/태블릿에서만 카드형 스타일 적용 */
+@media (min-width: 768px) and (min-height: 800px) {
+  .nextButton {
+    bottom: -50px;
+  }
 }
 
 .nextButton:disabled {
@@ -547,11 +554,18 @@
   transition: all 0.3s ease;
   margin: 0 auto;
   position: absolute;
-  bottom: -50px;
+  bottom: -30px;
   left: 0;
   right: 0;
   transform: none;
   animation: slideInUp 0.6s ease-out 1s both;
+}
+
+/* 데스크탑/태블릿에서만 카드형 스타일 적용 */
+@media (min-width: 768px) and (min-height: 800px) {
+  .nextButton {
+    bottom: -50px;
+  }
 }
 
 /* 요소 등장 애니메이션 - 매우 부드러운 전환 */
