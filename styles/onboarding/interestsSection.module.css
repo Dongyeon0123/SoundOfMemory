@@ -247,7 +247,6 @@
   border-color: #257EFE;
   color: white;
   box-shadow: 0 2px 8px rgba(37, 126, 254, 0.3);
-  animation: buttonSelect 0.3s ease-out;
 }
 
 .interestButton.selected:hover {
@@ -311,18 +310,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes buttonSelect {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
   }
 }
 
