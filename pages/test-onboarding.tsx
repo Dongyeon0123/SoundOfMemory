@@ -25,6 +25,15 @@ export default function TestOnboarding() {
   // 각 줄을 개별적으로 표시하는 애니메이션
   useEffect(() => {
     if (step === 0) {
+      // 상태 초기화
+      setCurrentTextPhase('first');
+      setCurrentLineIndex(0);
+      setCursorBlinkCount(0);
+      setShowLines([]);
+      setIsTransitioning(false);
+      setShowFirstContinueButton(false);
+      setShowSecondContinueButton(false);
+      
       const timer = setTimeout(() => setShowTyping(true), 500);
       return () => clearTimeout(timer);
     }
@@ -55,13 +64,31 @@ export default function TestOnboarding() {
           return () => clearTimeout(timer);
         } else {
           // 첫 번째 텍스트가 완료되면 자동으로 두 번째 텍스트로 전환
+          console.log('첫 번째 텍스트 완료, 두 번째 텍스트로 전환 시작');
           setIsTransitioning(true);
-          setTimeout(() => {
+          
+          // 안전장치: 1초 후에도 전환이 안 되면 강제로 전환
+          const transitionTimer = setTimeout(() => {
+            console.log('전환 타이머 실행');
             setCurrentTextPhase('second');
             setCurrentLineIndex(0);
             setCursorBlinkCount(0);
             setIsTransitioning(false);
           }, 1000);
+          
+          // 추가 안전장치: 3초 후에도 전환이 안 되면 강제로 전환
+          const fallbackTimer = setTimeout(() => {
+            console.log('폴백 타이머 실행 - 강제 전환');
+            setCurrentTextPhase('second');
+            setCurrentLineIndex(0);
+            setCursorBlinkCount(0);
+            setIsTransitioning(false);
+          }, 3000);
+          
+          return () => {
+            clearTimeout(transitionTimer);
+            clearTimeout(fallbackTimer);
+          };
         }
       }
     }
@@ -70,6 +97,7 @@ export default function TestOnboarding() {
   // 두 번째 텍스트 애니메이션 - 한 줄씩 표시
   useEffect(() => {
     if (currentTextPhase === 'second' && !isTransitioning) {
+      console.log('두 번째 텍스트 애니메이션 시작');
       const lines = secondText.split('\n');
       
       if (currentLineIndex < lines.length) {
@@ -92,6 +120,7 @@ export default function TestOnboarding() {
           return () => clearTimeout(timer);
         } else {
           // 두 번째 다음 버튼 표시
+          console.log('두 번째 텍스트 완료, 버튼 표시');
           setShowSecondContinueButton(true);
         }
       }
