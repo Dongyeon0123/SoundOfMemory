@@ -111,17 +111,16 @@
 }
 
 .textSection .title {
-  margin-bottom: 10px;
+  margin-bottom: -5px;
   margin-top: 0;
   text-align: left;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #333;
   font-family: 'S-Core Dream', sans-serif;
 }
 
 .textSection .subtitle {
-  margin-bottom: 0;
   text-align: left;
   line-height: 1.5;
   font-size: 12px;
@@ -150,7 +149,6 @@
   margin: 0 auto;
   padding: 20px 0;
   overflow-y: auto;
-  max-height: 530px;
 }
 
 .categorySection {
@@ -206,7 +204,7 @@
 }
 
 .nextButton {
-  width: 100%;
+  width: 80%;
   max-width: 440px;
   padding: 16px;
   border: none;
@@ -215,21 +213,21 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin: 0 auto;
-  position: absolute;
-  bottom: 160px;
-  left: 0;
-  right: 0;
-  transform: none;
-  animation: slideInUp 0.6s ease-out 1s both;
+  margin: 40px auto 20px auto;
   background: #257EFE;
   color: white;
+  animation: slideInUp 0.6s ease-out 2.4s both;
 }
 
 .nextButton:hover {
   background: #1e6ee8;
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(37, 126, 254, 0.3);
+}
+
+.nextButton:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 16px rgba(37, 126, 254, 0.3);
 }
 
 .nextButton:disabled {
@@ -242,8 +240,8 @@
 /* 데스크톱에서는 버튼을 더 위로 올림 */
 @media (min-width: 768px) {
   .nextButton {
-    bottom: 40px;
     max-width: 300px;
+    margin: 20px auto 20px auto;
   }
   .categoryContainer {
     max-height: 420px;
