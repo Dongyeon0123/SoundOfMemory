@@ -205,7 +205,7 @@ export default function TestOnboarding() {
               />
               
               {/* 제목과 부제목 */}
-              <h1 className={styles.title}>저의 이름을 지어주세요!</h1>
+              <h1 className={styles.title}>이름을 말해주세요!</h1>
               
               {/* 이름 입력 폼 */}
               <div className={styles.inputContainer}>
@@ -213,7 +213,7 @@ export default function TestOnboarding() {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="AI 아바타 이름 입력하기"
+                  placeholder="내 이름 입력하기"
                   className={styles.input}
                   maxLength={20}
                   autoFocus
@@ -228,7 +228,7 @@ export default function TestOnboarding() {
                 )}
               </div>
               
-              <p className={styles.subtitle}>다른 사람과 소통할 AI의 이름이에요.</p>
+              <p className={styles.subtitle}>신뢰할 수 있는 커뮤니티를 만들어가요</p>
               
               {/* 다음 버튼 */}
               <button 
