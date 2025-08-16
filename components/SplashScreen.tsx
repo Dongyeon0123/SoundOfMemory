@@ -9,11 +9,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // 3초 후에 부팅화면을 숨김
+    // 2초 후에 부팅화면을 숨김
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(onFinish, 500); // 페이드아웃 애니메이션 후 콜백 실행
-    }, 3000);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [onFinish]);

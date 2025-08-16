@@ -16,7 +16,7 @@
   background: #fff;
   border-radius: 0;
   box-shadow: none;
-  overflow: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -31,6 +31,7 @@
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     margin: 20px auto;
+    overflow: auto;
   }
 }
 
@@ -50,6 +51,7 @@
   border-radius: 0;
   box-shadow: none;
   margin: 0;
+  overflow: hidden;
 }
 
 /* 데스크탑/태블릿에서만 카드형 스타일 적용 */
@@ -72,6 +74,7 @@
     border-radius: 20px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     margin: 20px auto;
+    overflow: auto;
   }
 }
 
