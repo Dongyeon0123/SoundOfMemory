@@ -16,7 +16,7 @@
   background: #fff;
   border-radius: 0;
   box-shadow: none;
-  overflow: hidden;
+  overflow: auto;
   display: flex;
   flex-direction: column;
   margin: auto;
@@ -27,19 +27,30 @@
 @media (min-width: 768px) {
   .centerCard {
     width: 393px; /* iPhone 15 width */
-    height: 852px; /* iPhone 15 height */
+    height: 740px; /* iPhone 15 height */
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     margin: 20px auto;
   }
 }
 
-/* 카드형 (카카오톡 스타일) */
+/* 카드형 모드가 적용된 경우 항상 카드형으로 표시 */
+.centerCard.cardMode {
+  width: 370px;
+  max-width: 95vw;
+  height: 740px;
+  max-height: 92vh;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  margin: 20px auto;
+}
+
+/* 카드형 (카카오톡 스타일) - 독립 사용 시 */
 .cardMode {
   width: 370px;
   max-width: 95vw;
-  height: 780px;
-  max-height: 95vh;
+  height: 740px;
+  max-height: 92vh;
   border-radius: 20px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }

@@ -11,45 +11,49 @@
   height: 100dvh; /* 100vh에서 100dvh로 변경 */
   background: #257EFEFF;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
   animation: fadeIn 0.8s ease-out;
+  min-height: 740px;
+  max-height: 92vh;
 }
 
-/* 모든 화면에서 모바일 크기 고정 (실제 모바일과 동일하게) */
-@media (min-width: 0px) {
-  .container {
-    background: #f5f5f5;
-    padding: 20px;
-    overflow: hidden;
-  }
-  
-  .onboardingContent {
-    width: 100%;
-    height: 100%;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    margin: 0 auto;
-    background: #257EFEFF;
-    overflow: hidden;
-  }
-  
-  .nameInputContent {
-    width: 100%;
-    height: 100%;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    margin: 0 auto;
-    background: white;
-    overflow: hidden;
-  }
-  
-  .header {
-    border-radius: 20px 20px 0 0;
-  }
-  
-  .content {
-    border-radius: 0 0 20px 20px;
-  }
+/* 카드형 스타일 통합 */
+.container {
+  background: #f5f5f5;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.onboardingContent {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  margin: 0 auto;
+  background: #257EFEFF;
+  overflow: auto;
+  min-height: 740px;
+  max-height: 92vh;
+}
+
+.nameInputContent {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  margin: 0 auto;
+  background: white;
+  overflow: auto;
+  min-height: 740px;
+  max-height: 92vh;
+}
+
+.header {
+  border-radius: 20px 20px 0 0;
+}
+
+.content {
+  border-radius: 0 0 20px 20px;
 }
 
 .backButton {
@@ -91,7 +95,7 @@
 .greeting {
   position: absolute;
   top: 20%;
-  right: 65px;
+  right: 60px;
   text-align: right;
   color: white;
   font-family: 'S-Core Dream', sans-serif;
@@ -106,10 +110,10 @@
 }
 
 .greetingLine {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 400;
   line-height: 1.4;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   color: white;
   overflow: hidden;
   white-space: nowrap;
@@ -192,28 +196,32 @@
 
 .continueButton {
   position: absolute;
-  bottom: 60px;
-  right: 40px;
-  padding: 16px 32px;
-  background: white;
-  color: #257EFE;
+  width: 80%;
+  max-width: 480px;
+  padding: 16px;
   border: none;
-  border-radius: 50px;
+  border-radius: 12px;
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 auto;
+  bottom: 20px;
+  left: 10%;
+  transform: translateX(-50%);
+  background: white;
+  color: #257EFE;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
   animation: slideInUp 0.6s ease-out 1.2s both;
 }
 
 .continueButton:hover {
-  transform: translateY(-2px);
+  transform: translateX(-50%) translateY(-2px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
 }
 
 .continueButton:active {
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
 }
 
 @keyframes blink {
@@ -225,28 +233,37 @@
   margin-bottom: 0;
 }
 
-/* 데스크탑/태블릿 카드형 스타일 */
-@media (min-width: 600px) {
-  .character {
-    width: 140px;
-    height: 140px;
-    top: 50%;
-    left: 25%;
-  }
-  
-  .greeting {
-    top: 24%;
-    right: 50px;
-  }
-  
-  .greetingLine {
-    font-size: 22px;
-    margin-bottom: 8px;
-  }
+/* 데스크탑/태블릿 카드형 스타일 통합 */
+.character {
+  width: 140px;
+  height: 140px;
+  top: 50%;
+  left: 25%;
+}
 
-  .nextButton {
-    max-width: 340px !important;
-  }
+.greeting {
+  top: 30%;
+  right: 55px;
+}
+
+/* 두 번째 인사말을 위한 새로운 클래스 */
+.greetingSecond {
+  position: absolute;
+  top: 25%;
+  right: 55px;
+  text-align: right;
+  color: white;
+  font-family: 'S-Core Dream', sans-serif;
+  animation: slideInLeft 0.8s ease-out 0.5s both;
+}
+
+.greetingLine {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.nextButton {
+  max-width: 340px !important;
 }
 
 @keyframes typing {
@@ -265,9 +282,11 @@
   height: 100dvh; /* 100%에서 100dvh로 변경 */
   background: white;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
   display: flex;
   flex-direction: column;
+  min-height: 740px;
+  max-height: 92vh;
 }
 
 /* 헤더 스타일 */
@@ -291,11 +310,11 @@
 
 .progressContainer {
   width: 100%;
-  height: 16px; /* 8px에서 16px로 증가 */
+  height: 16px;
   background: #f0f0f0;
-  border-radius: 8px; /* 4px에서 8px로 증가 */
+  border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 12px; /* 8px에서 12px로 증가 */
+  margin-bottom: 12px;
 }
 
 .progressFill {
@@ -313,16 +332,20 @@
   align-items: center;
   justify-content: flex-start;
   padding: 20px 40px 0 40px;
+  margin-bottom: 60px;
+  margin-top: -10px;
+  transform: translateY(-30px);
   text-align: center;
 }
 
 .moriImage {
-  width: 140px;
-  height: 140px;
+  width: 100px;
+  height: 100px;
   border-radius: 16px;
   transform-origin: center bottom;
   will-change: transform, opacity;
   /* 기본 상태 (빈 상태) - 캐릭터가 꼴까닥 */
+  margin-bottom: 20px;
   transform: rotate(-30deg) translateY(10px) scale(0.95);
   opacity: 0.8;
   transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -359,13 +382,14 @@
 
 .inputContainer {
   position: relative;
-  width: 100%;
+  width: 90%;
   max-width: 480px;
   animation: slideInUp 0.6s ease-out 0.8s both;
+  margin: 0 auto;
 }
 
 .nextButton {
-  width: 100%;
+  width: 80%;
   max-width: 480px;
   padding: 16px;
   border: none;
@@ -376,7 +400,7 @@
   transition: all 0.2s;
   margin: 0 auto;
   position: absolute;
-  bottom: 60px;
+  bottom: -50px;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -454,7 +478,7 @@
 }
 
 .subtitle {
-  font-size: 16px;
+  font-size: 12px;
   color: #666;
   margin-bottom: 30px;
   line-height: 1.5;
@@ -464,12 +488,13 @@
 .inputContainer {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: 550px;
   animation: slideInUp 0.6s ease-out 0.8s both;
+  margin: 0 auto;
 }
 
 .nextButton {
-  width: 100%;
+  width: 90%;
   max-width: 480px;
   padding: 16px;
   border: none;
@@ -480,7 +505,7 @@
   transition: all 0.3s ease;
   margin: 0 auto;
   position: absolute;
-  bottom: 80px;
+  bottom: -50px;
   left: 0;
   right: 0;
   transform: none;
@@ -569,7 +594,7 @@
 .input {
   width: 100%;
   max-width: none;
-  padding: 16px 50px 16px 20px;
+  padding: 12px 50px 12px 20px;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
   font-size: 18px;

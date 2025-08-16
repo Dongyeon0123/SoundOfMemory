@@ -136,7 +136,7 @@ export default function TestOnboarding() {
 
   return (
     <div className={indexStyles.fullContainer}>
-      <div className={indexStyles.centerCard}>
+      <div className={`${indexStyles.centerCard} ${indexStyles.cardMode}`}>
         {step === 0 ? (
           // 첫 번째 단계: 인사말 + 계속하기
           <div className={styles.onboardingContent}>
@@ -158,8 +158,8 @@ export default function TestOnboarding() {
             />
             
             {/* 인사말 */}
-            <div className={styles.greeting}>
-              {showTyping && currentTextPhase === 'first' && (
+            {showTyping && currentTextPhase === 'first' && (
+              <div className={styles.greeting}>
                 <div className={`${styles.greetingText} ${isTransitioning ? styles.transitioning : ''}`}>
                   {firstText.split('\n').map((line, index) => (
                     <div 
@@ -170,8 +170,10 @@ export default function TestOnboarding() {
                     </div>
                   ))}
                 </div>
-              )}
-              {currentTextPhase === 'second' && (
+              </div>
+            )}
+            {currentTextPhase === 'second' && (
+              <div className={styles.greetingSecond}>
                 <div className={`${styles.greetingText} ${isTransitioning ? styles.fadeIn : ''}`}>
                   {secondText.split('\n').map((line, index) => (
                     <div 
@@ -182,8 +184,8 @@ export default function TestOnboarding() {
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* 첫 번째 다음 버튼 */}
             {showFirstContinueButton && (
