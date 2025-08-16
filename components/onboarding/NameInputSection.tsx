@@ -54,7 +54,7 @@ export default function NameInputSection({
           <div className={styles.progressContainer}>
             <div 
               className={styles.progressFill} 
-              style={{ width: `${(step / 5) * 100}%` }}
+              style={{ width: `${((step - 1) / 3) * 100}%` }}
             />
           </div>
         </div>

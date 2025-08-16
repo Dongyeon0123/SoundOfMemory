@@ -60,7 +60,7 @@ export default function TestOnboarding() {
           <NameInputSection
             onContinue={handleUserNameComplete}
             onBack={handleBack}
-            step={2}
+            step={1}
             title="이름을 알려주세요!"
             subtitle="신뢰할 수 있는 커뮤니티를 만들어가요"
             placeholder="내 이름 입력하기"
@@ -71,7 +71,7 @@ export default function TestOnboarding() {
           <NameInputSection
             onContinue={handleAvatarNameComplete}
             onBack={handleBack}
-            step={3}
+            step={2}
             title="저의 이름을 지어주세요!"
             subtitle="다른 사람과 소통할 AI의 이름이에요."
             placeholder="AI 아바타 이름 입력하기"
@@ -89,6 +89,7 @@ export default function TestOnboarding() {
           <CompletionSection
             userName={userName}
             avatarName={avatarName}
+            onBack={handleBack}
           />
         )}
       </div>

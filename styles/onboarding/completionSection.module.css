@@ -8,10 +8,7 @@
   max-height: 92vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 40px 20px;
+  animation: fadeIn 0.8s ease-out;
 }
 
 /* 카드형 스타일 통합 - 모바일에서는 화면 꽉 채움 */
@@ -35,7 +32,68 @@
     margin: 0 auto;
     min-height: 740px;
     max-height: 92vh;
+    animation: slideInFromBottom 0.8s ease-out;
   }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  animation: slideInFromTop 0.6s ease-out 0.2s both;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  animation: fadeIn 0.6s ease-out 0.4s both;
+}
+
+.backButton:hover {
+  background-color: #f5f5f5;
+  transform: scale(1.1);
+  transition: all 0.2s ease;
+}
+
+.progressBar {
+  flex: 1;
+  margin-left: 20px;
+  animation: slideInFromRight 0.6s ease-out 0.6s both;
+}
+
+.progressContainer {
+  width: 100%;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #257EFE;
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 0 0 20px 20px;
+  animation: fadeIn 0.8s ease-out 0.4s both;
 }
 
 .title {
@@ -44,6 +102,7 @@
   color: #333;
   margin-bottom: 24px;
   font-family: 'S-Core Dream', sans-serif;
+  animation: slideInUp 0.6s ease-out 0.6s both;
 }
 
 .subtitle {
@@ -51,8 +110,63 @@
   color: #666;
   margin-bottom: 16px;
   line-height: 1.5;
+  animation: slideInUp 0.6s ease-out 0.8s both;
 }
 
 .subtitle:last-child {
   margin-bottom: 0;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

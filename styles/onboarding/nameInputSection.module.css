@@ -78,8 +78,7 @@
   height: 100%;
   background: #257EFE;
   border-radius: 4px;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: progressFill 1s ease-out 0.8s both;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .content {
@@ -128,7 +127,7 @@
 
 .inputContainer {
   position: relative;
-  width: 100%;
+  width: 90%;
   max-width: 550px;
   animation: slideInUp 0.6s ease-out 1.2s both;
   margin: 0 auto;
@@ -136,7 +135,7 @@
 
 .input {
   width: 100%;
-  padding: 16px 20px;
+  padding: 12px 20px;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
   font-size: 18px;
@@ -305,15 +304,6 @@
   }
   100% {
     transform: scale(1.1) rotate(0deg);
-  }
-}
-
-@keyframes progressFill {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
   }
 }
 

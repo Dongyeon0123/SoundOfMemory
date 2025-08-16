@@ -76,7 +76,7 @@ export default function InterestsSection({ onContinue, onBack }: InterestsSectio
           <div className={styles.progressContainer}>
             <div 
               className={styles.progressFill} 
-              style={{ width: `${(4 / 5) * 100}%` }}
+              style={{ width: `${(2 / 3) * 100}%` }}
             />
           </div>
         </div>
