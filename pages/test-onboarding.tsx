@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/testOnboarding.module.css';
 import globalStyles from '../styles/styles.module.css';
+import indexStyles from '../styles/styles.module.css'; // index 페이지 스타일 참조
 
 export default function TestOnboarding() {
   const [step, setStep] = useState(0);
@@ -126,7 +127,7 @@ export default function TestOnboarding() {
 
   return (
     <div className={globalStyles.fullContainer}>
-      <div className={globalStyles.centerCard}>
+      <div className={indexStyles.centerCard}>
         {step === 0 ? (
           // 첫 번째 단계: 인사말 + 계속하기
           <div className={styles.onboardingContent}>
@@ -204,15 +205,15 @@ export default function TestOnboarding() {
               />
               
               {/* 제목과 부제목 */}
-              <h1 className={styles.title}>이름을 알려주세요!</h1>
-
+              <h1 className={styles.title}>저의 이름을 지어주세요!</h1>
+              
               {/* 이름 입력 폼 */}
               <div className={styles.inputContainer}>
                 <input
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="내 이름 입력하기"
+                  placeholder="AI 아바타 이름 입력하기"
                   className={styles.input}
                   maxLength={20}
                   autoFocus
@@ -226,8 +227,8 @@ export default function TestOnboarding() {
                   </button>
                 )}
               </div>
-
-              <p className={styles.subtitle}>신뢰할 수 있는 커뮤니티를 만들어가요</p>
+              
+              <p className={styles.subtitle}>다른 사람과 소통할 AI의 이름이에요.</p>
               
               {/* 다음 버튼 */}
               <button 
@@ -257,7 +258,7 @@ export default function TestOnboarding() {
                 <div className={styles.progressContainer}>
                   <div 
                     className={styles.progressFill} 
-                    style={{ width: `${(2 / 4) * 100}%` }}
+                    style={{ width: `${(3 / 4) * 100}%` }}
                   />
                 </div>
               </div>
@@ -274,7 +275,7 @@ export default function TestOnboarding() {
               
               {/* 제목과 부제목 */}
               <h1 className={styles.title}>저의 이름을 지어주세요!</h1>
-
+              
               {/* AI 아바타 이름 입력 폼 */}
               <div className={styles.inputContainer}>
                 <input
@@ -295,7 +296,7 @@ export default function TestOnboarding() {
                   </button>
                 )}
               </div>
-
+              
               <p className={styles.subtitle}>다른 사람과 소통할 AI의 이름이에요.</p>
               
               {/* 다음 버튼 */}
