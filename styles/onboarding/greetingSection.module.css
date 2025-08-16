@@ -119,6 +119,13 @@
   transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* 첫 번째 인사말이 부드럽게 사라지는 애니메이션 */
+.greetingText.transitioning {
+  opacity: 0;
+  transform: translateY(-30px) scale(0.95);
+  transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* 두 번째 인사말을 위한 새로운 클래스 */
 .greetingSecond {
   position: absolute;
@@ -128,6 +135,18 @@
   color: white;
   font-family: 'S-Core Dream', sans-serif;
   animation: slideInLeft 0.8s ease-out 0.5s both;
+}
+
+/* 두 번째 인사말이 나타날 때 부드럽게 */
+.greetingSecond .greetingText {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.greetingSecond .greetingText.fadeIn {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .continueButton {

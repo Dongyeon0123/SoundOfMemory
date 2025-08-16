@@ -105,12 +105,13 @@ export default function GreetingSection({ onContinue, onBack }: GreetingSectionP
     setIsTransitioning(true);
     setShowFirstContinueButton(false);
     
+    // 첫 번째 텍스트가 부드럽게 사라진 후 두 번째 텍스트로 전환
     setTimeout(() => {
       setCurrentTextPhase('second');
       setCurrentLineIndex(0);
       setCursorBlinkCount(0);
       setIsTransitioning(false);
-    }, 800);
+    }, 1000); // 1초로 증가하여 더 부드럽게 전환
   };
 
   const handleSecondContinue = () => {
@@ -136,7 +137,7 @@ export default function GreetingSection({ onContinue, onBack }: GreetingSectionP
         className={styles.character}
       />
       
-      {/* 인사말 */}
+      {/* 첫 번째 인사말 */}
       {showTyping && currentTextPhase === 'first' && (
         <div className={styles.greeting}>
           <div className={`${styles.greetingText} ${isTransitioning ? styles.transitioning : ''}`}>
@@ -151,9 +152,11 @@ export default function GreetingSection({ onContinue, onBack }: GreetingSectionP
           </div>
         </div>
       )}
+      
+      {/* 두 번째 인사말 */}
       {currentTextPhase === 'second' && (
         <div className={styles.greetingSecond}>
-          <div className={`${styles.greetingText} ${isTransitioning ? styles.fadeIn : ''}`}>
+          <div className={`${styles.greetingText} ${!isTransitioning ? styles.fadeIn : ''}`}>
             {secondText.split('\n').map((line, index) => (
               <div 
                 key={`second-${index}`} 
@@ -166,7 +169,7 @@ export default function GreetingSection({ onContinue, onBack }: GreetingSectionP
         </div>
       )}
 
-      {/* 첫 번째 다음 버튼 */}
+      {/* 첫 번째 계속하기 버튼 */}
       {showFirstContinueButton && (
         <button 
           onClick={handleFirstContinue}
@@ -176,7 +179,7 @@ export default function GreetingSection({ onContinue, onBack }: GreetingSectionP
         </button>
       )}
 
-      {/* 두 번째 다음 버튼 */}
+      {/* 두 번째 계속하기 버튼 */}
       {showSecondContinueButton && (
         <button 
           onClick={handleSecondContinue}
