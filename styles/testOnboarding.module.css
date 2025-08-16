@@ -85,6 +85,10 @@
   .content {
     border-radius: 0 0 20px 20px;
   }
+
+  .continueButton {
+    bottom: 20px;
+  }
 }
 
 .backButton {
@@ -237,13 +241,20 @@
   cursor: pointer;
   transition: all 0.2s;
   margin: 0 auto;
-  bottom: 20px;
+  bottom: 200px;
   left: 10%;
   transform: translateX(-50%);
   background: white;
   color: #257EFE;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   animation: slideInUp 0.6s ease-out 1.2s both;
+}
+
+/* 데스크탑/태블릿에서만 카드형 스타일 적용 */
+@media (min-width: 768px) and (min-height: 800px) {
+  .continueButton {
+    bottom: 40px;
+  }
 }
 
 .continueButton:hover {

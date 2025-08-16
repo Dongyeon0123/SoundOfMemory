@@ -51,11 +51,17 @@ export default function TestOnboarding() {
         if (cursorBlinkCount < 3) {
           const timer = setTimeout(() => {
             setCursorBlinkCount(prev => prev + 1);
-          }, 500);
+          }, 1000);
           return () => clearTimeout(timer);
         } else {
-          // 첫 번째 다음 버튼 표시
-          setShowFirstContinueButton(true);
+          // 첫 번째 텍스트가 완료되면 자동으로 두 번째 텍스트로 전환
+          setIsTransitioning(true);
+          setTimeout(() => {
+            setCurrentTextPhase('second');
+            setCurrentLineIndex(0);
+            setCursorBlinkCount(0);
+            setIsTransitioning(false);
+          }, 1000);
         }
       }
     }
