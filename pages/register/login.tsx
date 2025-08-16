@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithCustomToken } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import styles from '../../styles/login.module.css';
+import indexStyles from '../../styles/styles.module.css';
 
 // 카카오 SDK 타입 선언
 declare global {
@@ -261,8 +262,8 @@ export default function Login() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={`${styles.centerCard} ${styles.cardMode}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 500 }}>
+    <div className={indexStyles.fullContainer}>
+      <div className={indexStyles.centerCard} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 500 }}>
         <div className={styles.contentWrapper}>
           <img src="/BlueLogo.png" alt="서비스 로고" className={styles.logo} />
           <h1 className={styles.title}>자신을 기록하고<br></br>타인과 소통하세요.</h1>

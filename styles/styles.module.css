@@ -1,18 +1,19 @@
 /* 전체 뷰포트 중앙 카드 배치 */
 .fullContainer {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background: #eee;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 0;
+  box-sizing: border-box;
 }
 
 /* 카드형 컨테이너 - 모바일에서는 화면 꽉 채움 */
 .centerCard {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background: #fff;
   border-radius: 0;
   box-shadow: none;
@@ -21,6 +22,7 @@
   flex-direction: column;
   margin: 0;
   transition: all 0.25s;
+  box-sizing: border-box;
 }
 
 /* 데스크탑/태블릿에서만 카드형으로 표시 */
@@ -38,20 +40,22 @@
 /* 카드형 모드가 적용된 경우 - 모바일에서는 화면 꽉 채움 */
 .centerCard.cardMode {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   border-radius: 0;
   box-shadow: none;
   margin: 0;
+  box-sizing: border-box;
 }
 
 /* 카드형 (카카오톡 스타일) - 모바일에서는 화면 꽉 채움 */
 .cardMode {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   border-radius: 0;
   box-shadow: none;
   margin: 0;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* 데스크탑/태블릿에서만 카드형 스타일 적용 */
