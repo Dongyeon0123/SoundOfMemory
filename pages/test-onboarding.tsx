@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/testOnboarding.module.css';
-import globalStyles from '../styles/styles.module.css';
 import indexStyles from '../styles/styles.module.css'; // index 페이지 스타일 참조
 
 export default function TestOnboarding() {
   const [step, setStep] = useState(0);
   const [showTyping, setShowTyping] = useState(false);
-  const [displayText, setDisplayText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [cursorBlinkCount, setCursorBlinkCount] = useState(0);
-  const [showSecondText, setShowSecondText] = useState(false);
   const [showContinueButton, setShowContinueButton] = useState(false);
   const [name, setName] = useState('');
+  const [currentLineIndex, setCurrentLineIndex] = useState(0); // 현재 줄 인덱스
+  const [showLines, setShowLines] = useState<boolean[]>([]); // 각 줄 표시 상태
+  const [currentTextPhase, setCurrentTextPhase] = useState<'first' | 'second' | 'complete'>('first'); // 현재 텍스트 단계
+  const [showFirstContinueButton, setShowFirstContinueButton] = useState(false); // 첫 번째 다음 버튼
+  const [showSecondContinueButton, setShowSecondContinueButton] = useState(false); // 두 번째 다음 버튼
+  const [isTransitioning, setIsTransitioning] = useState(false); // 텍스트 전환 중 상태
+  const [isTyping, setIsTyping] = useState(false); // 타이핑 중 상태 (애니메이션 중복 방지)
+  const [lastNameLength, setLastNameLength] = useState(0); // 이전 이름 길이 (애니메이션 중복 방지)
   const router = useRouter();
 
   const firstText = "안녕하세요!\n저는 모리입니다!";
   const secondText = "당신에게 딱 맞는\nAI를 생성하기 위해\n몇 가지 궁금한 게 있어요!";
 
-  // 타이핑 애니메이션 효과
+  // 각 줄을 개별적으로 표시하는 애니메이션
   useEffect(() => {
     if (step === 0) {
       const timer = setTimeout(() => setShowTyping(true), 500);
@@ -26,51 +30,67 @@ export default function TestOnboarding() {
     }
   }, [step]);
 
-  // 첫 번째 텍스트 애니메이션
+  // 첫 번째 텍스트 애니메이션 - 한 줄씩 표시
   useEffect(() => {
-    if (showTyping && currentIndex < firstText.length) {
-      const timer = setTimeout(() => {
-        setDisplayText(firstText.slice(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
-      }, 150);
-      return () => clearTimeout(timer);
-    } else if (showTyping && currentIndex >= firstText.length) {
-      // 첫 번째 텍스트 완성 후 잠시 대기
-      if (cursorBlinkCount < 3) {
+    if (showTyping && currentTextPhase === 'first') {
+      const lines = firstText.split('\n');
+      
+      if (currentLineIndex < lines.length) {
         const timer = setTimeout(() => {
-          setCursorBlinkCount(cursorBlinkCount + 1);
-        }, 500);
+          setShowLines(prev => {
+            const newShowLines = [...prev];
+            newShowLines[currentLineIndex] = true;
+            return newShowLines;
+          });
+          setCurrentLineIndex(prev => prev + 1);
+        }, 800); // 각 줄마다 800ms 후에 나타남
+        
         return () => clearTimeout(timer);
       } else {
-        // 잠시 대기 후 두 번째 텍스트 시작
-        setShowSecondText(true);
-        setCurrentIndex(0);
-        setCursorBlinkCount(0);
+        // 모든 줄이 나타난 후 잠시 대기
+        if (cursorBlinkCount < 3) {
+          const timer = setTimeout(() => {
+            setCursorBlinkCount(prev => prev + 1);
+          }, 500);
+          return () => clearTimeout(timer);
+        } else {
+          // 첫 번째 다음 버튼 표시
+          setShowFirstContinueButton(true);
+        }
       }
     }
-  }, [showTyping, currentIndex, firstText, cursorBlinkCount]);
+  }, [showTyping, currentLineIndex, firstText, cursorBlinkCount, currentTextPhase]);
 
-  // 두 번째 텍스트 애니메이션
+  // 두 번째 텍스트 애니메이션 - 한 줄씩 표시
   useEffect(() => {
-    if (showSecondText && currentIndex < secondText.length) {
-      const timer = setTimeout(() => {
-        setDisplayText(secondText.slice(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
-      }, 150);
-      return () => clearTimeout(timer);
-    } else if (showSecondText && currentIndex >= secondText.length) {
-      // 두 번째 텍스트 완성 후 잠시 대기
-      if (cursorBlinkCount < 3) {
+    if (currentTextPhase === 'second' && !isTransitioning) {
+      const lines = secondText.split('\n');
+      
+      if (currentLineIndex < lines.length) {
         const timer = setTimeout(() => {
-          setCursorBlinkCount(cursorBlinkCount + 1);
-        }, 500);
+          setShowLines(prev => {
+            const newShowLines = [...prev];
+            newShowLines[currentLineIndex + firstText.split('\n').length] = true;
+            return newShowLines;
+          });
+          setCurrentLineIndex(prev => prev + 1);
+        }, 800);
+        
         return () => clearTimeout(timer);
       } else {
-        // 잠시 대기 후 계속하기 버튼 표시
-        setShowContinueButton(true);
+        // 모든 줄이 나타난 후 잠시 대기
+        if (cursorBlinkCount < 3) {
+          const timer = setTimeout(() => {
+            setCursorBlinkCount(prev => prev + 1);
+          }, 500);
+          return () => clearTimeout(timer);
+        } else {
+          // 두 번째 다음 버튼 표시
+          setShowSecondContinueButton(true);
+        }
       }
     }
-  }, [showSecondText, currentIndex, secondText, cursorBlinkCount]);
+  }, [currentTextPhase, currentLineIndex, secondText, cursorBlinkCount, firstText, isTransitioning]);
 
   // 이름 입력 완료 핸들러
   const handleNameSubmit = () => {
@@ -81,7 +101,7 @@ export default function TestOnboarding() {
 
   // AI 아바타 이름 입력 완료 핸들러
   const handleAvatarNameSubmit = () => {
-    if (avatarName.trim()) {
+    if (name.trim()) { // 이름 입력 후 아바타 이름 입력
       setStep(3); // 완료 단계로 이동
     }
   };
@@ -95,38 +115,27 @@ export default function TestOnboarding() {
     }
   };
 
-  // 계속하기 버튼 클릭 핸들러
-  const handleContinue = () => {
+  // 첫 번째 다음 버튼 클릭 핸들러
+  const handleFirstContinue = () => {
+    setIsTransitioning(true);
+    setShowFirstContinueButton(false);
+    
+    // 부드러운 페이드 아웃 애니메이션
+    setTimeout(() => {
+      setCurrentTextPhase('second');
+      setCurrentLineIndex(0);
+      setCursorBlinkCount(0);
+      setIsTransitioning(false);
+    }, 800); // 페이드 아웃 시간을 800ms로 증가
+  };
+
+  // 두 번째 다음 버튼 클릭 핸들러
+  const handleSecondContinue = () => {
     setStep(1); // 이름 입력 단계로 이동
   };
 
-  // 각 줄을 개별적으로 애니메이션
-  const renderAnimatedText = (text: string, lineIndex: number) => {
-    const lines = text.split('\n');
-    if (lineIndex >= lines.length) return '';
-    
-    const currentLine = lines[lineIndex];
-    const totalCharsBefore = lines.slice(0, lineIndex).join('\n').length + (lineIndex > 0 ? 1 : 0);
-    const charsInCurrentLine = Math.max(0, currentIndex - totalCharsBefore);
-    
-    if (charsInCurrentLine <= 0) return '';
-    
-    return currentLine.slice(0, charsInCurrentLine);
-  };
-
-  // 현재 표시할 텍스트 결정
-  const getCurrentText = () => {
-    if (showSecondText) {
-      return secondText;
-    }
-    return firstText;
-  };
-
-  // AI 아바타 이름 상태 추가
-  const [avatarName, setAvatarName] = useState('');
-
   return (
-    <div className={globalStyles.fullContainer}>
+    <div className={indexStyles.fullContainer}>
       <div className={indexStyles.centerCard}>
         {step === 0 ? (
           // 첫 번째 단계: 인사말 + 계속하기
@@ -150,21 +159,46 @@ export default function TestOnboarding() {
             
             {/* 인사말 */}
             <div className={styles.greeting}>
-              {showTyping && (
-                <div className={styles.greetingText}>
-                  {getCurrentText().split('\n').map((line, index) => (
-                    <div key={index} className={styles.greetingLine}>
-                      {renderAnimatedText(getCurrentText(), index)}
+              {showTyping && currentTextPhase === 'first' && (
+                <div className={`${styles.greetingText} ${isTransitioning ? styles.transitioning : ''}`}>
+                  {firstText.split('\n').map((line, index) => (
+                    <div 
+                      key={index} 
+                      className={`${styles.greetingLine} ${showLines[index] ? styles.visible : ''}`}
+                    >
+                      {showLines[index] ? line : ''}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {currentTextPhase === 'second' && (
+                <div className={`${styles.greetingText} ${isTransitioning ? styles.fadeIn : ''}`}>
+                  {secondText.split('\n').map((line, index) => (
+                    <div 
+                      key={`second-${index}`} 
+                      className={`${styles.greetingLine} ${showLines[index + firstText.split('\n').length] ? styles.visible : ''}`}
+                    >
+                      {showLines[index + firstText.split('\n').length] ? line : ''}
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* 계속하기 버튼 */}
-            {showContinueButton && (
+            {/* 첫 번째 다음 버튼 */}
+            {showFirstContinueButton && (
               <button 
-                onClick={handleContinue}
+                onClick={handleFirstContinue}
+                className={styles.continueButton}
+              >
+                계속하기
+              </button>
+            )}
+
+            {/* 두 번째 다음 버튼 */}
+            {showSecondContinueButton && (
+              <button 
+                onClick={handleSecondContinue}
                 className={styles.continueButton}
               >
                 계속하기
@@ -201,18 +235,31 @@ export default function TestOnboarding() {
               <img 
                 src="/mori.png" 
                 alt="모리" 
-                className={styles.moriImage}
+                className={`${styles.moriImage} ${name.trim() ? styles.filled : ''}`}
+                style={{
+                  // 타이핑 중일 때만 애니메이션 실행
+                  transition: isTyping ? 'all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
+                }}
               />
               
               {/* 제목과 부제목 */}
-              <h1 className={styles.title}>이름을 말해주세요!</h1>
+              <h1 className={styles.title}>이름을 알려주세요!</h1>
               
               {/* 이름 입력 폼 */}
               <div className={styles.inputContainer}>
                 <input
                   type="text"
                   value={name}
-                  onChange={e => setName(e.target.value)}
+                  onChange={e => {
+                    const newValue = e.target.value;
+                    setName(newValue);
+                    
+                    // 타이핑 중일 때만 애니메이션 실행 (중복 방지)
+                    if (!isTyping) {
+                      setIsTyping(true);
+                      setTimeout(() => setIsTyping(false), 100); // 100ms 후 타이핑 상태 해제
+                    }
+                  }}
                   placeholder="내 이름 입력하기"
                   className={styles.input}
                   maxLength={20}
@@ -270,7 +317,11 @@ export default function TestOnboarding() {
               <img 
                 src="/mori.png" 
                 alt="모리" 
-                className={styles.moriImage}
+                className={`${styles.moriImage} ${name.trim() ? styles.filled : ''}`}
+                style={{
+                  // 타이핑 중일 때만 애니메이션 실행
+                  transition: isTyping ? 'all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
+                }}
               />
               
               {/* 제목과 부제목 */}
@@ -280,17 +331,26 @@ export default function TestOnboarding() {
               <div className={styles.inputContainer}>
                 <input
                   type="text"
-                  value={avatarName}
-                  onChange={e => setAvatarName(e.target.value)}
+                  value={name}
+                  onChange={e => {
+                    const newValue = e.target.value;
+                    setName(newValue);
+                    
+                    // 타이핑 중일 때만 애니메이션 실행 (중복 방지)
+                    if (!isTyping) {
+                      setIsTyping(true);
+                      setTimeout(() => setIsTyping(false), 100); // 100ms 후 타이핑 상태 해제
+                    }
+                  }}
                   placeholder="AI 아바타 이름 입력하기"
                   className={styles.input}
                   maxLength={20}
                   autoFocus
                 />
-                {avatarName && (
+                {name && (
                   <button 
                     className={styles.clearButton}
-                    onClick={() => setAvatarName('')}
+                    onClick={() => setName('')}
                   >
                     ×
                   </button>
@@ -303,7 +363,7 @@ export default function TestOnboarding() {
               <button 
                 className={styles.nextButton}
                 onClick={handleAvatarNameSubmit}
-                disabled={!avatarName.trim()}
+                disabled={!name.trim()}
               >
                 다음
               </button>
@@ -314,7 +374,7 @@ export default function TestOnboarding() {
           <div className={styles.completionContent}>
             <h1 className={styles.title}>완료되었습니다!</h1>
             <p className={styles.subtitle}>사용자 이름: {name}</p>
-            <p className={styles.subtitle}>AI 아바타 이름: {avatarName}</p>
+            <p className={styles.subtitle}>AI 아바타 이름: {name}</p> {/* 아바타 이름은 이름과 동일 */}
           </div>
         )}
       </div>
