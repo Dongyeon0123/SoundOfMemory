@@ -1,0 +1,219 @@
+.nameInputContent {
+  width: 100%;
+  height: 100dvh;
+  background: white;
+  position: relative;
+  overflow: auto;
+  min-height: 740px;
+  max-height: 92vh;
+}
+
+/* 카드형 스타일 통합 - 모바일에서는 화면 꽉 채움 */
+.nameInputContent {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  background: white;
+  overflow: auto;
+  min-height: 100vh;
+  max-height: 100vh;
+}
+
+/* 데스크탑/태블릿에서만 카드형 스타일 적용 */
+@media (min-width: 768px) and (min-height: 800px) {
+  .nameInputContent {
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    margin: 0 auto;
+    min-height: 740px;
+    max-height: 92vh;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: white;
+  border-radius: 20px 20px 0 0;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background-color: #f5f5f5;
+}
+
+.progressBar {
+  flex: 1;
+  margin-left: 20px;
+}
+
+.progressContainer {
+  width: 100%;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #257EFE;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  background: white;
+  border-radius: 0 0 20px 20px;
+}
+
+.moriImage {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 30px;
+  transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: scale(1);
+}
+
+.moriImage.filled {
+  transform: scale(1.1);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 16px;
+  font-family: 'S-Core Dream', sans-serif;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 40px;
+  line-height: 1.5;
+}
+
+.inputContainer {
+  position: relative;
+  width: 100%;
+  max-width: 550px;
+  animation: slideInUp 0.6s ease-out 0.8s both;
+  margin: 0 auto;
+}
+
+.input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  background: white;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #257EFE;
+  box-shadow: 0 0 0 3px rgba(37, 126, 254, 0.1);
+}
+
+.input::placeholder {
+  color: #999;
+}
+
+.clearButton {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.clearButton:hover {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.nextButton {
+  width: 100%;
+  max-width: 480px;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 auto;
+  position: absolute;
+  bottom: 160px;
+  left: 0;
+  right: 0;
+  transform: none;
+  animation: slideInUp 0.6s ease-out 1s both;
+  background: #257EFE;
+  color: white;
+}
+
+.nextButton:hover {
+  background: #1e6ee8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37, 126, 254, 0.3);
+}
+
+.nextButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 데스크톱에서는 버튼을 더 위로 올림 */
+@media (min-width: 768px) {
+  .nextButton {
+    bottom: 30px;
+    max-width: 300px;
+  }
+}
+
+/* 애니메이션 */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
