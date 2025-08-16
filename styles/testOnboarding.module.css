@@ -57,7 +57,7 @@
 }
 
 /* 데스크탑/태블릿에서만 카드형 스타일 적용 */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (min-height: 800px) {
   .container {
     padding: 20px;
   }
@@ -420,7 +420,7 @@
 }
 
 .nextButton {
-  width: 80%;
+  width: 90%;
   max-width: 480px;
   padding: 16px;
   border: none;
@@ -525,8 +525,8 @@
 }
 
 .nextButton {
-  width: 90%;
-  max-width: 480px;
+  width: 100%;
+  max-width: 550px;
   padding: 16px;
   border: none;
   border-radius: 12px;
