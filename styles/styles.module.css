@@ -9,7 +9,7 @@
   padding: 0;
 }
 
-/* 카드형 컨테이너 */
+/* 카드형 컨테이너 - 모바일에서는 화면 꽉 채움 */
 .centerCard {
   width: 100vw;
   height: 100vh;
@@ -19,11 +19,11 @@
   overflow: auto;
   display: flex;
   flex-direction: column;
-  margin: auto;
+  margin: 0;
   transition: all 0.25s;
 }
 
-/* 모바일 크기 고정 (iPhone 15 기준) */
+/* 데스크탑/태블릿에서만 카드형으로 표시 */
 @media (min-width: 768px) {
   .centerCard {
     width: 393px; /* iPhone 15 width */
@@ -45,14 +45,26 @@
   margin: 20px auto;
 }
 
-/* 카드형 (카카오톡 스타일) - 독립 사용 시 */
+/* 카드형 (카카오톡 스타일) - 모바일에서는 화면 꽉 채움 */
 .cardMode {
-  width: 370px;
-  max-width: 95vw;
-  height: 740px;
-  max-height: 92vh;
-  border-radius: 20px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+}
+
+/* 데스크탑/태블릿에서만 카드형 스타일 적용 */
+@media (min-width: 768px) {
+  .cardMode {
+    width: 370px;
+    max-width: 95vw;
+    height: 740px;
+    max-height: 92vh;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    margin: 20px auto;
+  }
 }
 
 /* 상단 고정 헤더 */
