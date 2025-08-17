@@ -68,15 +68,13 @@ const Home: React.FC = () => {
         setMyProfile(profile);
         
         // 프로필이 없거나 온보딩이 완료되지 않은 경우 온보딩 페이지로 리다이렉트
-        if (!profile || !profile.name || profile.desc === '@온보딩사용자') {
+        if (!profile || !profile.name) {
           router.push('/test-onboarding');
           return;
         }
         
         // 온보딩이 완료된 경우에만 홈 페이지 표시
-        if (profile.desc === '@온보딩완료' || profile.desc !== '@온보딩사용자') {
-          setLoading(false);
-        }
+        setLoading(false);
       } else {
         setUserId(null);
         setMyProfile(null);

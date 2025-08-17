@@ -27,11 +27,15 @@ export default function CompletionSection({ userName, avatarName, onBack }: Comp
     return () => unsubscribe();
   }, []);
 
-  const handleSaveToFirebase = async () => {
-    if (!userId) {
-      setSaveStatus('error');
-      return;
+  // 컴포넌트 마운트 시 자동으로 저장 시작
+  useEffect(() => {
+    if (userId) {
+      handleAutoSave();
     }
+  }, [userId]);
+
+  const handleAutoSave = async () => {
+    if (!userId) return;
 
     setIsSaving(true);
     setSaveStatus('saving');
@@ -40,12 +44,9 @@ export default function CompletionSection({ userName, avatarName, onBack }: Comp
       // 로그인된 사용자의 ID를 사용하여 프로필 정보 저장
       await setProfileField(userId, {
         name: userName,
-        aiIntro: `안녕하세요! 저는 ${avatarName}입니다. ${userName}님과 함께 대화할 수 있어서 기쁩니다.`,
-        desc: '@온보딩완료', // 온보딩 완료 표시
+        aiIntro: `안녕 나는 ${userName}의 개인 AI비서야. 궁금한거 있으면 물어봐!`,
         img: '/char.png', // 기본 이미지
-        backgroundImg: '/background.png', // 기본 배경 이미지
-        tag: ['온보딩완료', '새사용자'],
-        introduce: `${userName}님의 AI 친구 ${avatarName}입니다.`
+        backgroundImg: '/background.png' // 기본 배경 이미지
       });
       
       setSaveStatus('success');
@@ -94,16 +95,6 @@ export default function CompletionSection({ userName, avatarName, onBack }: Comp
         <p className={styles.subtitle}>AI 아바타 이름: {avatarName}</p>
         
         {/* 저장 상태 표시 */}
-        {saveStatus === 'idle' && (
-          <button 
-            onClick={handleSaveToFirebase}
-            className={styles.saveButton}
-            disabled={isSaving}
-          >
-            파이어베이스에 저장하기
-          </button>
-        )}
-        
         {saveStatus === 'saving' && (
           <div className={styles.savingStatus}>
             <p>파이어베이스에 저장 중...</p>
@@ -120,7 +111,7 @@ export default function CompletionSection({ userName, avatarName, onBack }: Comp
           <div className={styles.errorStatus}>
             <p>❌ 저장 실패. 다시 시도해주세요.</p>
             <button 
-              onClick={handleSaveToFirebase}
+              onClick={handleAutoSave}
               className={styles.retryButton}
             >
               다시 시도
