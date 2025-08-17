@@ -117,6 +117,90 @@
   margin-bottom: 0;
 }
 
+/* 저장 버튼 스타일 */
+.saveButton {
+  background: #257EFE;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+  animation: slideInUp 0.6s ease-out 1s both;
+}
+
+.saveButton:hover {
+  background: #1a5fd8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 126, 254, 0.3);
+}
+
+.saveButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 상태 표시 스타일 */
+.savingStatus,
+.successStatus,
+.errorStatus {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  animation: slideInUp 0.6s ease-out 1s both;
+}
+
+.savingStatus {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #bbdefb;
+}
+
+.successStatus {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.errorStatus {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.savingStatus p,
+.successStatus p,
+.errorStatus p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* 재시도 버튼 */
+.retryButton {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 12px;
+}
+
+.retryButton:hover {
+  background: #d32f2f;
+  transform: translateY(-1px);
+}
+
 /* 애니메이션 */
 @keyframes fadeIn {
   from {

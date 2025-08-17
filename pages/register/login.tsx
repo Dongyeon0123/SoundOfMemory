@@ -29,7 +29,7 @@ export default function Login() {
         console.log('카카오 SDK 존재 여부:', !!window.Kakao);
         
         if (!kakaoKey) {
-          console.error('카카오 JavaScript 키가 설정되지 않았습니다. 환경 변수에 NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY를 설정해주세요.');
+          console.error('카카오 JavaScript 키가 설정되지 않았습니다. .env.local 파일에 NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY를 설정해주세요.');
           return;
         }
         
@@ -72,17 +72,25 @@ export default function Login() {
   // 카카오 SDK 강제 초기화 함수
   const forceInitKakao = () => {
     const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
-    if (kakaoKey && window.Kakao) {
-      try {
-        window.Kakao.init(kakaoKey);
-        console.log("강제 초기화 성공:", window.Kakao.isInitialized());
-        return true;
-      } catch (error) {
-        console.error("강제 초기화 실패:", error);
-        return false;
-      }
+    
+    if (!kakaoKey) {
+      console.error('카카오 JavaScript 키가 설정되지 않았습니다.');
+      return false;
     }
-    return false;
+    
+    if (!window.Kakao) {
+      console.error('카카오 SDK가 로드되지 않았습니다.');
+      return false;
+    }
+    
+    try {
+      window.Kakao.init(kakaoKey);
+      console.log("강제 초기화 성공:", window.Kakao.isInitialized());
+      return true;
+    } catch (error) {
+      console.error("강제 초기화 실패:", error);
+      return false;
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -113,8 +121,13 @@ export default function Login() {
       console.log('Kakao 객체 존재:', !!window.Kakao);
       console.log('Kakao 초기화 상태:', window.Kakao?.isInitialized?.());
       
+      // 환경 변수 확인
+      if (!process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY) {
+        throw new Error('카카오 JavaScript 키가 설정되지 않았습니다. .env.local 파일에 NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY를 설정해주세요.');
+      }
+      
       if (!window.Kakao) {
-        throw new Error('카카오 SDK가 로드되지 않았습니다.');
+        throw new Error('카카오 SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
       }
       
       if (!window.Kakao.isInitialized()) {

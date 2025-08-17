@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import styles from '../styles/testOnboarding.module.css';
 import indexStyles from '../styles/styles.module.css';
 import GreetingSection from '../components/onboarding/GreetingSection';
@@ -12,7 +13,35 @@ export default function TestOnboarding() {
   const [userName, setUserName] = useState('');
   const [avatarName, setAvatarName] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  // 인증 상태 확인 및 보호
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
+        router.push('/register/login');
+        return;
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [router]);
+
+  // 로딩 중이거나 인증되지 않은 경우 로딩 표시
+  if (loading) {
+    return (
+      <div className={indexStyles.fullContainer}>
+        <div className={`${indexStyles.centerCard} ${indexStyles.cardMode}`}>
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <p>로딩 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 뒤로가기 핸들러
   const handleBack = () => {
