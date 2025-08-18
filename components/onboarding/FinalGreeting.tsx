@@ -168,10 +168,9 @@ export default function FinalGreeting({
           animation: 'slideInUp 0.8s ease-out 1s both'
         }}>
           <div style={{
-            fontSize: '20px',
+            fontSize: '19px',
             fontWeight: '600',
             lineHeight: '1.4',
-            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
           }}>
             {firstText.split('\n').map((line, index) => (
               <div key={index} style={{ marginBottom: '8px' }}>
@@ -195,10 +194,9 @@ export default function FinalGreeting({
           animation: 'fadeIn 0.8s ease-out 1.5s both'
         }}>
           <div style={{
-            fontSize: '18px',
+            fontSize: '17px',
             fontWeight: '500',
             lineHeight: '1.4',
-            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
           }}>
             {secondText}
           </div>

@@ -74,7 +74,7 @@ const SearchModal: React.FC<Props> = ({
           textAlign: 'center',
           color: '#636AE8',
           fontWeight: 800,
-          fontSize: 22,
+                          fontSize: 21,
           marginBottom: 8,
         }}>
           유저 검색
@@ -92,7 +92,7 @@ const SearchModal: React.FC<Props> = ({
             right: 18,
             background: 'none',
             border: 'none',
-            fontSize: 26,
+                            fontSize: 25,
             color: '#636AE8',
             cursor: 'pointer',
             fontWeight: 700,
@@ -110,7 +110,7 @@ const SearchModal: React.FC<Props> = ({
           onChange={e => setSearch(e.target.value)}
           placeholder="이름을 입력하세요"
           style={{
-            fontSize: 17,
+                            fontSize: 16,
             padding: '13px 14px',
             borderRadius: 10,
             border: '2px solid #636AE8',
@@ -160,7 +160,7 @@ const SearchModal: React.FC<Props> = ({
                     background: '#fff',
                   }}
                 />
-                <span style={{ fontWeight: 700, fontSize: 16, color: '#222' }}>{p.name}</span>
+                <span style={{ fontWeight: 700, fontSize: 15, color: '#222' }}>{p.name}</span>
                 <button
                   style={{
                     marginLeft: 'auto',
@@ -170,7 +170,7 @@ const SearchModal: React.FC<Props> = ({
                     borderRadius: 7,
                     padding: '7px 18px',
                     fontWeight: 700,
-                    fontSize: 15,
+                    fontSize: 14,
                     cursor: 'pointer',
                     boxShadow: '0 2px 8px 0 rgba(99,106,232,0.07)',
                     transition: 'background 0.18s',

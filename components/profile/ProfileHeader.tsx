@@ -59,7 +59,7 @@ function ProfileHeader({
       </button>
 
       {/* 중앙 타이틀 */}
-      <span style={{ fontWeight: 700, fontSize: 18, textAlign: 'center' }}>프로필</span>
+              <span style={{ fontWeight: 700, fontSize: 17, textAlign: 'center' }}>프로필</span>
 
       {/* 오른쪽 아이콘 그룹 */}
       <div

@@ -35,7 +35,7 @@ const MessageList: React.FC<MessageListProps> = ({
         padding: '10px 0'
       }}>
         <div className="spinner" style={{ marginBottom: 6, transform: 'scale(0.8)' }} />
-        <div style={{ fontSize: 12, color: '#636AE8', fontWeight: 500 }}>
+        <div style={{ fontSize: 11, color: '#636AE8', fontWeight: 500 }}>
           메시지를 불러오는 중입니다...
         </div>
       </div>

@@ -26,7 +26,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
     <div className={styles.profileName}>
       {name}
       <div style={{ 
-        fontSize: 14, 
+        fontSize: 13, 
         color: '#999', 
         display: 'flex', 
         alignItems: 'center', 
@@ -41,7 +41,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({
               <span 
                 key={index}
                 style={{
-                  fontSize: '12px',
+                  fontSize: '11px',
                   color: '#636AE8',
                   fontWeight: '500'
                 }}

@@ -37,7 +37,7 @@ const MyAvatar: React.FC<Props> = ({ loading, userId, myProfile }) => {
           </div>
         </Link>
       ) : (
-        <div style={{ textAlign: 'center', color: '#888', margin: 24, fontSize: 16 }}>
+                  <div style={{ textAlign: 'center', color: '#888', margin: 24, fontSize: 15 }}>
           로그인 후 나의 아바타가 표시됩니다.
           <Link href="/register/login" style={{ color: '#636AE8', textDecoration: 'underline', marginLeft: 4 }}>
             로그인 하러가기

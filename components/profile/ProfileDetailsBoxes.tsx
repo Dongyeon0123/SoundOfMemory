@@ -41,8 +41,8 @@ export function ProfileIntroduceBox({ introduce, isMyProfile, onEdit }: ProfileI
       className={styles.introduceBox}
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', position: 'relative', marginTop: 10 }}
     >
-      <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>소개</span>
-      <span style={{ fontSize: 15, color: '#888', fontWeight: 500, marginTop: 12 }}>
+              <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>소개</span>
+              <span style={{ fontSize: 14, color: '#888', fontWeight: 500, marginTop: 12 }}>
         {introduce || '소개를 작성해보세요 !'}
       </span>
       {isMyProfile && (
@@ -73,7 +73,7 @@ interface ProfileHistoryBoxProps {
 export function ProfileHistoryBox({ history, isMyProfile, onEdit }: ProfileHistoryBoxProps) {
   return (
     <div className={styles.historyBox} style={{ position: 'relative' }}>
-      <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>이력</span>
+              <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>이력</span>
       {isMyProfile && (
         <FiEdit2
           size={20}
@@ -82,7 +82,7 @@ export function ProfileHistoryBox({ history, isMyProfile, onEdit }: ProfileHisto
           onClick={onEdit}
         />
       )}
-      <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 15, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+      <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
         {history && history.length > 0 ? (
           history.map((h, i) => (
             <div
@@ -101,14 +101,14 @@ export function ProfileHistoryBox({ history, isMyProfile, onEdit }: ProfileHisto
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ color: '#222', fontWeight: 600, fontSize: 16 }}>{h.school}</span>
-                <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 6 }}>{h.period}</span>
+                <span style={{ color: '#222', fontWeight: 600, fontSize: 15 }}>{h.school}</span>
+                <span style={{ color: '#888', fontWeight: 400, fontSize: 12, marginTop: 6 }}>{h.period}</span>
               </div>
               <span
                 style={{
                   color: '#636AE8FF',
                   fontWeight: 500,
-                  fontSize: 13,
+                  fontSize: 12,
                   background: '#fff',
                   border: '1px solid rgb(170, 170, 170)',
                   borderRadius: 8,
@@ -149,7 +149,7 @@ interface ProfileCareerBoxProps {
 export function ProfileCareerBox({ career, isMyProfile, onEdit }: ProfileCareerBoxProps) {
   return (
     <div className={styles.historyBox} style={{ position: 'relative', marginTop: 10, marginBottom: 10 }}>
-      <span style={{ fontSize: 18, color: '#222', fontWeight: 600 }}>경력</span>
+      <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>경력</span>
       {isMyProfile && (
         <FiEdit2
           size={20}
@@ -158,7 +158,7 @@ export function ProfileCareerBox({ career, isMyProfile, onEdit }: ProfileCareerB
           onClick={onEdit}
         />
       )}
-      <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 15, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+      <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
         {career && career.length > 0 ? (
           career.map((c, i) => (
             <div
@@ -177,20 +177,20 @@ export function ProfileCareerBox({ career, isMyProfile, onEdit }: ProfileCareerB
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ color: '#222', fontWeight: 600, fontSize: 16 }}>{c.org}</span>
-                <span style={{ color: '#9095A0FF', fontWeight: 500, fontSize: 14, marginTop: 6, marginBottom: 6 }}>
+                <span style={{ color: '#222', fontWeight: 600, fontSize: 15 }}>{c.org}</span>
+                <span style={{ color: '#9095A0FF', fontWeight: 500, fontSize: 13, marginTop: 6, marginBottom: 6 }}>
                   {c.dept}
                 </span>
-                <span style={{ color: '#888', fontWeight: 400, fontSize: 13, marginTop: 2 }}>
+                <span style={{ color: '#888', fontWeight: 400, fontSize: 12, marginTop: 2 }}>
                   {c.period}
-                  <span style={{ color: '#000', fontSize: 13, fontWeight: 600 }}>{c.months}개월</span>
+                  <span style={{ color: '#000', fontSize: 12, fontWeight: 600 }}>{c.months}개월</span>
                 </span>
               </div>
               <span
                 style={{
                   color: '#636AE8FF',
                   fontWeight: 500,
-                  fontSize: 13,
+                  fontSize: 12,
                   background: '#fff',
                   border: '1px solid rgb(170, 170, 170)',
                   borderRadius: 8,

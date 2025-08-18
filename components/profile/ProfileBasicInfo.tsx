@@ -10,17 +10,17 @@ interface ProfileBasicInfoProps {
 function ProfileBasicInfo({ name, desc, tag }: ProfileBasicInfoProps) {
   return (
     <div style={{ marginTop: 0, textAlign: 'center' }}>
-      <div className={styles.friendName} style={{ fontSize: 22 }}>
+              <div className={styles.friendName} style={{ fontSize: 21 }}>
         {name}
       </div>
-      <div style={{ marginTop: 12, color: '#9095A0FF', fontSize: 16 }}>
+              <div style={{ marginTop: 12, color: '#9095A0FF', fontSize: 15 }}>
         {desc}
       </div>
       <div
         style={{
           marginTop: 12,
           color: '#636AE8FF',
-          fontSize: 16,
+                      fontSize: 15,
           display: 'flex',
           justifyContent: 'center',
           flexWrap: 'wrap',

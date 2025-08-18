@@ -37,18 +37,18 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ show, message, ty
             width: 80, height: 80, borderRadius: '50%', margin: '0 auto 24px auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: type === 'success' ? '#636AE8' : '#FF4757',
             color: '#fff',
-            fontSize: 32,
+                         fontSize: 31,
             fontWeight: 700,
           }}>
             {type === 'success' ? '✓' : '✕'}
           </div>
           <div style={{
-            fontSize: 24, fontWeight: 700, color: '#222', marginBottom: 12,
+                         fontSize: 23, fontWeight: 700, color: '#222', marginBottom: 12,
           }}>
             {type === 'success' ? '성공!' : '알림'}
           </div>
           <div style={{
-            fontSize: 18, color: '#666', lineHeight: 1.5, maxWidth: '280px',
+                         fontSize: 17, color: '#666', lineHeight: 1.5, maxWidth: '280px',
           }}>
             {message}
           </div>
@@ -62,7 +62,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ show, message, ty
             borderRadius: 12,
             padding: '16px 32px',
             fontWeight: 700,
-            fontSize: 18,
+                         fontSize: 17,
             cursor: 'pointer',
             transition: 'background 0.18s',
             width: '100%',

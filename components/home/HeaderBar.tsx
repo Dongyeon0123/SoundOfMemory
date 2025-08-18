@@ -85,7 +85,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 borderRadius: 6,
                 padding: '6px 18px',
                 fontWeight: 600,
-                fontSize: 14,
+                fontSize: 13,
                 cursor: 'pointer',
                 marginRight: 8
               }}>
@@ -100,7 +100,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                     borderRadius: 6,
                     padding: '6px 18px',
                     fontWeight: 600,
-                    fontSize: 14,
+                    fontSize: 13,
                     cursor: 'pointer',
                     marginRight: 8
                   }}>로그인</button>
