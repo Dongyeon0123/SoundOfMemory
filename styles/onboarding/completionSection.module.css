@@ -125,12 +125,18 @@
   border: none;
   padding: 16px 48px;
   border-radius: 12px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 24px;
   animation: slideInUp 0.6s ease-out 1s both;
+}
+
+@media (max-width: 600px) {
+  .completeButton {
+    margin-bottom: 120px;
+  }
 }
 
 .completeButton:hover {
