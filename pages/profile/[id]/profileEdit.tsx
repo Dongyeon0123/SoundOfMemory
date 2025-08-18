@@ -315,6 +315,18 @@ const ProfileEditPage: React.FC = () => {
       setChatTopics(prev => prev.filter(topic => topic.topicName !== topicName));
       setSelectedChatTopics(prev => prev.filter(topic => topic !== topicName));
       
+      // profile.tag 필드도 업데이트
+      const updatedProfile = {
+        ...profile,
+        tag: profile.tag ? profile.tag.filter(tag => tag !== topicName) : []
+      };
+      setProfile(updatedProfile);
+      
+      // Firebase의 profile.tag 필드도 즉시 업데이트
+      await updateProfileField(profile.id, {
+        tag: updatedProfile.tag
+      });
+      
     } catch (error) {
       console.error('채팅 주제 삭제 실패:', error);
     }

@@ -118,6 +118,7 @@ export default function TestOnboarding() {
           <CompletionSection
             userName={userName}
             avatarName={avatarName}
+            selectedInterests={selectedInterests}
             onBack={handleBack}
           />
         )}

@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import styles from '../../styles/onboarding/completionSection.module.css';
-import { setProfileField } from '../../types/profiles';
+import { setProfileField, updateChatTopicInformation } from '../../types/profiles';
 
 interface CompletionSectionProps {
   userName: string;
   avatarName: string;
+  selectedInterests: Set<string>;
   onBack: () => void;
 }
 
-export default function CompletionSection({ userName, avatarName, onBack }: CompletionSectionProps) {
+export default function CompletionSection({ userName, avatarName, selectedInterests, onBack }: CompletionSectionProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [userId, setUserId] = useState<string | null>(null);
@@ -46,8 +47,14 @@ export default function CompletionSection({ userName, avatarName, onBack }: Comp
         name: userName,
         aiIntro: `안녕 나는 ${userName}의 개인 AI비서야. 궁금한거 있으면 물어봐!`,
         img: '/char.png', // 기본 이미지
-        backgroundImg: '/background.png' // 기본 배경 이미지
+        backgroundImg: '/background.png', // 기본 배경 이미지
+        tag: Array.from(selectedInterests) // 선택된 관심사들을 tag 필드에 저장
       });
+
+      // chatData 컬렉션에 각 관심사를 문서명으로 하는 문서들 생성
+      for (const interest of selectedInterests) {
+        await updateChatTopicInformation(userId, interest, []);
+      }
       
       setSaveStatus('success');
       
