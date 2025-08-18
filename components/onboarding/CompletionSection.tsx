@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import styles from '../../styles/onboarding/completionSection.module.css';
 import { setProfileField, updateChatTopicInformation } from '../../types/profiles';
+import { uploadProfileImage } from '../../client/uploadProfileImage';
 import ProfileImage from './ProfileImage';
 
 interface CompletionSectionProps {
@@ -15,6 +16,7 @@ interface CompletionSectionProps {
 export default function CompletionSection({ userName, avatarName, selectedInterests, onBack }: CompletionSectionProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [error, setError] = useState<string>('');
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedProfileImage, setSelectedProfileImage] = useState<File | null>(null);
   const [hasProfileImage, setHasProfileImage] = useState(false);
@@ -43,11 +45,36 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
     setSaveStatus('saving');
     
     try {
+      let profileImageUrl = '/char.png'; // 기본 이미지
+
+      // 프로필 이미지가 선택된 경우 Firebase Storage에 업로드
+      if (selectedProfileImage) {
+        try {
+          // 파일 확장자 확인
+          const fileExtension = selectedProfileImage.name.split('.').pop()?.toLowerCase();
+          if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
+            throw new Error('지원하지 않는 파일 형식입니다. JPG, PNG, GIF, WEBP 파일만 업로드 가능합니다.');
+          }
+
+          // 파일 크기 확인 (5MB 제한)
+          if (selectedProfileImage.size > 5 * 1024 * 1024) {
+            throw new Error('파일 크기가 너무 큽니다. 5MB 이하의 파일만 업로드 가능합니다.');
+          }
+
+          // Firebase Storage에 이미지 업로드
+          profileImageUrl = await uploadProfileImage(selectedProfileImage);
+          console.log('프로필 이미지 업로드 완료:', profileImageUrl);
+        } catch (uploadError) {
+          console.error('이미지 업로드 실패:', uploadError);
+          throw new Error(`이미지 업로드 실패: ${(uploadError as any).message}`);
+        }
+      }
+
       // 로그인된 사용자의 ID를 사용하여 프로필 정보 저장
       await setProfileField(userId, {
         name: userName,
         aiIntro: `안녕 나는 ${userName}의 개인 AI비서야. 궁금한거 있으면 물어봐!`,
-        img: selectedProfileImage ? URL.createObjectURL(selectedProfileImage) : '/char.png', // 선택된 이미지 또는 기본 이미지
+        img: profileImageUrl, // 업로드된 이미지 URL 또는 기본 이미지
         backgroundImg: '/background.png', // 기본 배경 이미지
         tag: Array.from(selectedInterests) // 선택된 관심사들을 tag 필드에 저장
       });
@@ -66,6 +93,7 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
       
     } catch (error) {
       console.error('파이어베이스 저장 실패:', error);
+      setError((error as any).message || '저장 중 오류가 발생했습니다.');
       setSaveStatus('error');
     } finally {
       setIsSaving(false);
