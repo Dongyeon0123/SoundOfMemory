@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import styles from '../../styles/onboarding/completionSection.module.css';
 import { setProfileField, updateChatTopicInformation } from '../../types/profiles';
+import ProfileImage from './ProfileImage';
 
 interface CompletionSectionProps {
   userName: string;
@@ -15,6 +16,8 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [userId, setUserId] = useState<string | null>(null);
+  const [selectedProfileImage, setSelectedProfileImage] = useState<File | null>(null);
+  const [hasProfileImage, setHasProfileImage] = useState(false);
   const router = useRouter();
 
   // 현재 로그인된 사용자 ID 가져오기
@@ -28,14 +31,12 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
     return () => unsubscribe();
   }, []);
 
-  // 컴포넌트 마운트 시 자동으로 저장 시작
-  useEffect(() => {
-    if (userId) {
-      handleAutoSave();
-    }
-  }, [userId]);
+  const handleImageSelect = (file: File) => {
+    setSelectedProfileImage(file);
+    setHasProfileImage(true);
+  };
 
-  const handleAutoSave = async () => {
+  const handleComplete = async () => {
     if (!userId) return;
 
     setIsSaving(true);
@@ -46,7 +47,7 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
       await setProfileField(userId, {
         name: userName,
         aiIntro: `안녕 나는 ${userName}의 개인 AI비서야. 궁금한거 있으면 물어봐!`,
-        img: '/char.png', // 기본 이미지
+        img: selectedProfileImage ? URL.createObjectURL(selectedProfileImage) : '/char.png', // 선택된 이미지 또는 기본 이미지
         backgroundImg: '/background.png', // 기본 배경 이미지
         tag: Array.from(selectedInterests) // 선택된 관심사들을 tag 필드에 저장
       });
@@ -89,7 +90,7 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
           <div className={styles.progressContainer}>
             <div 
               className={styles.progressFill} 
-              style={{ width: `${(3 / 3) * 100}%` }}
+              style={{ width: `${(4 / 4) * 100}%` }}
             />
           </div>
         </div>
@@ -97,9 +98,23 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
       
       {/* 메인 콘텐츠 */}
       <div className={styles.content}>
-        <h1 className={styles.title}>완료되었습니다!</h1>
-        <p className={styles.subtitle}>사용자 이름: {userName}</p>
-        <p className={styles.subtitle}>AI 아바타 이름: {avatarName}</p>
+        {/* 프로필 이미지 등록 컴포넌트 */}
+        <ProfileImage 
+          onImageSelect={handleImageSelect}
+          currentImage={selectedProfileImage ? URL.createObjectURL(selectedProfileImage) : undefined}
+          onImageStatusChange={(hasImage) => {
+            setHasProfileImage(hasImage);
+          }}
+        />
+        
+        {/* 완료 버튼 */}
+        <button 
+          onClick={handleComplete}
+          className={`${styles.completeButton} ${!hasProfileImage ? styles.disabled : ''}`}
+          disabled={isSaving || !hasProfileImage}
+        >
+          {isSaving ? '저장 중...' : !hasProfileImage ? '프로필 이미지를 등록해주세요' : '완료'}
+        </button>
         
         {/* 저장 상태 표시 */}
         {saveStatus === 'saving' && (
@@ -118,7 +133,7 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
           <div className={styles.errorStatus}>
             <p>❌ 저장 실패. 다시 시도해주세요.</p>
             <button 
-              onClick={handleAutoSave}
+              onClick={handleComplete}
               className={styles.retryButton}
             >
               다시 시도

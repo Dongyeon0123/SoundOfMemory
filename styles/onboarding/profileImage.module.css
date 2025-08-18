@@ -1,0 +1,130 @@
+.profileImageContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin-top: -20px;
+}
+
+.imageUploadSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.imageWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileImage {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #f0f0f0;
+}
+
+.cameraButton {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  background: white;
+  border: 2px solid #636AE8;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.cameraButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.uploadText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin: 0;
+  margin-bottom: -10px;
+}
+
+.guideSection {
+  width: 100%;
+}
+
+.guideTitle {
+  background-color: #257EFE26;
+  border-radius: 24px;
+  padding: 10px;
+  font-size: 12px;
+  color: #414141;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0;
+  margin-bottom: 10px;
+  text-align: left;
+  padding-left: 43px;
+}
+
+.goodExamplesSection,
+.badExamplesSection {
+  width: 100%;
+  max-width: 500px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+  text-align: left;
+}
+
+.exampleImages {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.exampleImage {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  border: 2px solid #e0e0e0;
+}
+
+.exampleDescription {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+    text-align: left;
+    }
+
+
+@media (max-width: 600px) {
+.guideTitle {
+    padding-left: 25%;
+}
+.exampleImages {
+    gap: 14px;
+}
+.exampleImage {
+    width: 70px;
+    height: 70px;
+}
+}

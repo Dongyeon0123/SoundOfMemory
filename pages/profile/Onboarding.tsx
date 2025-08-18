@@ -24,6 +24,7 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTyping, setShowTyping] = useState(false);
+  const [hasProfileImage, setHasProfileImage] = useState(false);
   const router = useRouter();
   const [mbtiSelection, setMbtiSelection] = useState<string[]>(['E','N','T','J']);
 
@@ -51,6 +52,7 @@ export default function Onboarding() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       setImg(ev.target?.result as string);
+      setHasProfileImage(true); // 이미지가 등록되었음을 표시
     };
     reader.readAsDataURL(file);
   };
@@ -127,8 +129,19 @@ export default function Onboarding() {
             <input type="file" accept="image/*" onChange={handleImgChange} style={{ marginBottom: 18 }} />
             <button
               onClick={() => setStep(2)}
-              style={{ width: 180, padding: 12, borderRadius: 8, background: '#636AE8', color: '#fff', fontWeight: 700, fontSize: 17, border: 'none', marginBottom: 8, cursor: 'pointer' }}
-              disabled={loading}
+              style={{ 
+                width: 180, 
+                padding: 12, 
+                borderRadius: 8, 
+                background: hasProfileImage ? '#636AE8' : '#ccc', 
+                color: '#fff', 
+                fontWeight: 700, 
+                fontSize: 17, 
+                border: 'none', 
+                marginBottom: 8, 
+                cursor: hasProfileImage ? 'pointer' : 'not-allowed' 
+              }}
+              disabled={!hasProfileImage || loading}
             >다음</button>
             <button
               onClick={() => setStep(2)}

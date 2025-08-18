@@ -117,6 +117,35 @@
   margin-bottom: 0;
 }
 
+/* 완료 버튼 스타일 */
+.completeButton {
+  background: #257EFE;
+  width: 100%;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+  animation: slideInUp 0.6s ease-out 1s both;
+}
+
+.completeButton:hover {
+  background: #1f69d1;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+}
+
+.completeButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* 상태 표시 스타일 */
 .savingStatus,
 .successStatus,
