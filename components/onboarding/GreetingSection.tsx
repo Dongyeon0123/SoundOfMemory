@@ -87,7 +87,7 @@ export default function GreetingSection({ onContinue, onBack }: GreetingSectionP
         if (cursorBlinkCount < 3) {
           const timer = setTimeout(() => {
             setCursorBlinkCount(prev => prev + 1);
-          }, 500);
+          }, 250);
           return () => clearTimeout(timer);
         } else {
           setShowSecondContinueButton(true);
