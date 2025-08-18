@@ -98,8 +98,7 @@ export default function ProfileImage({ onImageSelect, currentImage, onImageStatu
       </div>
     </div>
   );
-}
-// 현재 로그인된 사용자 ID 가져오기
+}// 현재 로그인된 사용자 ID 가져오기
 // useEffect(() => {
 //     const auth = getAuth();
 //     const unsubscribe = onAuthStateChanged(auth, (user) => {

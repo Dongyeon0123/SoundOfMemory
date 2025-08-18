@@ -7,6 +7,8 @@ import GreetingSection from '../components/onboarding/GreetingSection';
 import NameInputSection from '../components/onboarding/NameInputSection';
 import InterestsSection from '../components/onboarding/InterestsSection';
 import CompletionSection from '../components/onboarding/CompletionSection';
+import ProfileCompleteGreeting from '../components/onboarding/ProfileCompleteGreeting';
+import FinalGreeting from '../components/onboarding/FinalGreeting';
 
 export default function TestOnboarding() {
   const [step, setStep] = useState(0);
@@ -75,6 +77,17 @@ export default function TestOnboarding() {
     setStep(4);
   };
 
+  // 다섯 번째 단계 완료 (프로필 완료 축하)
+  const handleProfileCompleteGreeting = () => {
+    setStep(5);
+  };
+
+  // 최종 단계 완료 (최종 greeting 및 데이터 저장)
+  const handleFinalGreetingComplete = () => {
+    // 온보딩 완료 후 홈으로 이동
+    router.push('/');
+  };
+
   return (
     <div className={indexStyles.fullContainer}>
       <div className={`${indexStyles.centerCard} ${indexStyles.cardMode}`}>
@@ -120,6 +133,25 @@ export default function TestOnboarding() {
             avatarName={avatarName}
             selectedInterests={selectedInterests}
             onBack={handleBack}
+            onNext={() => setStep(5)}
+          />
+        )}
+
+        {step === 5 && (
+          <ProfileCompleteGreeting 
+            onContinue={handleProfileCompleteGreeting}
+            onBack={handleBack}
+          />
+        )}
+
+        {step === 6 && (
+          <FinalGreeting 
+            onComplete={handleFinalGreetingComplete}
+            onBack={handleBack}
+            userName={userName}
+            avatarName={avatarName}
+            selectedInterests={selectedInterests}
+            selectedProfileImage={null}
           />
         )}
       </div>

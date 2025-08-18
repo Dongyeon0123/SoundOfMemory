@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { getAuth } from 'firebase/auth';
 import { setProfileField } from '../../types/profiles';
 import cardStyles from '../../styles/styles.module.css';
 import mbtiStyles from '../../styles/MbtiModal.module.css';
 import styles from '../../styles/login.module.css';
+import CompletionSection from '../../components/onboarding/CompletionSection';
+import ProfileCompleteGreeting from '../../components/onboarding/ProfileCompleteGreeting';
+import FinalGreeting from '../../components/onboarding/FinalGreeting';
 
 const MBTI_LETTERS = [
   ['E', 'I'],
@@ -25,6 +28,9 @@ export default function Onboarding() {
   const [error, setError] = useState('');
   const [showTyping, setShowTyping] = useState(false);
   const [hasProfileImage, setHasProfileImage] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
+  const [avatarName, setAvatarName] = useState('');
+  const [selectedProfileImage, setSelectedProfileImage] = useState<File | null>(null);
   const router = useRouter();
   const [mbtiSelection, setMbtiSelection] = useState<string[]>(['E','N','T','J']);
 
@@ -37,13 +43,13 @@ export default function Onboarding() {
   }, [step]);
 
   // 뒤로가기 핸들러
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (step > 0) {
       setStep(step - 1);
     } else {
       router.push('/register/login');
     }
-  };
+  }, [step, router]);
 
   // 이미지 업로드 핸들러 (base64 변환)
   const handleImgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,30 +63,70 @@ export default function Onboarding() {
     reader.readAsDataURL(file);
   };
 
-  // 저장
-  const handleSubmit = async () => {
+  // 다음 단계로 이동
+  const handleNext = useCallback(() => {
+    setStep((prevStep) => prevStep + 1);
+  }, []);
+
+  // 디버깅: handleNext 함수 확인
+  useEffect(() => {
+    console.log('handleNext function:', handleNext);
+    console.log('handleNext type:', typeof handleNext);
+  }, [handleNext]);
+
+  // 온보딩 완료
+  const handleComplete = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) throw new Error('로그인이 필요합니다.');
+      
+      // 최종 데이터 저장
       await setProfileField(user.uid, {
         name,
         img,
         mbti,
         introduce,
-        tag: [],
+        tag: Array.from(selectedInterests),
+        aiName: avatarName,
       });
+      
+      // 홈으로 이동
       router.push('/');
     } catch (err: any) {
       setError(err.message || '저장 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [name, img, mbti, introduce, selectedInterests, avatarName, router]);
 
   // 스텝별 렌더링
+  if (step === 4) {
+    // 프로필 완료 후 첫 번째 greeting
+    return (
+      <ProfileCompleteGreeting 
+        onContinue={handleNext}
+        onBack={handleBack}
+      />
+    );
+  }
+
+  if (step === 5) {
+    // 최종 greeting 및 데이터 저장
+    return (
+      <FinalGreeting 
+        onComplete={handleComplete}
+        onBack={handleBack}
+        userName={name}
+        avatarName={avatarName}
+        selectedInterests={selectedInterests}
+        selectedProfileImage={selectedProfileImage}
+      />
+    );
+  }
+
   return (
     <div className={cardStyles.fullContainer}>
       <div className={cardStyles.centerCard} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 500 }}>
@@ -89,7 +135,7 @@ export default function Onboarding() {
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
             <div style={{ flex: 1, height: 7, borderRadius: 4, background: '#eee', overflow: 'hidden', position: 'relative' }}>
               <div style={{
-                width: `${((step + 1) / 4) * 100}%`,
+                width: `${((step + 1) / 6) * 100}%`,
                 height: '100%',
                 background: '#636AE8',
                 borderRadius: 4,
@@ -100,9 +146,10 @@ export default function Onboarding() {
             </div>
           </div>
           <div style={{ textAlign: 'center', color: '#636AE8', fontWeight: 700, fontSize: 15, letterSpacing: '-1px' }}>
-            4단계 중 {step + 1}단계
+            6단계 중 {step + 1}단계
           </div>
         </div>
+        
         {step === 0 && (
           <>
             <h2 style={{ fontWeight: 700, fontSize: 24, marginBottom: 24 }}>이름을 입력해 주세요</h2>
@@ -122,34 +169,19 @@ export default function Onboarding() {
             >다음</button>
           </>
         )}
+        
         {step === 1 && (
-          <>
-            <h2 style={{ fontWeight: 700, fontSize: 24, marginBottom: 18 }}>프로필 이미지를 선택해 주세요</h2>
-            <img src={img} alt="프로필" style={{ width: 100, height: 100, borderRadius: '50%', objectFit: 'cover', marginBottom: 18, border: '2px solid #eee' }} />
-            <input type="file" accept="image/*" onChange={handleImgChange} style={{ marginBottom: 18 }} />
-            <button
-              onClick={() => setStep(2)}
-              style={{ 
-                width: 180, 
-                padding: 12, 
-                borderRadius: 8, 
-                background: hasProfileImage ? '#636AE8' : '#ccc', 
-                color: '#fff', 
-                fontWeight: 700, 
-                fontSize: 17, 
-                border: 'none', 
-                marginBottom: 8, 
-                cursor: hasProfileImage ? 'pointer' : 'not-allowed' 
-              }}
-              disabled={!hasProfileImage || loading}
-            >다음</button>
-            <button
-              onClick={() => setStep(2)}
-              style={{ width: 180, padding: 12, borderRadius: 8, background: '#bbb', color: '#fff', fontWeight: 700, fontSize: 17, border: 'none', marginBottom: 8, cursor: 'pointer' }}
-              disabled={loading}
-            >건너뛰기</button>
-          </>
+          <div key="completion-section">
+            <CompletionSection
+              userName={name}
+              avatarName={avatarName || name}
+              selectedInterests={selectedInterests}
+              onBack={handleBack}
+              onNext={() => setStep(2)}
+            />
+          </div>
         )}
+        
         {step === 2 && (
           <>
             <h2 style={{ fontWeight: 700, fontSize: 24, marginBottom: 18 }}>MBTI를 선택해 주세요</h2>
@@ -181,17 +213,26 @@ export default function Onboarding() {
               ))}
             </div>
             <button
-              onClick={() => { setMbti(mbtiSelection.join('')); setStep(3); }}
+              onClick={() => { 
+                setMbti(mbtiSelection.join('')); 
+                setSelectedInterests(new Set([mbtiSelection.join('')])); // MBTI를 관심사로 설정
+                setStep(3); 
+              }}
               style={{ width: 180, padding: 12, borderRadius: 8, background: '#636AE8', color: '#fff', fontWeight: 700, fontSize: 17, border: 'none', marginBottom: 8, cursor: 'pointer' }}
               disabled={loading}
             >다음</button>
             <button
-              onClick={() => { setMbti(''); setStep(3); }}
+              onClick={() => { 
+                setMbti(''); 
+                setSelectedInterests(new Set()); 
+                setStep(3); 
+              }}
               style={{ width: 180, padding: 12, borderRadius: 8, background: '#bbb', color: '#fff', fontWeight: 700, fontSize: 17, border: 'none', marginBottom: 8, cursor: 'pointer' }}
               disabled={loading}
             >건너뛰기</button>
           </>
         )}
+        
         {step === 3 && (
           <>
             <h2 style={{ fontWeight: 700, fontSize: 24, marginBottom: 18 }}>자기소개를 입력해 주세요</h2>
@@ -203,17 +244,24 @@ export default function Onboarding() {
               maxLength={200}
             />
             <button
-              onClick={handleSubmit}
+              onClick={() => {
+                setAvatarName(name); // 사용자 이름을 AI 아바타 이름으로 설정
+                setStep(4);
+              }}
               style={{ width: 180, padding: 12, borderRadius: 8, background: '#636AE8', color: '#fff', fontWeight: 700, fontSize: 17, border: 'none', marginBottom: 8, cursor: 'pointer' }}
               disabled={loading}
-            >완료</button>
+            >다음</button>
             <button
-              onClick={handleSubmit}
+              onClick={() => {
+                setAvatarName(name);
+                setStep(4);
+              }}
               style={{ width: 180, padding: 12, borderRadius: 8, background: '#bbb', color: '#fff', fontWeight: 700, fontSize: 17, border: 'none', marginBottom: 8, cursor: 'pointer' }}
               disabled={loading}
             >건너뛰기</button>
           </>
         )}
+        
         {error && <div style={{ color: 'red', marginTop: 16, fontWeight: 600 }}>{error}</div>}
       </div>
     </div>
