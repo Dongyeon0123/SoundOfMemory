@@ -8,9 +8,10 @@ interface CompletionSectionProps {
   selectedInterests: Set<string>;
   onBack: () => void;
   onNext: () => void;
+  onImageSelect: (file: File) => void;
 }
 
-export default function CompletionSection({ userName, avatarName, selectedInterests, onBack, onNext }: CompletionSectionProps) {
+export default function CompletionSection({ userName, avatarName, selectedInterests, onBack, onNext, onImageSelect }: CompletionSectionProps) {
   const [selectedProfileImage, setSelectedProfileImage] = useState<File | null>(null);
   const [hasProfileImage, setHasProfileImage] = useState(false);
 
@@ -24,6 +25,8 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
   const handleImageSelect = (file: File) => {
     setSelectedProfileImage(file);
     setHasProfileImage(true);
+    // 상위 컴포넌트로 이미지 선택 전달
+    onImageSelect(file);
   };
 
   const handleComplete = () => {

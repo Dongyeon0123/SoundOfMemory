@@ -15,6 +15,7 @@ export default function TestOnboarding() {
   const [userName, setUserName] = useState('');
   const [avatarName, setAvatarName] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
+  const [selectedProfileImage, setSelectedProfileImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -31,6 +32,11 @@ export default function TestOnboarding() {
     });
     return () => unsubscribe();
   }, [router]);
+
+  // 디버깅: step 상태 확인
+  useEffect(() => {
+    console.log('Step 변경됨:', step);
+  }, [step]);
 
   // 로딩 중이거나 인증되지 않은 경우 로딩 표시
   if (loading) {
@@ -77,9 +83,17 @@ export default function TestOnboarding() {
     setStep(4);
   };
 
+  // 프로필 이미지 선택 핸들러
+  const handleProfileImageSelect = (file: File) => {
+    setSelectedProfileImage(file);
+  };
+
   // 다섯 번째 단계 완료 (프로필 완료 축하)
   const handleProfileCompleteGreeting = () => {
-    setStep(5);
+    console.log('handleProfileCompleteGreeting 호출됨, 현재 step:', step);
+    console.log('Step 6으로 이동 시도');
+    setStep(6);
+    console.log('setStep(6) 호출 완료');
   };
 
   // 최종 단계 완료 (최종 greeting 및 데이터 저장)
@@ -134,6 +148,7 @@ export default function TestOnboarding() {
             selectedInterests={selectedInterests}
             onBack={handleBack}
             onNext={() => setStep(5)}
+            onImageSelect={handleProfileImageSelect}
           />
         )}
 
@@ -151,7 +166,7 @@ export default function TestOnboarding() {
             userName={userName}
             avatarName={avatarName}
             selectedInterests={selectedInterests}
-            selectedProfileImage={null}
+            selectedProfileImage={selectedProfileImage}
           />
         )}
       </div>

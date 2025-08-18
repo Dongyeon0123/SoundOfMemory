@@ -84,22 +84,27 @@ export default function ProfileCompleteGreeting({ onContinue, onBack }: ProfileC
         
         return () => clearTimeout(timer);
       } else {
-        if (cursorBlinkCount < 3) {
-          const timer = setTimeout(() => {
-            setCursorBlinkCount(prev => prev + 1);
-          }, 250);
-          return () => clearTimeout(timer);
-        } else {
-          setShowSecondContinueButton(true);
-        }
+        // 두 번째 텍스트가 모두 표시된 후 바로 버튼 표시
+        console.log('두 번째 텍스트 완료, 버튼 표시');
+        setShowSecondContinueButton(true);
       }
     }
-  }, [currentTextPhase, currentLineIndex, secondText, cursorBlinkCount, firstText, isTransitioning]);
+  }, [currentTextPhase, currentLineIndex, secondText, firstText, isTransitioning]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowTyping(true), 500);
     return () => clearTimeout(timer);
   }, []);
+
+  // 디버깅: 상태 확인
+  useEffect(() => {
+    console.log('ProfileCompleteGreeting 상태:', {
+      currentTextPhase,
+      currentLineIndex,
+      showSecondContinueButton,
+      showTyping
+    });
+  }, [currentTextPhase, currentLineIndex, showSecondContinueButton, showTyping]);
 
   const handleFirstContinue = () => {
     setIsTransitioning(true);
@@ -115,6 +120,7 @@ export default function ProfileCompleteGreeting({ onContinue, onBack }: ProfileC
   };
 
   const handleSecondContinue = () => {
+    console.log('시작하기 버튼 클릭됨, onContinue 호출');
     onContinue();
   };
 
@@ -169,7 +175,6 @@ export default function ProfileCompleteGreeting({ onContinue, onBack }: ProfileC
         </div>
       )}
 
-      {/* 첫 번째 계속하기 버튼 */}
       {showFirstContinueButton && (
         <button 
           onClick={handleFirstContinue}
@@ -179,7 +184,6 @@ export default function ProfileCompleteGreeting({ onContinue, onBack }: ProfileC
         </button>
       )}
 
-      {/* 두 번째 계속하기 버튼 - "시작하기"로 텍스트 변경 */}
       {showSecondContinueButton && (
         <button 
           onClick={handleSecondContinue}

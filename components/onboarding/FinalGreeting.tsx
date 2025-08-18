@@ -41,18 +41,17 @@ export default function FinalGreeting({
     return () => clearTimeout(timer);
   }, []);
 
-  // 첫 번째 텍스트가 완전히 표시된 후 자동으로 두 번째 단계로 전환
+  // 첫 번째 텍스트가 완전히 표시된 후 자동으로 저장 시작
   useEffect(() => {
-    if (showTyping && currentTextPhase === 'first') {
+    if (showTyping) {
       const timer = setTimeout(() => {
-        setCurrentTextPhase('second');
-        // 두 번째 단계에서 자동으로 저장 시작
+        // 3초 후 자동으로 저장 시작
         handleSaveData();
       }, 3000); // 3초 후 자동 전환
       
       return () => clearTimeout(timer);
     }
-  }, [showTyping, currentTextPhase]);
+  }, [showTyping]);
 
   // 데이터 저장 함수
   const handleSaveData = async () => {
@@ -105,14 +104,11 @@ export default function FinalGreeting({
         await updateChatTopicInformation(userId, interest, []);
       }
 
-      // 저장 완료 후 성공 상태로 변경
+      // 저장 완료 후 바로 홈으로 이동
+      setSaveStatus('success');
       setTimeout(() => {
-        setSaveStatus('success');
-        // 2초 후 완료 콜백 호출
-        setTimeout(() => {
-          onComplete();
-        }, 2000);
-      }, 2000);
+        onComplete();
+      }, 1000);
 
     } catch (error) {
       console.error('데이터 저장 실패:', error);
@@ -138,10 +134,10 @@ export default function FinalGreeting({
         </svg>
       </button>
       
-      {/* twoMori.png 이미지 - 가운데 배치 */}
+      {/* twoMori.png 이미지 - 더 크게 하고 위로 올림 */}
       <div style={{
         position: 'absolute',
-        top: '50%',
+        top: '35%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
         textAlign: 'center',
@@ -151,19 +147,19 @@ export default function FinalGreeting({
           src="/twoMori.png" 
           alt="Two Mori" 
           style={{
-            width: '200px',
-            height: '200px',
+            width: '280px',
+            height: '280px',
             objectFit: 'contain',
             animation: 'fadeIn 1s ease-out 0.5s both'
           }}
         />
       </div>
       
-      {/* 첫 번째 메시지 */}
-      {showTyping && currentTextPhase === 'first' && (
+      {/* 첫 번째 메시지 - twoMori 아래에 표시 (사라지지 않음) */}
+      {showTyping && (
         <div style={{
           position: 'absolute',
-          bottom: '120px',
+          top: '55%',
           left: '50%',
           transform: 'translateX(-50%)',
           textAlign: 'center',
@@ -175,7 +171,7 @@ export default function FinalGreeting({
             fontSize: '20px',
             fontWeight: '600',
             lineHeight: '1.4',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
           }}>
             {firstText.split('\n').map((line, index) => (
               <div key={index} style={{ marginBottom: '8px' }}>
@@ -186,8 +182,8 @@ export default function FinalGreeting({
         </div>
       )}
       
-      {/* 두 번째 메시지 - "필요한 서류 준비 중..." */}
-      {currentTextPhase === 'second' && (
+      {/* 두 번째 메시지 - 처음부터 표시되며 애니메이션 추가 */}
+      {showTyping && (
         <div style={{
           position: 'absolute',
           bottom: '120px',
@@ -196,47 +192,16 @@ export default function FinalGreeting({
           textAlign: 'center',
           color: 'white',
           fontFamily: 'S-Core Dream, sans-serif',
-          animation: 'fadeIn 0.8s ease-out 0.5s both'
+          animation: 'fadeIn 0.8s ease-out 1.5s both'
         }}>
           <div style={{
             fontSize: '18px',
             fontWeight: '500',
             lineHeight: '1.4',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
           }}>
             {secondText}
           </div>
-          
-          {/* 저장 상태 표시 */}
-          {saveStatus === 'saving' && (
-            <div style={{
-              marginTop: '20px',
-              fontSize: '14px',
-              color: '#e0e0e0'
-            }}>
-              저장 중...
-            </div>
-          )}
-          
-          {saveStatus === 'success' && (
-            <div style={{
-              marginTop: '20px',
-              fontSize: '14px',
-              color: '#4caf50'
-            }}>
-              ✅ 저장 완료! 잠시 후 이동합니다...
-            </div>
-          )}
-          
-          {saveStatus === 'error' && (
-            <div style={{
-              marginTop: '20px',
-              fontSize: '14px',
-              color: '#f44336'
-            }}>
-              ❌ 저장 실패. 다시 시도해주세요.
-            </div>
-          )}
         </div>
       )}
     </div>
