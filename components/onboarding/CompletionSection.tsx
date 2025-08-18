@@ -73,6 +73,7 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
       // 로그인된 사용자의 ID를 사용하여 프로필 정보 저장
       await setProfileField(userId, {
         name: userName,
+        aiName: avatarName, // AI 아바타 이름 저장
         aiIntro: `안녕 나는 ${userName}의 개인 AI비서야. 궁금한거 있으면 물어봐!`,
         img: profileImageUrl, // 업로드된 이미지 URL 또는 기본 이미지
         backgroundImg: '/background.png', // 기본 배경 이미지

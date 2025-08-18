@@ -1,6 +1,6 @@
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 const storage = getStorage();
 const auth = getAuth();
@@ -36,11 +36,11 @@ export const uploadProfileImage = async (file: File): Promise<string> => {
     const downloadURL = await getDownloadURL(storageRef);
     console.log("다운로드 URL:", downloadURL);
     
-    // Firestore 업데이트
+    // Firestore 업데이트 (문서가 없으면 생성)
     const profileRef = doc(db, "users", user.uid);
-    await updateDoc(profileRef, {
+    await setDoc(profileRef, {
       img: downloadURL
-    });
+    }, { merge: true });
     
     console.log("Firestore 업데이트 완료");
     

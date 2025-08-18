@@ -4,6 +4,7 @@ import { db } from "./firebase";
 export type Profile = {
   id: string; // id 1, 2, 3 이런식
   name: string; // 이름
+  aiName: string; // AI 이름
   desc: string; // @개발자, @의사
   img: string;
   backgroundImg: string;
