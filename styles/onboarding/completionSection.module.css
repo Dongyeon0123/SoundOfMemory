@@ -146,6 +146,14 @@
   box-shadow: none;
 }
 
+.completeButton.disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  color: #666;
+}
+
 /* 상태 표시 스타일 */
 .savingStatus,
 .successStatus,
