@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithCustomToken } from 'firebase/auth';
 import { useRouter } from 'next/router';
+import { BsChatFill } from 'react-icons/bs';
 import styles from '../../styles/login.module.css';
 import indexStyles from '../../styles/styles.module.css';
 
@@ -303,6 +304,7 @@ export default function Login() {
             onClick={handleKakaoLogin}
             disabled={loading}
           >
+            <BsChatFill size={20} className={styles.kakaoIcon} />
             {loading ? '로그인 중...' : '카카오로 시작하기'}
           </button>
           
