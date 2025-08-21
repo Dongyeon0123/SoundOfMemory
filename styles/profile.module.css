@@ -253,6 +253,6 @@
   
 @media (max-width: 600px) {
   .headerTitle{
-    margin-right: 5px;
+    margin-right: 0px;
   }
 }
