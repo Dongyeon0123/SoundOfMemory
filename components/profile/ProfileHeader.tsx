@@ -3,6 +3,7 @@ import { FiEdit2 } from 'react-icons/fi';
 import { MdDocumentScanner, MdNotificationsActive, MdBlock } from 'react-icons/md';
 import { BiQrScan } from 'react-icons/bi';
 import { FaStar } from 'react-icons/fa';
+import styles from '../../styles/profile.module.css';
 
 const ICON_SIZE = 24;
 
@@ -59,7 +60,7 @@ function ProfileHeader({
       </button>
 
       {/* 중앙 타이틀 */}
-              <span style={{ fontWeight: 700, fontSize: 17, textAlign: 'center' }}>프로필</span>
+      <span className={styles.headerTitle} style={{ fontWeight: 700, fontSize: 17, textAlign: 'center' }}>프로필</span>
 
       {/* 오른쪽 아이콘 그룹 */}
       <div
