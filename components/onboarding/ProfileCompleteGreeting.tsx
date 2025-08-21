@@ -17,7 +17,7 @@ export default function ProfileCompleteGreeting({ onContinue, onBack }: ProfileC
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const firstText = "좋아요!\n프로필 정보 입력이 끝났어요!";
-  const secondText = "가벼운 첫 걸음으로\n간단한 인터뷰를 시작해봐요!";
+  const secondText = "당신에게 딱 맞는\nAI를 생성하기 위해\n몇 가지 궁금한 게 있어요!";
 
   // 첫 번째 텍스트 애니메이션 - 한 줄씩 표시
   useEffect(() => {

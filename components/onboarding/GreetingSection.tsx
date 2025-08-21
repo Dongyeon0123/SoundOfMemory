@@ -17,7 +17,7 @@ export default function GreetingSection({ onContinue, onBack }: GreetingSectionP
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const firstText = "안녕하세요!\n저는 모리입니다!";
-  const secondText = "당신에게 딱 맞는\nAI를 생성하기 위해\n몇 가지 궁금한 게 있어요!";
+  const secondText = "가벼운 첫 걸음으로\n간단한 인터뷰를 시작해봐요!";
 
   // 첫 번째 텍스트 애니메이션 - 한 줄씩 표시
   useEffect(() => {
