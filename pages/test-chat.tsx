@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiSend } from 'react-icons/fi';
-import styles from '../styles/testChat.module.css';
+import styles from '../styles/onboarding/testChat.module.css';
 import indexStyles from '../styles/styles.module.css';
 
 interface Message {
@@ -10,13 +10,105 @@ interface Message {
   timestamp: Date;
 }
 
+interface QuestionOption {
+  id: string;
+  text: string;
+}
+
+interface Question {
+  type: 'subjective' | 'objective';
+  question: string;
+  options?: QuestionOption[];
+}
+
 export default function TestChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isAIResponding, setIsAIResponding] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [totalSteps] = useState(3);
+  const [totalSteps] = useState(12);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 질문 목록
+  const questions: Question[] = [
+    {
+      type: "subjective",
+      question: "요즘 가장 흥미를 느끼거나 많은 시간을 쏟고 있는 분야가 뭔가요?"
+    },
+    {
+      type: "objective",
+      question: "새로운 사람을 만나는 자리가 에너지를 채워주나요?",
+      options: [
+        {"id": "a", "text": "에너지를 얻는다"},
+        {"id": "b", "text": "피곤하다"}
+      ]
+    },
+    {
+      type: "subjective",
+      question: "평소 어떤 취미나 관심사가 있나요?"
+    },
+    {
+      type: "objective",
+      question: "어떤 음악을 좋아하나요?",
+      options: [
+        {"id": "a", "text": "팝/록"},
+        {"id": "b", "text": "클래식/재즈"},
+        {"id": "c", "text": "힙합/R&B"},
+        {"id": "d", "text": "K-pop"}
+      ]
+    },
+    {
+      type: "subjective",
+      question: "좋아하는 영화나 드라마 장르가 있나요?"
+    },
+    {
+      type: "objective",
+      question: "여행을 좋아하나요?",
+      options: [
+        {"id": "a", "text": "매우 좋아한다"},
+        {"id": "b", "text": "좋아한다"},
+        {"id": "c", "text": "보통이다"},
+        {"id": "d", "text": "별로다"}
+      ]
+    },
+    {
+      type: "subjective",
+      question: "어떤 책을 주로 읽나요?"
+    },
+    {
+      type: "objective",
+      question: "운동이나 스포츠를 좋아하나요?",
+      options: [
+        {"id": "a", "text": "매우 좋아한다"},
+        {"id": "b", "text": "좋아한다"},
+        {"id": "c", "text": "보통이다"},
+        {"id": "d", "text": "별로다"}
+      ]
+    },
+    {
+      type: "subjective",
+      question: "어떤 사람과 대화하는 것을 즐기나요?"
+    },
+    {
+      type: "objective",
+      question: "앞으로 이루고 싶은 목표가 있나요?",
+      options: [
+        {"id": "a", "text": "구체적인 목표가 있다"},
+        {"id": "b", "text": "대략적인 계획이 있다"},
+        {"id": "c", "text": "아직 모르겠다"}
+      ]
+    },
+    {
+      type: "subjective",
+      question: "스트레스를 받을 때 어떻게 해소하나요?"
+    },
+    {
+      type: "subjective",
+      question: "자신을 한 문장으로 표현한다면?"
+    }
+  ];
 
   // 초기 메시지 설정
   useEffect(() => {
@@ -26,7 +118,16 @@ export default function TestChat() {
       isUser: false,
       timestamp: new Date()
     };
-    setMessages([initialMessage]);
+    
+    const firstQuestion: Message = {
+      id: '2',
+      text: questions[0].question,
+      isUser: false,
+      timestamp: new Date()
+    };
+    
+    setMessages([initialMessage, firstQuestion]);
+    setCurrentQuestion(questions[0]);
   }, []);
 
   // 자동 스크롤
@@ -34,8 +135,33 @@ export default function TestChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // 사용자 입력 감지
+  useEffect(() => {
+    if (inputValue.length > 0) {
+      setIsTyping(true);
+    } else {
+      setIsTyping(false);
+    }
+  }, [inputValue]);
+
+  // 객관식 옵션 선택 처리
+  const handleOptionSelect = async (option: QuestionOption) => {
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: option.text,
+      isUser: true,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
+    // AI 응답 시뮬레이션
+    await simulateAIResponse(option.text);
+  };
+
   // AI 응답 시뮬레이션
   const simulateAIResponse = async (userMessage: string) => {
+    setIsAIResponding(true);
     setIsTyping(true);
     
     // 타이핑 효과를 위한 지연
@@ -44,18 +170,13 @@ export default function TestChat() {
     let aiResponse = '';
     let shouldIncrementStep = false;
     
-    // 사용자 입력에 따른 AI 응답 로직
-    if (userMessage.toLowerCase().includes('이름') || userMessage.toLowerCase().includes('name')) {
-      aiResponse = '좋아요! 그럼 다음 질문이에요. 평소 어떤 취미나 관심사가 있나요?';
-      shouldIncrementStep = true;
-    } else if (userMessage.toLowerCase().includes('취미') || userMessage.toLowerCase().includes('관심사') || userMessage.toLowerCase().includes('hobby')) {
-      aiResponse = '흥미롭네요! 그럼 마지막으로, 앞으로 어떤 목표나 계획이 있나요?';
-      shouldIncrementStep = true;
-    } else if (userMessage.toLowerCase().includes('목표') || userMessage.toLowerCase().includes('계획') || userMessage.toLowerCase().includes('goal')) {
-      aiResponse = '완벽해요! 이제 사용자님에 대해 충분히 알게 되었어요. 온보딩이 완료되었습니다! 🎉';
+    // 현재 단계에 따른 응답
+    if (currentStep < questions.length) {
+      aiResponse = questions[currentStep].question;
       shouldIncrementStep = true;
     } else {
-      aiResponse = '흥미로운 답변이에요! 그럼 다음 질문으로 넘어갈게요. 평소 어떤 음악을 좋아하나요?';
+      aiResponse = '완벽해요! 이제 사용자님에 대해 충분히 알게 되었어요. 온보딩이 완료되었습니다! 🎉';
+      shouldIncrementStep = true;
     }
     
     const aiMessage: Message = {
@@ -70,9 +191,11 @@ export default function TestChat() {
     // 단계 진행
     if (shouldIncrementStep && currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
+      setCurrentQuestion(questions[currentStep]);
     }
     
     setIsTyping(false);
+    setIsAIResponding(false);
   };
 
   const handleSubmit = async () => {
@@ -92,6 +215,9 @@ export default function TestChat() {
     // AI 응답 시뮬레이션
     await simulateAIResponse(inputValue);
   };
+
+  // 현재 질문이 객관식인지 확인
+  const isCurrentQuestionObjective = currentQuestion?.type === 'objective';
 
   return (
     <div className={indexStyles.fullContainer}>
@@ -149,13 +275,32 @@ export default function TestChat() {
             );
           })}
           
-          {/* 타이핑 표시 */}
+          {/* 객관식 옵션 표시 */}
+          {currentQuestion?.type === 'objective' && currentQuestion.options && (
+            <div className={styles.optionsContainer}>
+              {currentQuestion.options.map((option) => (
+                <button
+                  key={option.id}
+                  className={styles.optionButton}
+                  onClick={() => handleOptionSelect(option)}
+                  disabled={isAIResponding}
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {/* 타이핑 표시 (사용자 쪽에 표시) */}
           {isTyping && (
-            <div className={styles.typingIndicator}>
-              <div className={styles.wave}>
-                <div className={styles.dot}></div>
-                <div className={styles.dot}></div>
-                <div className={styles.dot}></div>
+            <div className={`${styles.msgWrapper} ${styles.user}`}>
+              <div className={styles.name}>You</div>
+              <div className={styles.typingIndicator}>
+                <div className={styles.wave}>
+                  <div className={styles.dot}></div>
+                  <div className={styles.dot}></div>
+                  <div className={styles.dot}></div>
+                </div>
               </div>
             </div>
           )}
@@ -165,39 +310,41 @@ export default function TestChat() {
         
         {/* 제목 */}
         <div className={styles.chatTitle}>
-          기본 정체성을 확인해요
+          기본 정체성을 확인해요 ({currentStep}/{totalSteps})
         </div>
         
-        {/* 입력 영역 */}
-        <div className={styles.inputSection}>
-          <textarea
-            className={styles.textarea}
-            value={inputValue}
-            placeholder="구체적으로 작성할수록 성격이 정확해져요."
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit();
-              }
-            }}
-            rows={1}
-            maxLength={500}
-            disabled={isTyping}
-          />
-          <button
-            className={styles.button}
-            onClick={handleSubmit}
-            disabled={!inputValue.trim() || isTyping}
-            type="button"
-            style={{
-              borderRadius: '50%',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <FiSend className="icon" />
-          </button>
-        </div>
+        {/* 입력 영역 (주관식일 때만 표시) */}
+        {currentQuestion?.type === 'subjective' && (
+          <div className={styles.inputSection}>
+            <textarea
+              className={styles.textarea}
+              value={inputValue}
+              placeholder="구체적으로 작성할수록 성격이 정확해져요."
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              rows={1}
+              maxLength={500}
+              disabled={isAIResponding}
+            />
+            <button
+              className={styles.button}
+              onClick={handleSubmit}
+              disabled={!inputValue.trim() || isAIResponding}
+              type="button"
+              style={{
+                borderRadius: '50%',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <FiSend className="icon" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
