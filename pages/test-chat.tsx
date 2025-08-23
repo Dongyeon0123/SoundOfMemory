@@ -566,13 +566,7 @@ export default function TestChat() {
                        {selectedInterests.includes(option.text) && ' ✓'}
                      </button>
                    ))}
-                   <button
-                     className={styles.completeButton}
-                     onClick={handleInterestsComplete}
-                     disabled={selectedInterests.length === 0 || isAIResponding || isAnyMessageTyping}
-                   >
-                     선택 완료 ({selectedInterests.length}/5)
-                   </button>
+                   
                  </>
                ) : (
                  // 일반 객관식 질문
@@ -619,8 +613,8 @@ export default function TestChat() {
           {" "}({currentStep}/{questions.length})
         </div>
         
-        {/* 입력 영역 (모든 질문에서 표시) */}
-        {currentQuestion && (
+        {/* 입력 영역 (마지막 질문이 아닐 때만 표시) */}
+        {currentQuestion && currentStep !== 12 && (
           <div className={styles.inputSection}>
             <textarea
               className={styles.textarea}
@@ -651,6 +645,31 @@ export default function TestChat() {
               }}
             >
               <FiSend className="icon" />
+            </button>
+          </div>
+        )}
+        
+        {/* 마지막 질문 완료 버튼 */}
+        {currentQuestion && currentStep === 12 && (
+          <div className={styles.inputSection}>
+            <button
+              className={styles.completeButton}
+              onClick={handleInterestsComplete}
+              disabled={selectedInterests.length === 0 || isAIResponding || isAnyMessageTyping}
+              style={{
+                width: '100%',
+                padding: '16px',
+                fontSize: '16px',
+                fontWeight: '600',
+                backgroundColor: selectedInterests.length > 0 ? '#007AFF' : '#E5E5EA',
+                color: selectedInterests.length > 0 ? 'white' : '#8E8E93',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: selectedInterests.length > 0 ? 'pointer' : 'not-allowed',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              완료 ({selectedInterests.length}/5)
             </button>
           </div>
         )}
