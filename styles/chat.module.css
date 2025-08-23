@@ -170,12 +170,14 @@
   background: #f1f3f5;
   color: #000;
   margin-right: 50px;
+  border-bottom-left-radius: 0px;
 }
 
 .user .bubble {
   background: #636AE8FF;
   color: #fff;
   margin-left: 50px;
+  border-bottom-right-radius: 0px;
 }
 .inputSection {
   position: sticky;

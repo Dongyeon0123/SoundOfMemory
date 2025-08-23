@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiSend } from 'react-icons/fi';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, arrayUnion } from 'firebase/firestore';
 import { db } from '../types/firebase';
 import { getAuth } from 'firebase/auth';
 import styles from '../styles/onboarding/testChat.module.css';
@@ -36,10 +36,11 @@ export default function TestChat() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isQuestionReady, setIsQuestionReady] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const auth = getAuth();
 
-  // 사용자 답변을 Firebase에 저장
+    // 사용자 답변을 Firebase에 저장
   const saveUserResponse = async (questionIndex: number, response: string) => {
     try {
       const user = auth.currentUser;
@@ -48,17 +49,57 @@ export default function TestChat() {
         return;
       }
 
-      const responseRef = doc(db, 'users', user.uid, 'onboard', 'response', questionIndex.toString());
-      await setDoc(responseRef, {
-        questionIndex: questionIndex,
-        response: response,
-        timestamp: new Date(),
-        questionType: questions[questionIndex - 1]?.type || 'unknown'
-      });
+      console.log('현재 사용자:', user.uid);
+      
+      // 서브컬렉션 경로: users/{userId}/onboard/response
+      const onboardDocRef = doc(db, 'users', user.uid, 'onboard', 'response');
+      console.log('📁 저장하려는 경로:', onboardDocRef.path);
+      
+      // arrayUnion으로 배열에 순서대로 추가
+      await setDoc(onboardDocRef, {
+        answers: arrayUnion(response),
+        lastUpdated: new Date()
+      }, { merge: true });
+      
+      console.log('✅ 답변 저장 완료! 경로:', onboardDocRef.path);
+
+                                                       // 마지막 질문(12번째)인 경우 chatData 업데이트
+         if (questionIndex === 12) {
+           try {
+             // 선택된 관심사들을 tag로 저장
+             const interests = response.split(', ').map(item => item.trim()).filter(item => item);
+             
+             if (interests.length > 0) {
+               // 사용자 프로필에 tag로 저장
+               const userProfileRef = doc(db, 'users', user.uid);
+               await setDoc(userProfileRef, {
+                 tag: interests,
+                 lastUpdated: new Date()
+               }, { merge: true });
+               
+               console.log('✅ 사용자 프로필에 tag 저장 완료:', interests);
+               
+               // 각 관심사를 chatData 컬렉션에 문서명으로 저장
+               for (const interest of interests) {
+                 const chatDataDocRef = doc(db, 'users', user.uid, 'chatData', interest);
+                 await setDoc(chatDataDocRef, {
+                   createdAt: new Date(),
+                   lastUpdated: new Date()
+                 }, { merge: true });
+               }
+               
+               console.log('✅ chatData에 관심사들 저장 완료:', interests);
+             }
+           } catch (chatError) {
+             console.error('chatData 업데이트 실패:', chatError);
+           }
+         }
 
       console.log(`답변 ${questionIndex} 저장 완료:`, response);
     } catch (error) {
       console.error(`답변 ${questionIndex} 저장 실패:`, error);
+      console.error('에러 상세:', error.message);
+      console.error('에러 코드:', error.code);
     }
   };
 
@@ -99,8 +140,8 @@ export default function TestChat() {
       setIsLoading(true);
       const questionsArray: Question[] = [];
       
-      // Firebase에서 질문 불러오기
-      for (let i = 1; i <= 12; i++) {
+      // Firebase에서 질문 불러오기 (1-11번까지만)
+      for (let i = 1; i <= 11; i++) {
         try {
           const questionDoc = await getDoc(doc(db, 'queryai', `question${i}`));
           
@@ -120,6 +161,65 @@ export default function TestChat() {
           continue;
         }
       }
+      
+             // 12번째 질문은 chatdata에서 관심사 불러오기
+       try {
+         const user = auth.currentUser;
+         if (user) {
+           console.log('🔍 사용자 ID:', user.uid);
+           
+           // chatData 컬렉션에서 모든 문서(관심사) 불러오기
+           const chatDataRef = collection(db, 'users', user.uid, 'chatData');
+           const snapshot = await getDocs(chatDataRef);
+           
+           console.log('🔍 chatData 컬렉션 시도:', chatDataRef.path);
+           console.log('📋 찾은 문서 수:', snapshot.size);
+           
+           if (!snapshot.empty) {
+             // 각 문서명을 관심사로 사용
+             const interests: string[] = [];
+             snapshot.forEach((doc) => {
+               const interestName = doc.id; // 문서명이 관심사
+               interests.push(interestName);
+               console.log('📋 관심사 문서:', interestName);
+             });
+             
+             if (interests.length > 0) {
+               // 관심사가 있으면 객관식으로 표시
+               const interestOptions = interests.map((interest: string, index: number) => ({
+                 id: `interest${index}`,
+                 text: interest
+               }));
+               
+               console.log('✅ 객관식 옵션 생성:', interestOptions);
+               
+               questionsArray.push({
+                 type: 'objective',
+                 question: '앞에서 관심사들을 알려주셨는데 어떤 분야의 예시가 가장 흥미롭게 들리세요? 베스트 5개만 뽑아주세요',
+                 options: interestOptions
+               });
+             } else {
+               console.log('⚠️ 관심사가 비어있음 - 주관식으로 설정');
+               questionsArray.push({
+                 type: 'subjective',
+                 question: '어떤 주제에 대해 대화하고 싶으신가요?'
+               });
+             }
+           } else {
+             console.log('⚠️ chatData 컬렉션이 비어있음 - 주관식으로 설정');
+             questionsArray.push({
+               type: 'subjective',
+               question: '어떤 주제에 대해 대화하고 싶으신가요?'
+             });
+           }
+         }
+       } catch (error) {
+         console.error('❌ 관심사 로드 중 오류:', error);
+         questionsArray.push({
+           type: 'subjective',
+           question: '어떤 주제에 대해 대화하고 싶으신가요?'
+         });
+       }
       
       if (questionsArray.length > 0) {
         setQuestions(questionsArray);
@@ -212,14 +312,37 @@ export default function TestChat() {
     }
   }, [inputValue, isAnyMessageTyping]);
 
-  // 객관식 옵션 선택 처리
-  const handleOptionSelect = async (option: QuestionOption) => {
-    // 사용자 답변을 Firebase에 저장
-    await saveUserResponse(currentStep, option.text);
+  // 관심사 선택 처리 (12번째 질문)
+  const handleInterestSelect = (interest: string) => {
+    setSelectedInterests(prev => {
+      if (prev.includes(interest)) {
+        // 이미 선택된 관심사면 제거
+        return prev.filter(item => item !== interest);
+      } else {
+        // 최대 5개까지만 선택 가능
+        if (prev.length < 5) {
+          return [...prev, interest];
+        } else {
+          alert('최대 5개까지만 선택할 수 있습니다.');
+          return prev;
+        }
+      }
+    });
+  };
+
+  // 관심사 선택 완료 처리
+  const handleInterestsComplete = async () => {
+    if (selectedInterests.length === 0) {
+      alert('최소 1개 이상의 관심사를 선택해주세요.');
+      return;
+    }
+
+    // 선택된 관심사들을 Firebase에 저장
+    await saveUserResponse(12, selectedInterests.join(', '));
     
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: option.text,
+      text: `선택된 관심사: ${selectedInterests.join(', ')}`,
       isUser: true,
       timestamp: new Date()
     };
@@ -227,7 +350,28 @@ export default function TestChat() {
     setMessages(prev => [...prev, userMessage]);
     
     // AI 응답 시뮬레이션
-    await simulateAIResponse(option.text);
+    await simulateAIResponse(selectedInterests.join(', '));
+  };
+
+  // 일반 객관식 옵션 선택 처리
+  const handleOptionSelect = async (option: QuestionOption) => {
+    // 12번째 질문(관심사 선택)이 아닌 경우에만 처리
+    if (currentStep !== 12) {
+      // 사용자 답변을 Firebase에 저장
+      await saveUserResponse(currentStep, option.text);
+      
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: option.text,
+        isUser: true,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+      
+      // AI 응답 시뮬레이션
+      await simulateAIResponse(option.text);
+    }
   };
 
   // AI 응답 시뮬레이션
@@ -395,26 +539,59 @@ export default function TestChat() {
             );
           })}
           
-          {/* 객관식 옵션 표시 */}
-          {currentQuestion?.type === 'objective' && 
-           currentQuestion.options && 
-           currentQuestion.options.length > 0 && 
-           messages.length > 0 && 
-           messages[messages.length - 1].text === currentQuestion.question && (
-            <div className={styles.optionsContainer}>
-              <div className={styles.optionsTitle}>선택하거나 직접 작성하세요:</div>
-              {currentQuestion.options.map((option) => (
-                <button
-                  key={option.id}
-                  className={styles.optionButton}
-                  onClick={() => handleOptionSelect(option)}
-                  disabled={isAIResponding || isAnyMessageTyping}
-                >
-                  {option.text}
-                </button>
-              ))}
-            </div>
-          )}
+                     {/* 객관식 옵션 표시 */}
+           {currentQuestion?.type === 'objective' && 
+            currentQuestion.options && 
+            currentQuestion.options.length > 0 && 
+            messages.length > 0 && 
+            messages[messages.length - 1].text === currentQuestion.question && (
+             <div className={styles.optionsContainer}>
+               {currentStep === 12 ? (
+                 // 12번째 질문: 관심사 다중 선택
+                 <>
+                   <div className={styles.optionsTitle}>원하는 관심사를 선택하세요 (최대 5개):</div>
+                   <div className={styles.selectedInterests}>
+                     선택된 관심사: {selectedInterests.length > 0 ? selectedInterests.join(', ') : '없음'}
+                   </div>
+                   {currentQuestion.options.map((option) => (
+                     <button
+                       key={option.id}
+                       className={`${styles.optionButton} ${
+                         selectedInterests.includes(option.text) ? styles.selected : ''
+                       }`}
+                       onClick={() => handleInterestSelect(option.text)}
+                       disabled={isAIResponding || isAnyMessageTyping}
+                     >
+                       {option.text}
+                       {selectedInterests.includes(option.text) && ' ✓'}
+                     </button>
+                   ))}
+                   <button
+                     className={styles.completeButton}
+                     onClick={handleInterestsComplete}
+                     disabled={selectedInterests.length === 0 || isAIResponding || isAnyMessageTyping}
+                   >
+                     선택 완료 ({selectedInterests.length}/5)
+                   </button>
+                 </>
+               ) : (
+                 // 일반 객관식 질문
+                 <>
+                   <div className={styles.optionsTitle}>선택하거나 직접 작성하세요:</div>
+                   {currentQuestion.options.map((option) => (
+                     <button
+                       key={option.id}
+                       className={styles.optionButton}
+                       onClick={() => handleOptionSelect(option)}
+                       disabled={isAIResponding || isAnyMessageTyping}
+                     >
+                       {option.text}
+                     </button>
+                   ))}
+                 </>
+               )}
+             </div>
+           )}
           
           {/* 타이핑 표시 (사용자 쪽에 표시) */}
           {isTyping && (
