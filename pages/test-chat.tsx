@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styles from '../styles/chat.module.css';
+import { FiSend } from 'react-icons/fi';
+import styles from '../styles/testChat.module.css';
 import indexStyles from '../styles/styles.module.css';
 
 interface Message {
@@ -100,21 +101,7 @@ export default function TestChat() {
           {/* 뒤로가기 버튼 */}
           <button
             onClick={() => window.history.back()}
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: '43%',
-              transform: 'translateY(-50%)',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              height: 40,
-              width: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className={styles.backButton}
             aria-label="뒤로가기"
           >
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -176,12 +163,17 @@ export default function TestChat() {
           <div ref={messagesEndRef} />
         </div>
         
+        {/* 제목 */}
+        <div className={styles.chatTitle}>
+          기본 정체성을 확인해요
+        </div>
+        
         {/* 입력 영역 */}
         <div className={styles.inputSection}>
           <textarea
             className={styles.textarea}
             value={inputValue}
-            placeholder="메시지를 입력하세요."
+            placeholder="구체적으로 작성할수록 성격이 정확해져요."
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -198,10 +190,12 @@ export default function TestChat() {
             onClick={handleSubmit}
             disabled={!inputValue.trim() || isTyping}
             type="button"
+            style={{
+              borderRadius: '50%',
+              transition: 'all 0.2s ease',
+            }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M22 2L11 13M22 2L2 9L11 13M22 2L2 9L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <FiSend className="icon" />
           </button>
         </div>
       </div>
