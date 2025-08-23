@@ -153,7 +153,6 @@
 .bubble {
   padding: 10px 16px;
   border-radius: 10px;
-  border-bottom-left-radius: 0px;
   max-width: 80%;
   font-size: 14px;
   line-height: 1.4;
@@ -163,11 +162,28 @@
 .bot .bubble {
   background: #f1f3f5;
   color: #000;
+  border-bottom-left-radius: 0px;
 }
 
 .user .bubble {
   background: #257EFE;
   color: #fff;
+  border-bottom-right-radius: 0px;
+}
+
+/* 타이핑 커서 */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #000000;
+  margin-left: 2px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 /* 타이핑 인디케이터 */
@@ -220,6 +236,15 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* 객관식 옵션 제목 */
+.optionsTitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  text-align: center;
+  font-weight: 500;
 }
 
 /* 객관식 옵션 버튼 */

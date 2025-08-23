@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiSend } from 'react-icons/fi';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../types/firebase';
+import { getAuth } from 'firebase/auth';
 import styles from '../styles/onboarding/testChat.module.css';
 import indexStyles from '../styles/styles.module.css';
 
@@ -8,6 +11,7 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  isTyping?: boolean; // 타이핑 애니메이션용
 }
 
 interface QuestionOption {
@@ -27,125 +31,192 @@ export default function TestChat() {
   const [isTyping, setIsTyping] = useState(false);
   const [isAIResponding, setIsAIResponding] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [totalSteps] = useState(12);
+  const [totalSteps, setTotalSteps] = useState(0); // 동적으로 설정
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isQuestionReady, setIsQuestionReady] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const auth = getAuth();
 
-  // 질문 목록
-  const questions: Question[] = [
-    {
-      type: "subjective",
-      question: "요즘 가장 흥미를 느끼거나 많은 시간을 쏟고 있는 분야가 뭔가요?"
-    },
-    {
-      type: "objective",
-      question: "새로운 사람을 만나는 자리가 에너지를 채워주나요?",
-      options: [
-        {"id": "a", "text": "에너지를 얻는다"},
-        {"id": "b", "text": "피곤하다"}
-      ]
-    },
-    {
-      type: "subjective",
-      question: "평소 어떤 취미나 관심사가 있나요?"
-    },
-    {
-      type: "objective",
-      question: "어떤 음악을 좋아하나요?",
-      options: [
-        {"id": "a", "text": "팝/록"},
-        {"id": "b", "text": "클래식/재즈"},
-        {"id": "c", "text": "힙합/R&B"},
-        {"id": "d", "text": "K-pop"}
-      ]
-    },
-    {
-      type: "subjective",
-      question: "좋아하는 영화나 드라마 장르가 있나요?"
-    },
-    {
-      type: "objective",
-      question: "여행을 좋아하나요?",
-      options: [
-        {"id": "a", "text": "매우 좋아한다"},
-        {"id": "b", "text": "좋아한다"},
-        {"id": "c", "text": "보통이다"},
-        {"id": "d", "text": "별로다"}
-      ]
-    },
-    {
-      type: "subjective",
-      question: "어떤 책을 주로 읽나요?"
-    },
-    {
-      type: "objective",
-      question: "운동이나 스포츠를 좋아하나요?",
-      options: [
-        {"id": "a", "text": "매우 좋아한다"},
-        {"id": "b", "text": "좋아한다"},
-        {"id": "c", "text": "보통이다"},
-        {"id": "d", "text": "별로다"}
-      ]
-    },
-    {
-      type: "subjective",
-      question: "어떤 사람과 대화하는 것을 즐기나요?"
-    },
-    {
-      type: "objective",
-      question: "앞으로 이루고 싶은 목표가 있나요?",
-      options: [
-        {"id": "a", "text": "구체적인 목표가 있다"},
-        {"id": "b", "text": "대략적인 계획이 있다"},
-        {"id": "c", "text": "아직 모르겠다"}
-      ]
-    },
-    {
-      type: "subjective",
-      question: "스트레스를 받을 때 어떻게 해소하나요?"
-    },
-    {
-      type: "subjective",
-      question: "자신을 한 문장으로 표현한다면?"
+  // 사용자 답변을 Firebase에 저장
+  const saveUserResponse = async (questionIndex: number, response: string) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        console.error('사용자가 로그인되어 있지 않습니다.');
+        return;
+      }
+
+      const responseRef = doc(db, 'users', user.uid, 'onboard', 'response', questionIndex.toString());
+      await setDoc(responseRef, {
+        questionIndex: questionIndex,
+        response: response,
+        timestamp: new Date(),
+        questionType: questions[questionIndex - 1]?.type || 'unknown'
+      });
+
+      console.log(`답변 ${questionIndex} 저장 완료:`, response);
+    } catch (error) {
+      console.error(`답변 ${questionIndex} 저장 실패:`, error);
     }
-  ];
+  };
+
+  // 타이핑 애니메이션 함수
+  const typeMessage = async (text: string, messageId: string) => {
+    const characters = text.split('');
+    let currentText = '';
+    
+    for (let i = 0; i < characters.length; i++) {
+      currentText += characters[i];
+      
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, text: currentText, isTyping: true }
+          : msg
+      ));
+      
+      // 문자 간 지연 (더 자연스러운 속도)
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    
+    // 타이핑 완료
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, isTyping: false }
+        : msg
+    ));
+    
+    // 질문이 완료되면 옵션 표시 준비
+    if (currentQuestion?.type === 'objective') {
+      setIsQuestionReady(true);
+    }
+  };
+
+  // Firebase에서 질문 불러오기
+  const fetchQuestions = async () => {
+    try {
+      setIsLoading(true);
+      const questionsArray: Question[] = [];
+      
+      // Firebase에서 질문 불러오기
+      for (let i = 1; i <= 12; i++) {
+        try {
+          const questionDoc = await getDoc(doc(db, 'queryai', `question${i}`));
+          
+          if (questionDoc.exists()) {
+            const questionData = questionDoc.data();
+            
+            questionsArray.push({
+              type: questionData.type,
+              question: questionData.question,
+              options: questionData.option || questionData.options || []
+            });
+          } else {
+            console.warn(`질문 ${i} 문서가 존재하지 않습니다.`);
+          }
+        } catch (error) {
+          console.error(`질문 ${i} 로드 중 오류:`, error);
+          continue;
+        }
+      }
+      
+      if (questionsArray.length > 0) {
+        setQuestions(questionsArray);
+        setTotalSteps(questionsArray.length);
+        setCurrentQuestion(questionsArray[0]);
+      } else {
+        // 백업으로 기본 질문 사용
+        const backupQuestions: Question[] = [
+          {
+            type: "subjective",
+            question: "요즘 가장 흥미를 느끼거나 많은 시간을 쏟고 있는 분야가 뭔가요?"
+          },
+          {
+            type: "objective",
+            question: "새로운 사람을 만나는 자리가 에너지를 채워주나요?",
+            options: [
+              {"id": "a", "text": "에너지를 얻는다"},
+              {"id": "b", "text": "피곤하다"}
+            ]
+          }
+        ];
+        setQuestions(backupQuestions);
+        setTotalSteps(backupQuestions.length);
+        setCurrentQuestion(backupQuestions[0]);
+      }
+    } catch (error) {
+      console.error('전체 질문 로딩 중 오류 발생:', error);
+      // 오류 발생 시 백업 질문 사용
+      const backupQuestions: Question[] = [
+        {
+          type: "subjective",
+          question: "요즘 가장 흥미를 느끼거나 많은 시간을 쏟고 있는 분야가 뭔가요?"
+        },
+        {
+          type: "objective",
+          question: "새로운 사람을 만나는 자리가 에너지를 채워주나요?",
+          options: [
+            {"id": "a", "text": "에너지를 얻는다"},
+            {"id": "b", "text": "피곤하다"}
+          ]
+        }
+      ];
+      setQuestions(backupQuestions);
+      setTotalSteps(backupQuestions.length);
+      setCurrentQuestion(backupQuestions[0]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 초기 메시지 설정
   useEffect(() => {
-    const initialMessage: Message = {
-      id: '1',
-      text: '안녕하세요! 저는 모리입니다. 사용자님에 대해 더 자세히 알아보고 싶어요. 몇 가지 질문을 드릴게요.',
-      isUser: false,
-      timestamp: new Date()
-    };
-    
-    const firstQuestion: Message = {
-      id: '2',
-      text: questions[0].question,
-      isUser: false,
-      timestamp: new Date()
-    };
-    
-    setMessages([initialMessage, firstQuestion]);
-    setCurrentQuestion(questions[0]);
+    fetchQuestions();
   }, []);
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      const firstQuestion: Message = {
+        id: '2',
+        text: '', // 빈 텍스트로 시작
+        isUser: false,
+        timestamp: new Date(),
+        isTyping: true
+      };
+      
+      setMessages([firstQuestion]);
+      setCurrentQuestion(questions[0]);
+      
+      // 첫 번째 질문 타이핑 애니메이션 시작
+      setTimeout(() => {
+        typeMessage(questions[0].question, '2');
+      }, 1000); // 1초 후 시작
+    }
+  }, [questions]);
 
   // 자동 스크롤
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // 타이핑 애니메이션 진행 중인지 확인
+  const isAnyMessageTyping = messages.some(msg => msg.isTyping);
+
   // 사용자 입력 감지
   useEffect(() => {
-    if (inputValue.length > 0) {
+    if (inputValue.length > 0 && !isAnyMessageTyping) {
       setIsTyping(true);
     } else {
       setIsTyping(false);
     }
-  }, [inputValue]);
+  }, [inputValue, isAnyMessageTyping]);
 
   // 객관식 옵션 선택 처리
   const handleOptionSelect = async (option: QuestionOption) => {
+    // 사용자 답변을 Firebase에 저장
+    await saveUserResponse(currentStep, option.text);
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       text: option.text,
@@ -172,7 +243,7 @@ export default function TestChat() {
     
     // 현재 단계에 따른 응답
     if (currentStep < questions.length) {
-      aiResponse = questions[currentStep].question;
+      aiResponse = '좋은 답변이에요! 그럼 다음 질문을 드릴게요.';
       shouldIncrementStep = true;
     } else {
       aiResponse = '완벽해요! 이제 사용자님에 대해 충분히 알게 되었어요. 온보딩이 완료되었습니다! 🎉';
@@ -181,17 +252,49 @@ export default function TestChat() {
     
     const aiMessage: Message = {
       id: Date.now().toString(),
-      text: aiResponse,
+      text: '', // 빈 텍스트로 시작
       isUser: false,
-      timestamp: new Date()
+      timestamp: new Date(),
+      isTyping: true
     };
     
     setMessages(prev => [...prev, aiMessage]);
     
+    // AI 메시지 타이핑 애니메이션 시작
+    await typeMessage(aiResponse, aiMessage.id);
+    
     // 단계 진행
-    if (shouldIncrementStep && currentStep < totalSteps) {
-      setCurrentStep(prev => prev + 1);
-      setCurrentQuestion(questions[currentStep]);
+    if (shouldIncrementStep && currentStep < questions.length) {
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      
+      if (nextStep <= questions.length) {
+        const nextQuestion = questions[nextStep - 1]; // 배열 인덱스는 0부터 시작
+        
+        // currentQuestion 즉시 업데이트
+        setCurrentQuestion(nextQuestion);
+        setIsQuestionReady(false); // 새로운 질문 시작 시 옵션 숨김
+        
+        // 2초 후에 채팅창 clear하고 다음 질문 표시
+        setTimeout(() => {
+          // 채팅창 clear하고 다음 질문만 표시
+          const nextQuestionMessage: Message = {
+            id: Date.now().toString() + '_next',
+            text: '', // 빈 텍스트로 시작
+            isUser: false,
+            timestamp: new Date(),
+            isTyping: true
+          };
+          
+          // 기존 메시지들을 모두 제거하고 다음 질문만 표시
+          setMessages([nextQuestionMessage]);
+          
+          // 다음 질문 타이핑 애니메이션 시작
+          setTimeout(() => {
+            typeMessage(nextQuestion.question, nextQuestionMessage.id);
+          }, 500);
+        }, 2000); // 2초 후 클리어
+      }
     }
     
     setIsTyping(false);
@@ -200,6 +303,9 @@ export default function TestChat() {
 
   const handleSubmit = async () => {
     if (!inputValue.trim()) return;
+    
+    // 사용자 답변을 Firebase에 저장
+    await saveUserResponse(currentStep, inputValue);
     
     // 사용자 메시지 추가
     const userMessage: Message = {
@@ -218,6 +324,19 @@ export default function TestChat() {
 
   // 현재 질문이 객관식인지 확인
   const isCurrentQuestionObjective = currentQuestion?.type === 'objective';
+
+  // 로딩 중일 때
+  if (isLoading) {
+    return (
+      <div className={indexStyles.fullContainer}>
+        <div className={indexStyles.centerCard}>
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <div>질문을 불러오는 중...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={indexStyles.fullContainer}>
@@ -240,7 +359,7 @@ export default function TestChat() {
             <div className={styles.progressContainer}>
               <div 
                 className={styles.progressFill} 
-                style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                style={{ width: `${questions.length > 0 ? (currentStep / questions.length) * 100 : 0}%` }}
               />
             </div>
           </div>
@@ -270,20 +389,26 @@ export default function TestChat() {
                 </div>
                 <div className={styles.bubble}>
                   {message.text}
+                  {message.isTyping && <span className={styles.cursor}>|</span>}
                 </div>
               </div>
             );
           })}
           
           {/* 객관식 옵션 표시 */}
-          {currentQuestion?.type === 'objective' && currentQuestion.options && (
+          {currentQuestion?.type === 'objective' && 
+           currentQuestion.options && 
+           currentQuestion.options.length > 0 && 
+           messages.length > 0 && 
+           messages[messages.length - 1].text === currentQuestion.question && (
             <div className={styles.optionsContainer}>
+              <div className={styles.optionsTitle}>선택하거나 직접 작성하세요:</div>
               {currentQuestion.options.map((option) => (
                 <button
                   key={option.id}
                   className={styles.optionButton}
                   onClick={() => handleOptionSelect(option)}
-                  disabled={isAIResponding}
+                  disabled={isAIResponding || isAnyMessageTyping}
                 >
                   {option.text}
                 </button>
@@ -310,16 +435,23 @@ export default function TestChat() {
         
         {/* 제목 */}
         <div className={styles.chatTitle}>
-          기본 정체성을 확인해요 ({currentStep}/{totalSteps})
+          {currentStep <= 2 && "기본 정체성을 확인해요"}
+          {currentStep >= 3 && currentStep <= 8 && "성향 및 가치관을 확인해요"}
+          {currentStep >= 9 && currentStep <= 11 && "소통 방식을 확인해요"}
+          {currentStep === 12 && "마지막 단계"}
+          {" "}({currentStep}/{questions.length})
         </div>
         
-        {/* 입력 영역 (주관식일 때만 표시) */}
-        {currentQuestion?.type === 'subjective' && (
+        {/* 입력 영역 (모든 질문에서 표시) */}
+        {currentQuestion && (
           <div className={styles.inputSection}>
             <textarea
               className={styles.textarea}
               value={inputValue}
-              placeholder="구체적으로 작성할수록 성격이 정확해져요."
+              placeholder={currentQuestion.type === 'subjective' 
+                ? "구체적으로 작성할수록 성격이 정확해져요." 
+                : "답변을 직접 작성해도 좋아요"
+              }
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -329,12 +461,12 @@ export default function TestChat() {
               }}
               rows={1}
               maxLength={500}
-              disabled={isAIResponding}
+              disabled={isAIResponding || isAnyMessageTyping}
             />
             <button
               className={styles.button}
               onClick={handleSubmit}
-              disabled={!inputValue.trim() || isAIResponding}
+              disabled={!inputValue.trim() || isAIResponding || isAnyMessageTyping}
               type="button"
               style={{
                 borderRadius: '50%',
