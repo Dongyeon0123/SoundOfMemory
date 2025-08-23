@@ -25,9 +25,12 @@ export const uploadProfileImage = async (file: File): Promise<string> => {
   });
 
   try {
-    // Storage에 업로드
-    const storageRef = ref(storage, `profile_images/${user.uid}/profile`);
-    console.log("Storage 경로:", `profile_images/${user.uid}/profile`);
+    // 파일 확장자 추출
+    const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    
+    // Storage에 업로드 (파일 확장자 포함)
+    const storageRef = ref(storage, `profile_images/${user.uid}/profile.${fileExtension}`);
+    console.log("Storage 경로:", `profile_images/${user.uid}/profile.${fileExtension}`);
     
     const snapshot = await uploadBytes(storageRef, file);
     console.log("업로드 성공:", snapshot);
