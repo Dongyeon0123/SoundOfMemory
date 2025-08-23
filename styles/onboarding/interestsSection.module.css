@@ -290,14 +290,24 @@
   box-shadow: none;
 }
 
-/* 데스크톱에서는 버튼을 더 위로 올림 */
+/* 데스크톱에서는 버튼을 제일 아래로 */
 @media (min-width: 768px) {
   .nextButton {
     max-width: 300px;
     margin: 20px auto 20px auto;
+    margin-bottom: 20px;
   }
   .categoryContainer {
     max-height: 420px;
+  }
+  .content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .categoryContainer {
+    flex: 1;
+    overflow-y: auto;
   }
 }
 
