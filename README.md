@@ -1,13 +1,18 @@
 # SoundOfMemory
 
 SoundOfMemory는 사용자의 개성을 파악하고 맞춤형 AI 채팅 경험을 제공하는 Next.js 기반 웹 애플리케이션입니다.  
-온보딩 과정을 통해 사용자의 성향과 관심사를 분석하고, 이를 바탕으로 개인화된 AI와의 대화를 가능하게 합니다.
+온보딩 과정을 통해 사용자의 성향과 관심사를 분석하고, 이를 바탕으로 개인화된 AI와의 대화를 가능하게 합니다.<br>
+명함과 같은 공식적인 수단이 없는 사람들을 위해 사람들만의 개성 있는 브랜딩의 필요성을 느꼈고,<br>
+단순히 정보 전달을 넘어서 사용자의 본질을 담아내는 퍼스널 AI 아바타 서비스를 제작하게되었습니다.
+
+## 사이트 URL: soundofmemory.io
 
 ---
 
 ## 스크린샷
 
 ### 로그인 페이지
+구글 로그인과 카카오 로그인을 통한 로그인이 가능
 <p align="center">
   <img src="https://github.com/user-attachments/assets/b9c6da73-6373-476b-b755-17db79003adf" width="250" />
 </p>
@@ -22,15 +27,16 @@ SoundOfMemory는 사용자의 개성을 파악하고 맞춤형 AI 채팅 경험�
   <img src="https://github.com/user-attachments/assets/f144181e-7f69-40c8-927b-27b565440e16" width="250" />
 </p>
 
-### 채팅창
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/538930e2-e9b4-4ac6-a535-fc299ed72f7a" width="250" />
-</p>
-
 ### 채팅 주제 관리  
 (내가 내 AI 아바타와 대화를 하면, 나에 대한 정보가 쌓이게 됨.)
 <p align="center">
   <img src="https://github.com/user-attachments/assets/15dde99c-5dd4-4880-9df0-cac2629b9db7" width="250" />
+</p>
+
+### 채팅창
+(내가 쌓아놓은 정보로 AI가 답변을 하는 모습)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/538930e2-e9b4-4ac6-a535-fc299ed72f7a" width="250" />
 </p>
 
 ### 프로필 QR 코드 생성
@@ -46,6 +52,7 @@ SoundOfMemory는 사용자의 개성을 파악하고 맞춤형 AI 채팅 경험�
 </p>
 
 ### 성향 분석 온보딩 채팅
+(여기서의 답변을 토대로 AI가 사용자의 성향 & 성격을 분석하여 저장)
 <p align="center">
   <img src="https://github.com/user-attachments/assets/58d21f72-b632-414a-9843-275ecf802508" width="250" />
   <img src="https://github.com/user-attachments/assets/47bc5ec4-f716-4af3-886b-9147eba360a9" width="250" />
