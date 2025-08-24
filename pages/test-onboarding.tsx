@@ -98,8 +98,8 @@ export default function TestOnboarding() {
 
   // 최종 단계 완료 (최종 greeting 및 데이터 저장)
   const handleFinalGreetingComplete = () => {
-    // 온보딩 완료 후 홈으로 이동
-    router.push('/');
+    // 온보딩 완료 후 test-chat으로 이동
+    router.push('/test-chat');
   };
 
   return (

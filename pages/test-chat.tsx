@@ -37,6 +37,7 @@ export default function TestChat() {
   const [isLoading, setIsLoading] = useState(true);
   const [isQuestionReady, setIsQuestionReady] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const auth = getAuth();
 
@@ -63,7 +64,7 @@ export default function TestChat() {
       
       console.log('✅ 답변 저장 완료! 경로:', onboardDocRef.path);
 
-                                                       // 마지막 질문(12번째)인 경우 chatData 업데이트
+        // 마지막 질문(12번째)인 경우 chatData 업데이트
          if (questionIndex === 12) {
            try {
              // 선택된 관심사들을 tag로 저장
@@ -337,20 +338,62 @@ export default function TestChat() {
       return;
     }
 
-    // 선택된 관심사들을 Firebase에 저장
-    await saveUserResponse(12, selectedInterests.join(', '));
-    
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: `선택된 관심사: ${selectedInterests.join(', ')}`,
-      isUser: true,
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    
-    // AI 응답 시뮬레이션
-    await simulateAIResponse(selectedInterests.join(', '));
+    try {
+      // 선택된 관심사들을 Firebase에 저장
+      await saveUserResponse(12, selectedInterests.join(', '));
+      
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: `선택된 관심사: ${selectedInterests.join(', ')}`,
+        isUser: true,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+      
+      // 성격 생성 API 호출
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const response = await fetch('https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/generatePersonality', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: user.uid
+            })
+          });
+          
+          if (response.ok) {
+            console.log('✅ 성격 생성 API 호출 성공');
+          } else {
+            console.error('❌ 성격 생성 API 호출 실패:', response.status);
+          }
+        } catch (apiError) {
+          console.error('❌ 성격 생성 API 호출 중 오류:', apiError);
+        }
+      }
+      
+      // 온보딩 완료 메시지 표시
+      const completionMessage: Message = {
+        id: Date.now().toString() + '_completion',
+        text: '완벽해요! 이제 사용자님에 대해 충분히 알게 되었어요. 온보딩이 완료되었습니다! 🎉',
+        isUser: false,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, completionMessage]);
+      
+      // 3초 후 홈으로 이동
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 3000);
+      
+    } catch (error) {
+      console.error('온보딩 완료 처리 중 오류:', error);
+      alert('온보딩 완료 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   // 일반 객관식 옵션 선택 처리
@@ -466,6 +509,46 @@ export default function TestChat() {
     await simulateAIResponse(inputValue);
   };
 
+  // 자유 채팅 제출 처리
+  const handleChatSubmit = async () => {
+    if (!inputValue.trim()) return;
+    
+    // 사용자 메시지 추가
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: inputValue,
+      isUser: true,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    
+    // AI 응답 시뮬레이션 (채팅 모드)
+    setIsAIResponding(true);
+    setIsTyping(true);
+    
+    // 타이핑 효과를 위한 지연
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const aiMessage: Message = {
+      id: Date.now().toString(),
+      text: '',
+      isUser: false,
+      timestamp: new Date(),
+      isTyping: true
+    };
+    
+    setMessages(prev => [...prev, aiMessage]);
+    
+    // 간단한 AI 응답 (실제로는 AI API 호출)
+    const aiResponse = '흥미로운 질문이네요! 더 자세히 이야기해주세요.';
+    await typeMessage(aiResponse, aiMessage.id);
+    
+    setIsTyping(false);
+    setIsAIResponding(false);
+  };
+
   // 현재 질문이 객관식인지 확인
   const isCurrentQuestionObjective = currentQuestion?.type === 'objective';
 
@@ -498,15 +581,17 @@ export default function TestChat() {
             </svg>
           </button>
           
-          {/* 진행상황 바 */}
-          <div className={styles.progressBar}>
-            <div className={styles.progressContainer}>
-              <div 
-                className={styles.progressFill} 
-                style={{ width: `${questions.length > 0 ? (currentStep / questions.length) * 100 : 0}%` }}
-              />
+          {/* 진행상황 바 (온보딩 중에만 표시) */}
+          {!isOnboardingComplete && (
+            <div className={styles.progressBar}>
+              <div className={styles.progressContainer}>
+                <div 
+                  className={styles.progressFill} 
+                  style={{ width: `${questions.length > 0 ? (currentStep / questions.length) * 100 : 0}%` }}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
         
         {/* 프로필 섹션 */}
@@ -606,28 +691,95 @@ export default function TestChat() {
         
         {/* 제목 */}
         <div className={styles.chatTitle}>
-          {currentStep <= 2 && "기본 정체성을 확인해요"}
-          {currentStep >= 3 && currentStep <= 8 && "성향 및 가치관을 확인해요"}
-          {currentStep >= 9 && currentStep <= 11 && "소통 방식을 확인해요"}
-          {currentStep === 12 && "마지막 단계"}
-          {" "}({currentStep}/{questions.length})
+          {!isOnboardingComplete ? (
+            <>
+              {currentStep <= 2 && "기본 정체성을 확인해요"}
+              {currentStep >= 3 && currentStep <= 8 && "성향 및 가치관을 확인해요"}
+              {currentStep >= 9 && currentStep <= 11 && "소통 방식을 확인해요"}
+              {currentStep === 12 && "마지막 단계"}
+              {" "}({currentStep}/{questions.length})
+            </>
+          ) : (
+            "자유로운 대화를 나눠보세요 💬"
+          )}
         </div>
         
-        {/* 입력 영역 (마지막 질문이 아닐 때만 표시) */}
-        {currentQuestion && currentStep !== 12 && (
+        {/* 입력 영역 */}
+        {!isOnboardingComplete ? (
+          <>
+            {/* 온보딩 중: 마지막 질문이 아닐 때만 표시 */}
+            {currentQuestion && currentStep !== 12 && (
+              <div className={styles.inputSection}>
+                <textarea
+                  className={styles.textarea}
+                  value={inputValue}
+                  placeholder={currentQuestion.type === 'subjective' 
+                    ? "구체적으로 작성할수록 성격이 정확해져요." 
+                    : "답변을 직접 작성해도 좋아요"
+                  }
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit();
+                    }
+                  }}
+                  rows={1}
+                  maxLength={500}
+                  disabled={isAIResponding || isAnyMessageTyping}
+                />
+                <button
+                  className={styles.button}
+                  onClick={handleSubmit}
+                  disabled={!inputValue.trim() || isAIResponding || isAnyMessageTyping}
+                  type="button"
+                  style={{
+                    borderRadius: '50%',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <FiSend className="icon" />
+                </button>
+              </div>
+            )}
+            
+            {/* 온보딩 중: 마지막 질문 완료 버튼 */}
+            {currentQuestion && currentStep === 12 && (
+              <div className={styles.inputSection}>
+                <button
+                  className={styles.completeButton}
+                  onClick={handleInterestsComplete}
+                  disabled={selectedInterests.length === 0 || isAIResponding || isAnyMessageTyping}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    backgroundColor: selectedInterests.length > 0 ? '#007AFF' : '#E5E5EA',
+                    color: selectedInterests.length > 0 ? 'white' : '#8E8E93',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: selectedInterests.length > 0 ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  완료 ({selectedInterests.length}/5)
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          /* 온보딩 완료 후: 자유 채팅 입력 */
           <div className={styles.inputSection}>
             <textarea
               className={styles.textarea}
               value={inputValue}
-              placeholder={currentQuestion.type === 'subjective' 
-                ? "구체적으로 작성할수록 성격이 정확해져요." 
-                : "답변을 직접 작성해도 좋아요"
-              }
+              placeholder="무엇이든 자유롭게 말씀해주세요..."
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  handleSubmit();
+                  handleChatSubmit();
                 }
               }}
               rows={1}
@@ -636,7 +788,7 @@ export default function TestChat() {
             />
             <button
               className={styles.button}
-              onClick={handleSubmit}
+              onClick={handleChatSubmit}
               disabled={!inputValue.trim() || isAIResponding || isAnyMessageTyping}
               type="button"
               style={{
@@ -645,31 +797,6 @@ export default function TestChat() {
               }}
             >
               <FiSend className="icon" />
-            </button>
-          </div>
-        )}
-        
-        {/* 마지막 질문 완료 버튼 */}
-        {currentQuestion && currentStep === 12 && (
-          <div className={styles.inputSection}>
-            <button
-              className={styles.completeButton}
-              onClick={handleInterestsComplete}
-              disabled={selectedInterests.length === 0 || isAIResponding || isAnyMessageTyping}
-              style={{
-                width: '100%',
-                padding: '16px',
-                fontSize: '16px',
-                fontWeight: '600',
-                backgroundColor: selectedInterests.length > 0 ? '#007AFF' : '#E5E5EA',
-                color: selectedInterests.length > 0 ? 'white' : '#8E8E93',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: selectedInterests.length > 0 ? 'pointer' : 'not-allowed',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              완료 ({selectedInterests.length}/5)
             </button>
           </div>
         )}
