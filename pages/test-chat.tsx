@@ -38,6 +38,7 @@ export default function TestChat() {
   const [isQuestionReady, setIsQuestionReady] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [isProcessingComplete, setIsProcessingComplete] = useState(false); // 완료 처리 중 상태
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const auth = getAuth();
 
@@ -338,6 +339,9 @@ export default function TestChat() {
       return;
     }
 
+    // 처리 시작 시 버튼 비활성화
+    setIsProcessingComplete(true);
+
     try {
       // 선택된 관심사들을 Firebase에 저장
       await saveUserResponse(12, selectedInterests.join(', '));
@@ -434,16 +438,18 @@ export default function TestChat() {
       
       setMessages(prev => [...prev, completionMessage]);
       
-      // 3초 후 홈으로 이동
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 3000);
-      
-    } catch (error) {
-      console.error('온보딩 완료 처리 중 오류:', error);
-      alert('온보딩 완료 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
-  };
+             // 3초 후 홈으로 이동
+       setTimeout(() => {
+         window.location.href = '/';
+       }, 3000);
+       
+     } catch (error) {
+       console.error('온보딩 완료 처리 중 오류:', error);
+       alert('온보딩 완료 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+       // 에러 발생 시에도 버튼 다시 활성화
+       setIsProcessingComplete(false);
+     }
+   };
 
   // 일반 객관식 옵션 선택 처리
   const handleOptionSelect = async (option: QuestionOption) => {
@@ -833,30 +839,30 @@ export default function TestChat() {
               </div>
             )}
             
-            {/* 온보딩 중: 마지막 질문 완료 버튼 */}
-            {currentQuestion && currentStep === 12 && (
-              <div className={styles.inputSection}>
-                <button
-                  className={styles.completeButton}
-                  onClick={handleInterestsComplete}
-                  disabled={selectedInterests.length === 0 || isAIResponding || isAnyMessageTyping}
-                  style={{
-                    width: '100%',
-                    padding: '16px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    backgroundColor: selectedInterests.length > 0 ? '#007AFF' : '#E5E5EA',
-                    color: selectedInterests.length > 0 ? 'white' : '#8E8E93',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: selectedInterests.length > 0 ? 'pointer' : 'not-allowed',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  완료 ({selectedInterests.length}/5)
-                </button>
-              </div>
-            )}
+                         {/* 온보딩 중: 마지막 질문 완료 버튼 */}
+             {currentQuestion && currentStep === 12 && (
+               <div className={styles.inputSection}>
+                 <button
+                   className={styles.completeButton}
+                   onClick={handleInterestsComplete}
+                   disabled={selectedInterests.length === 0 || isAIResponding || isAnyMessageTyping || isProcessingComplete}
+                   style={{
+                     width: '100%',
+                     padding: '16px',
+                     fontSize: '16px',
+                     fontWeight: '600',
+                     backgroundColor: isProcessingComplete ? '#8E8E93' : (selectedInterests.length > 0 ? '#007AFF' : '#E5E5EA'),
+                     color: 'white',
+                     border: 'none',
+                     borderRadius: '12px',
+                     cursor: isProcessingComplete ? 'not-allowed' : (selectedInterests.length > 0 ? 'pointer' : 'not-allowed'),
+                     transition: 'all 0.2s ease',
+                   }}
+                 >
+                   {isProcessingComplete ? '처리중...' : `완료 (${selectedInterests.length}/5)`}
+                 </button>
+               </div>
+             )}
           </>
         ) : (
           /* 온보딩 완료 후: 자유 채팅 입력 */
