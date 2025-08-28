@@ -366,12 +366,61 @@ export default function TestChat() {
           });
           
           if (response.ok) {
-            console.log('✅ 성격 생성 API 호출 성공');
+            const result = await response.json();
+            console.log('성격 생성 API 호출 성공:', result);
+            
+            // API 응답 처리 - response 데이터 활용
+            if (result.success) {
+              console.log('프로필 생성 완료:', result.data);
+              
+              // 성공 시 응답 데이터를 사용하여 추가 메시지 표시
+              if (result.data && result.data.personality) {
+                const personalityMessage: Message = {
+                  id: Date.now().toString() + '_personality',
+                  text: `AI가 분석한 당신의 성격: ${result.data.personality}`,
+                  isUser: false,
+                  timestamp: new Date()
+                };
+                setMessages(prev => [...prev, personalityMessage]);
+              }
+              
+            } else {
+              console.warn('프로필 생성 실패:', result.message);
+              
+              // 실패 시 에러 메시지 표시
+              const errorMessage: Message = {
+                id: Date.now().toString() + '_error',
+                text: `프로필 생성 실패: ${result.message || '알 수 없는 오류가 발생했습니다.'}`,
+                isUser: false,
+                timestamp: new Date()
+              };
+              setMessages(prev => [...prev, errorMessage]);
+            }
           } else {
-            console.error('❌ 성격 생성 API 호출 실패:', response.status);
+            console.error('성격 생성 API 호출 실패:', response.status);
+            const errorText = await response.text();
+            console.error('에러 상세:', errorText);
+            
+            // HTTP 에러 시 사용자에게 알림
+            const httpErrorMessage: Message = {
+              id: Date.now().toString() + '_http_error',
+              text: `서버 오류가 발생했습니다. (${response.status}) 잠시 후 다시 시도해주세요.`,
+              isUser: false,
+              timestamp: new Date()
+            };
+            setMessages(prev => [...prev, httpErrorMessage]);
           }
         } catch (apiError) {
-          console.error('❌ 성격 생성 API 호출 중 오류:', apiError);
+          console.error('성격 생성 API 호출 중 오류:', apiError);
+          
+          // 네트워크 에러 시 사용자에게 알림
+          const networkErrorMessage: Message = {
+            id: Date.now().toString() + '_network_error',
+            text: '네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요.',
+            isUser: false,
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, networkErrorMessage]);
         }
       }
       
