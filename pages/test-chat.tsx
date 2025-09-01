@@ -25,6 +25,12 @@ interface Question {
   options?: QuestionOption[];
 }
 
+interface UserProfile {
+  name?: string;
+  tag?: string[];
+  profileImage?: string;
+}
+
 export default function TestChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -39,8 +45,33 @@ export default function TestChat() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
   const [isProcessingComplete, setIsProcessingComplete] = useState(false); // 완료 처리 중 상태
+  const [userProfile, setUserProfile] = useState<UserProfile>({}); // 사용자 프로필 정보
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const auth = getAuth();
+
+  // 사용자 프로필 정보 가져오기
+  const fetchUserProfile = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        console.error('사용자가 로그인되어 있지 않습니다.');
+        return;
+      }
+
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUserProfile({
+          name: userData.name || '',
+          tag: userData.tag || [],
+          profileImage: userData.profileImage || ''
+        });
+        console.log('사용자 프로필 로드 완료:', userData);
+      }
+    } catch (error) {
+      console.error('사용자 프로필 로드 실패:', error);
+    }
+  };
 
     // 사용자 답변을 Firebase에 저장
   const saveUserResponse = async (questionIndex: number, response: string) => {
@@ -275,6 +306,7 @@ export default function TestChat() {
   // 초기 메시지 설정
   useEffect(() => {
     fetchQuestions();
+    fetchUserProfile(); // 사용자 프로필 정보 가져오기
   }, []);
 
   useEffect(() => {
@@ -438,10 +470,16 @@ export default function TestChat() {
       
       setMessages(prev => [...prev, completionMessage]);
       
-             // 3초 후 홈으로 이동
-       setTimeout(() => {
-         window.location.href = '/';
-       }, 3000);
+      // 온보딩 완료 상태로 변경
+      setIsOnboardingComplete(true);
+      
+      // 사용자 프로필 정보 다시 로드 (업데이트된 태그 정보 포함)
+      await fetchUserProfile();
+      
+      // 3초 후 홈으로 이동
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 3000);
        
      } catch (error) {
        console.error('온보딩 완료 처리 중 오류:', error);
@@ -692,10 +730,29 @@ export default function TestChat() {
         
         {/* 프로필 섹션 */}
         <div className={styles.profileSection}>
-          <img src="/mori.png" alt="모리" />
+          <img 
+            src={userProfile.profileImage || "/profile/1.png"} 
+            alt={userProfile.name || "사용자"} 
+            onError={(e) => {
+              e.currentTarget.src = "/profile/1.png";
+            }}
+          />
           <div className={styles.profileInfo}>
-            <div className={styles.name}>모리</div>
+            <div className={styles.name}>
+              {userProfile.name || "사용자"}
+            </div>
             <div className={styles.status}>AI와 대화중이에요</div>
+            <div>
+              {userProfile.tag && userProfile.tag.length > 0 && (
+                  <div className={styles.userTags}>
+                    {userProfile.tag.map((tag, index) => (
+                      <span key={index} className={styles.tag}>
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+              )}
+            </div>
           </div>
         </div>
         
