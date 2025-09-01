@@ -187,24 +187,37 @@ const Chat = () => {
   };
 
   const sendMessage = async (msg?: string) => {
-    // 이미 전송 중이면 중복 전송 방지
+    // 1. 이미 전송 중이면 중복 전송 방지
     if (isWaitingForReply) {
       console.log('이미 전송 중입니다. 중복 전송을 방지합니다.');
       return;
     }
     
-    // 디바운싱: 1초 내 중복 전송 방지
+    // 2. 디바운싱: 1초 내 중복 전송 방지
     const now = Date.now();
     if (now - lastSendTime < 1000) {
       console.log('너무 빠른 전송입니다. 1초 후 다시 시도해주세요.');
       return;
     }
     
+    // 3. 입력값 검증
     const text = (msg ?? input).trim();
-    if (!text || !profileInfo?.id || !currentUserId || typeof safeId !== "string") return;
-  
+    if (!text || !profileInfo?.id || !currentUserId || typeof safeId !== "string") {
+      console.log('전송 조건이 충족되지 않았습니다.');
+      return;
+    }
+    
+    // 4. 즉시 전송 중 상태로 변경하여 중복 전송 방지
+    setIsWaitingForReply(true);
+    
+    // 5. 전송 시도 시간 기록 (디바운싱용)
+    setLastSendTime(now);
+    
     const chatDocRef = getChatDocRef();
-    if (!chatDocRef) return;
+    if (!chatDocRef) {
+      setIsWaitingForReply(false); // 에러 시 상태 복구
+      return;
+    }
   
     let messagesArr: string[] = [];
     try {
@@ -216,11 +229,9 @@ const Chat = () => {
       await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
     } catch (e) {
       alert("채팅 저장 실패: " + (e as any).message);
+      setIsWaitingForReply(false); // 에러 시 상태 복구
       return;
     }
-  
-    // 즉시 전송 중 상태로 변경하여 중복 전송 방지
-    setIsWaitingForReply(true);
     
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
@@ -293,10 +304,15 @@ const Chat = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      // 이미 전송 중이면 Enter 키 전송 무시
-      if (!isWaitingForReply) {
-        sendMessage();
+      e.stopPropagation(); // 이벤트 전파 차단
+      
+      // 이미 전송 중이거나 입력이 비어있으면 무시
+      if (isWaitingForReply || !input.trim()) {
+        return false;
       }
+      
+      sendMessage();
+      return false; // 추가 안전장치
     }
   };
 
@@ -349,7 +365,7 @@ const Chat = () => {
           onKeyDown={handleKeyDown}
           disabled={isWaitingForReply}
           isWaitingForReply={isWaitingForReply}
-          onSend={() => sendMessage()}
+          onSend={sendMessage}
           onCancel={cancelMessage}
           textareaRef={textareaRef}
         />

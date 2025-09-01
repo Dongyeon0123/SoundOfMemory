@@ -35,7 +35,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       className={styles.button}
       onClick={isWaitingForReply ? onCancel : onSend}
       aria-label={isWaitingForReply ? "취소" : "전송"}
-      disabled={!input.trim() && !isWaitingForReply}
+      disabled={(!input.trim() && !isWaitingForReply) || isWaitingForReply}
       type="button"
       style={{
         borderRadius: isWaitingForReply ? '8px' : '50%',
