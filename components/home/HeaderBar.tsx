@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouter } from 'next/router';
 import styles from '../../styles/styles.module.css';
 import { FiSearch, FiSettings } from 'react-icons/fi';
 import { IoNotificationsOutline, IoPersonOutline } from 'react-icons/io5';
@@ -21,6 +22,12 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
   onLogout,
   onSearchClick,
 }) => {
+  const router = useRouter();
+
+  const handleSettingsClick = () => {
+    router.push('/settings');
+  };
+
   return (
     <div className={styles.fixedHeader}>
       <div className={styles.headerContent}>
@@ -73,7 +80,12 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 </div>
               )}
             </Link>
-            <FiSettings size={ICON_SIZE} color="#222" />
+            <FiSettings 
+              size={ICON_SIZE} 
+              color="#222" 
+              style={{ cursor: 'pointer' }}
+              onClick={handleSettingsClick}
+            />
           </div>
 
           {/* 로그인/로그아웃 */}
