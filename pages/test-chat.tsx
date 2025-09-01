@@ -686,6 +686,36 @@ export default function TestChat() {
   // 현재 질문이 객관식인지 확인
   const isCurrentQuestionObjective = currentQuestion?.type === 'objective';
 
+  // 뒤로가기 핸들러
+  const handleBack = () => {
+    if (currentStep > 1) {
+      // 온보딩 단계를 한 칸씩 뒤로 이동
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      
+      // 이전 질문으로 설정
+      if (questions.length > 0 && prevStep <= questions.length) {
+        const prevQuestion = questions[prevStep - 1];
+        setCurrentQuestion(prevQuestion);
+        
+        // 채팅창을 이전 질문으로 초기화
+        const prevQuestionMessage: Message = {
+          id: Date.now().toString() + '_prev',
+          text: prevQuestion.question,
+          isUser: false,
+          timestamp: new Date(),
+          isTyping: false
+        };
+        
+        setMessages([prevQuestionMessage]);
+        setIsQuestionReady(false);
+      }
+    } else {
+      // 첫 번째 단계에서는 홈으로 이동
+      window.location.href = '/';
+    }
+  };
+
   // 로딩 중일 때
   if (isLoading) {
     return (
@@ -706,7 +736,7 @@ export default function TestChat() {
         <div className={styles.header}>
           {/* 뒤로가기 버튼 */}
           <button
-            onClick={() => window.history.back()}
+            onClick={handleBack}
             className={styles.backButton}
             aria-label="뒤로가기"
           >
