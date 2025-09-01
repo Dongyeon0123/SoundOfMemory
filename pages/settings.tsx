@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { getAuth, signOut } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getApp } from 'firebase/app';
+import { getFirestore, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import CouponResultModal from '../components/CouponResultModal';
 import styles from '../styles/settings.module.css';
 
@@ -10,7 +11,7 @@ export default function SettingsPage() {
   const [couponCode, setCouponCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [walletBalance, setWalletBalance] = useState(12500);
+  const [walletBalance, setWalletBalance] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [couponResult, setCouponResult] = useState<{
     success: boolean;
@@ -19,7 +20,37 @@ export default function SettingsPage() {
   } | null>(null);
   const router = useRouter();
   const auth = getAuth();
-
+    const db = getFirestore();
+  
+  // 사용자 지갑 잔액 실시간 가져오기
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    
+    if (!user) return;
+    
+    // 지갑 문서 참조
+    const walletRef = doc(db, `users/${user.uid}/wallet/default`);
+    
+    // 실시간 리스너 설정
+    const unsubscribe = onSnapshot(walletRef, (doc) => {
+      if (doc.exists()) {
+        const walletData = doc.data();
+        setWalletBalance(walletData.balance || 0);
+        console.log('지갑 잔액 업데이트:', walletData.balance);
+      } else {
+        console.log('지갑 문서가 존재하지 않습니다');
+        setWalletBalance(0);
+      }
+    }, (error) => {
+      console.error('지갑 데이터 가져오기 오류:', error);
+      setWalletBalance(0);
+    });
+    
+    // 컴포넌트 언마운트 시 리스너 해제
+    return () => unsubscribe();
+  }, [db]);
+  
   const handleCouponSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponCode.trim()) {
@@ -132,7 +163,7 @@ export default function SettingsPage() {
                 </div>
                 <div className={styles.walletInfo}>
                   <div className={styles.balanceLabel}>
-                    현재 잔액
+                    현재 보유 토큰
                   </div>
                   <div className={styles.balanceAmount}>
                     ₩{formatAmount(walletBalance)}
