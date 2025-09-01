@@ -526,25 +526,25 @@ export default function TestChat() {
         return `흥미로운 답변이네요! "${userAnswer}"에 대한 생각이 정말 깊어 보여요. 다음 질문도 기대됩니다! ✨`;
       
       case 5:
-        return `"${userAnswer}"라는 답변을 들으니 사용자님의 성향이 조금씩 보이기 시작하네요! 더 알아보겠습니다! 🔍`;
+        return `"${userAnswer}"라는 답변을 들으니 ${userProfile.name}님의 성향이 조금씩 보이기 시작하네요! 더 알아보겠습니다! 🔍`;
       
       case 6:
-        return `정말 좋은 답변이에요! "${userAnswer}"에 대한 생각이 사용자님만의 독특한 관점을 보여주네요! 💡`;
+        return `정말 좋은 답변이에요! "${userAnswer}"에 대한 생각이 ${userProfile.name}님만의 독특한 관점을 보여주네요! 💡`;
       
       case 7:
-        return `흥미롭습니다! "${userAnswer}"라는 답변에서 사용자님의 가치관이 잘 드러나요. 더 많은 이야기를 들려주세요! 🌈`;
+        return `흥미롭습니다! "${userAnswer}"라는 답변에서 ${userProfile.name}님의 가치관이 잘 드러나요. 더 많은 이야기를 들려주세요! 🌈`;
       
       case 8:
         return `"${userAnswer}"라는 생각이 정말 인상적이에요! 이제 소통 방식에 대해 알아보겠습니다. 🗣️`;
       
       case 9:
-        return `좋은 답변이에요! "${userAnswer}"에 대한 생각이 사용자님의 소통 스타일을 잘 보여주네요! 📢`;
+        return `좋은 답변이에요! "${userAnswer}"에 대한 생각이 ${userProfile.name}님의 소통 스타일을 잘 보여주네요! 📢`;
       
       case 10:
-        return `"${userAnswer}"라는 답변을 들으니 사용자님의 소통 방식이 점점 더 명확해지고 있어요! 🎯`;
+        return `"${userAnswer}"라는 답변을 들으니 ${userProfile.name}님의 소통 방식이 점점 더 명확해지고 있어요! 🎯`;
       
       case 11:
-        return `정말 흥미로운 답변이에요! "${userAnswer}"에 대한 생각이 사용자님의 개성을 잘 보여줍니다! 🎨`;
+        return `정말 흥미로운 답변이에요! "${userAnswer}"에 대한 생각이 ${userProfile.name}님의 개성을 잘 보여줍니다! 🎨`;
       
       default:
         return '좋은 답변이에요! 그럼 다음 질문을 드릴게요.';
@@ -732,7 +732,7 @@ export default function TestChat() {
         <div className={styles.profileSection}>
           <img 
             src={userProfile.profileImage || "/profile/1.png"} 
-            alt={userProfile.name || "사용자"} 
+            alt={userProfile.name || "사용자"}
             onError={(e) => {
               e.currentTarget.src = "/profile/1.png";
             }}
@@ -742,17 +742,6 @@ export default function TestChat() {
               {userProfile.name || "사용자"}
             </div>
             <div className={styles.status}>AI와 대화중이에요</div>
-            <div>
-              {userProfile.tag && userProfile.tag.length > 0 && (
-                  <div className={styles.userTags}>
-                    {userProfile.tag.map((tag, index) => (
-                      <span key={index} className={styles.tag}>
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-              )}
-            </div>
           </div>
         </div>
         
@@ -767,7 +756,7 @@ export default function TestChat() {
             return (
               <div key={message.id} className={`${styles.msgWrapper} ${msgTypeClass}`}>
                 <div className={styles.name}>
-                  {isAI ? "모리" : "You"}
+                  {isAI ? userProfile.name : "You"}
                 </div>
                 <div className={styles.bubble}>
                   {message.text}
@@ -777,7 +766,7 @@ export default function TestChat() {
             );
           })}
           
-                     {/* 객관식 옵션 표시 */}
+            {/* 객관식 옵션 표시 */}
            {currentQuestion?.type === 'objective' && 
             currentQuestion.options && 
             currentQuestion.options.length > 0 && 
