@@ -365,7 +365,7 @@ const Chat = () => {
           onKeyDown={handleKeyDown}
           disabled={isWaitingForReply}
           isWaitingForReply={isWaitingForReply}
-          onSend={sendMessage}
+          onSend={() => sendMessage(input)}
           onCancel={cancelMessage}
           textareaRef={textareaRef}
         />
