@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { verifyQRToken } from '../../types/profiles';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import styles from '../../styles/styles.module.css';
 
 const QRTokenPage: React.FC = () => {
@@ -8,6 +9,19 @@ const QRTokenPage: React.FC = () => {
   const { token } = router.query;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Firebase 인증 상태 확인
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setIsAuthChecked(true);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const verifyAndRedirect = async () => {
@@ -17,12 +31,23 @@ const QRTokenPage: React.FC = () => {
         return;
       }
 
+      if (!isAuthChecked) {
+        // 인증 상태 확인이 완료될 때까지 대기
+        return;
+      }
+
       try {
         const userId = await verifyQRToken(token);
         
         if (userId) {
-          // 유효한 토큰이면 게스트 프로필 페이지로 리다이렉트
-          router.replace(`/guest-profile/${userId}`);
+          // 로그인 상태에 따라 다른 프로필 페이지로 리다이렉트
+          if (currentUser) {
+            // 로그인한 사용자 → 일반 프로필 페이지
+            router.replace(`/profile/${userId}`);
+          } else {
+            // 로그인하지 않은 사용자 → 게스트 프로필 페이지
+            router.replace(`/guest-profile/${userId}`);
+          }
         } else {
           setError('QR 코드가 유효하지 않거나 만료되었습니다.');
           setLoading(false);
@@ -35,7 +60,7 @@ const QRTokenPage: React.FC = () => {
     };
 
     verifyAndRedirect();
-  }, [token, router]);
+  }, [token, router, isAuthChecked, currentUser]);
 
   if (loading) {
     return (
