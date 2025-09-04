@@ -37,18 +37,23 @@ const QRTokenPage: React.FC = () => {
       }
 
       try {
+        console.log('QR 토큰 해석 시작:', token);
         const userId = await verifyQRToken(token);
         
         if (userId) {
+          console.log('토큰 해석 성공, userId:', userId, '로그인 상태:', !!currentUser);
           // 로그인 상태에 따라 다른 프로필 페이지로 리다이렉트
           if (currentUser) {
             // 로그인한 사용자 → 일반 프로필 페이지
+            console.log('로그인 사용자 → 일반 프로필로 리다이렉트');
             router.replace(`/profile/${userId}`);
           } else {
             // 로그인하지 않은 사용자 → 게스트 프로필 페이지
+            console.log('게스트 사용자 → 게스트 프로필로 리다이렉트');
             router.replace(`/guest-profile/${userId}`);
           }
         } else {
+          console.log('토큰 해석 실패');
           setError('QR 코드가 유효하지 않거나 만료되었습니다.');
           setLoading(false);
         }

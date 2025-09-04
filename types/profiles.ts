@@ -539,7 +539,7 @@ export async function generateQRToken(userId: string): Promise<{ token: string; 
     }
     
     // 새 토큰 생성 (고유하고 예측 불가능한 토큰)
-    const token = `qr_${crypto.randomUUID().replace(/-/g, '')}`;
+    const token = `qr_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}${Date.now().toString(36)}`;
     
     // qrtokens 컬렉션에 저장
     const qrTokenRef = doc(db, "qrtokens", token);
@@ -565,32 +565,34 @@ export async function generateQRToken(userId: string): Promise<{ token: string; 
   }
 }
 
-// 영구 QR 토큰 검증 및 사용자 ID 반환
+// 영구 QR 토큰 검증 및 사용자 ID 반환 (Cloud Function 사용)
 export async function verifyQRToken(token: string): Promise<string | null> {
   try {
-    const qrTokenRef = doc(db, "qrtokens", token);
-    const snap = await getDoc(qrTokenRef);
-    
-    if (!snap.exists()) {
-      console.log('QR 토큰이 존재하지 않음');
+    const response = await fetch(
+      'https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/resolveToken',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      }
+    );
+
+    if (!response.ok) {
+      console.log('QR 토큰 검증 요청 실패:', response.status);
       return null;
     }
+
+    const result = await response.json();
     
-    const data = snap.data();
-    
-    if (!data.isActive) {
-      console.log('QR 토큰이 비활성화됨');
+    if (result.ownerUserId) {
+      console.log('QR 토큰 검증 성공:', result.ownerUserId);
+      return result.ownerUserId;
+    } else {
+      console.log('QR 토큰이 유효하지 않음');
       return null;
     }
-    
-    // 사용 횟수 증가
-    await updateDoc(qrTokenRef, {
-      'usage.count': (data.usage?.count || 0) + 1,
-      'usage.lastUsedAt': serverTimestamp()
-    });
-    
-    console.log('QR 토큰 검증 성공:', data.ownerUserId);
-    return data.ownerUserId;
   } catch (error) {
     console.error('QR 토큰 검증 실패:', error);
     return null;
