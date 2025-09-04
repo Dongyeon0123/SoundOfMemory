@@ -374,6 +374,7 @@ const ProfilePage: React.FC = () => {
         profileUrl={typeof window !== 'undefined' ? window.location.href : `https://soundofmemory.com/profile/${id}`}
         userName={profile?.name || '사용자'}
         userId={profile?.id || ''}
+        usePermamentToken={true}
         onClose={() => setShowQRModal(false)}
       />
 

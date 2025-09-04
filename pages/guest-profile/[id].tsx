@@ -380,6 +380,7 @@ const GuestProfilePage: React.FC = () => {
         profileUrl={typeof window !== 'undefined' ? window.location.href : `https://soundofmemory.com/guest-profile/${id}`}
         userName={profile?.name || '사용자'}
         userId={profile?.id || ''}
+        usePermamentToken={true}
         onClose={() => setShowQRModal(false)}
       />
 

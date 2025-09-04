@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
 import { FiX, FiDownload, FiShare, FiClock } from 'react-icons/fi';
 import styles from '../../../styles/styles.module.css';
-import { saveTempToken } from '../../../types/profiles';
+import { saveTempToken, generateQRToken } from '../../../types/profiles';
 
 interface QRCodeModalProps {
   visible: boolean;
   profileUrl: string;
   userName: string;
   userId: string;
+  usePermamentToken?: boolean; // 영구 토큰 사용 여부
   onClose: () => void;
 }
 
@@ -17,11 +18,30 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
   profileUrl,
   userName,
   userId,
+  usePermamentToken = false,
   onClose,
 }) => {
   const [tempToken, setTempToken] = useState<string>('');
+  const [permanentToken, setPermanentToken] = useState<string>('');
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+
+  // 영구 QR 토큰 생성
+  const generatePermanentToken = async () => {
+    if (!userId) return;
+    
+    setIsGenerating(true);
+    try {
+      const result = await generateQRToken(userId);
+      if (result) {
+        setPermanentToken(result.token);
+      }
+    } catch (error) {
+      console.error('영구 토큰 생성 실패:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // 임시 토큰 생성 및 저장
   const generateNewToken = async () => {
@@ -47,13 +67,17 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
   // 컴포넌트가 열릴 때 토큰 생성
   useEffect(() => {
     if (visible && userId) {
-      generateNewToken();
+      if (usePermamentToken) {
+        generatePermanentToken();
+      } else {
+        generateNewToken();
+      }
     }
-  }, [visible, userId]);
+  }, [visible, userId, usePermamentToken]);
 
-  // 1분 타이머 및 토큰 갱신
+  // 1분 타이머 및 토큰 갱신 (임시 토큰만)
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || usePermamentToken) return;
 
     const interval = setInterval(() => {
       setTimeLeft(prev => {
@@ -66,14 +90,14 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [visible]); // tempToken 의존성 제거
+  }, [visible, usePermamentToken]); // tempToken 의존성 제거
 
   if (!visible) return null;
 
-  // 임시 토큰 URL 생성 (1분마다 바뀜)
-  const tempUrl = tempToken 
-    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://soundofmemory.com'}/profile/temp/${tempToken}`
-    : profileUrl;
+  // QR 코드 URL 생성
+  const qrUrl = usePermamentToken 
+    ? (permanentToken ? `${typeof window !== 'undefined' ? window.location.origin : 'https://soundofmemory.com'}/p/${permanentToken}` : profileUrl)
+    : (tempToken ? `${typeof window !== 'undefined' ? window.location.origin : 'https://soundofmemory.com'}/profile/temp/${tempToken}` : profileUrl);
 
   const handleDownload = () => {
     const svg = document.getElementById('qr-code-svg');
@@ -196,7 +220,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
             )}
             <QRCode
               id="qr-code-svg"
-              value={tempUrl}
+              value={qrUrl}
               size={200}
               style={{ height: "auto", maxWidth: "100%", width: "100%" }}
               viewBox="0 0 256 256"
@@ -216,22 +240,24 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
               QR 코드를 스캔하여<br />
               프로필 페이지로 이동하세요
             </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              padding: '8px 12px',
-              backgroundColor: timeLeft <= 10 ? '#ffebee' : '#f8f8fb',
-              borderRadius: 20,
-              fontSize: 12,
-              fontWeight: 500,
-              color: timeLeft <= 10 ? '#e53e3e' : '#666',
-              border: `1px solid ${timeLeft <= 10 ? '#ffcdd2' : '#e8e8f0'}`,
-            }}>
-              <FiClock size={14} />
-              {timeLeft}초 후 갱신
-            </div>
+            {!usePermamentToken && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '8px 12px',
+                backgroundColor: timeLeft <= 10 ? '#ffebee' : '#f8f8fb',
+                borderRadius: 20,
+                fontSize: 12,
+                fontWeight: 500,
+                color: timeLeft <= 10 ? '#e53e3e' : '#666',
+                border: `1px solid ${timeLeft <= 10 ? '#ffcdd2' : '#e8e8f0'}`,
+              }}>
+                <FiClock size={14} />
+                {timeLeft}초 후 갱신
+              </div>
+            )}
           </div>
 
           {/* 버튼들 */}
