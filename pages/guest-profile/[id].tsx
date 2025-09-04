@@ -94,7 +94,7 @@ const GuestProfilePage: React.FC = () => {
       setModal({ show: true, message: '자신의 프로필만 수정할 수 있습니다.', type: 'error' });
     }
   };  
-
+//
   // 프로필 데이터 로딩 (QR 토큰 또는 직접 userId)
   useEffect(() => {
     if (typeof id === 'string') {

@@ -41,6 +41,7 @@ const QRTokenPage: React.FC = () => {
       }
 
       if (!isAuthChecked) {
+        //
         // 인증 상태 확인이 완료될 때까지 대기
         console.log('인증 상태 확인 대기 중...');
         return;
