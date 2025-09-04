@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-import { fetchProfileById, updateProfileField, fetchFriends, toggleFavorite, fetchUserChatTopics, fetchSelectedChatTopics } from '../../types/profiles';
+import { fetchProfileById, updateProfileField, fetchFriends, toggleFavorite, fetchUserChatTopics, fetchSelectedChatTopics, verifyQRToken } from '../../types/profiles';
 import type { Profile, ChatTopic } from '../../types/profiles';
 
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -38,6 +38,7 @@ const GuestProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [myUid, setMyUid] = useState<string | null>(null);
+  const [actualUserId, setActualUserId] = useState<string | null>(null);
 
   const [isFriend, setIsFriend] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -74,7 +75,7 @@ const GuestProfilePage: React.FC = () => {
   const [selectedChatTopics, setSelectedChatTopics] = useState<string[]>([]);
 
   // 내 프로필 여부
-  const isMyProfile = myUid && id === myUid;
+  const isMyProfile = myUid && actualUserId === myUid;
 
   // 파이어베이스 인증 구독 및 내 UID 설정
   useEffect(() => {
@@ -94,36 +95,72 @@ const GuestProfilePage: React.FC = () => {
     }
   };  
 
-  // 프로필 데이터 로딩
+  // 프로필 데이터 로딩 (QR 토큰 또는 직접 userId)
   useEffect(() => {
     if (typeof id === 'string') {
       setLoading(true);
-      fetchProfileById(id).then((profile) => {
-        setProfile(profile);
-        setLoading(false);
-      });
       
-      // 채팅 주제 데이터도 함께 불러오기
-      fetchUserChatTopics(id).then(topics => {
-        setChatTopics(topics);
-      });
+      const loadProfile = async () => {
+        let actualUserId = id;
+        
+        // QR 토큰인지 확인 (qr_로 시작하는지)
+        if (id.startsWith('qr_')) {
+          console.log('QR 토큰 감지:', id, '→ 토큰 해석 시작');
+          try {
+            const resolvedUserId = await verifyQRToken(id);
+            if (resolvedUserId) {
+              actualUserId = resolvedUserId;
+              setActualUserId(resolvedUserId);
+              console.log('QR 토큰 해석 성공:', id, '→', actualUserId);
+            } else {
+              console.error('QR 토큰 해석 실패:', id);
+              setLoading(false);
+              return;
+            }
+          } catch (error) {
+            console.error('QR 토큰 해석 중 오류:', error);
+            setLoading(false);
+            return;
+          }
+        } else {
+          console.log('직접 userId 사용:', id);
+          setActualUserId(id);
+        }
+        
+        // 실제 사용자ID로 프로필 데이터 로딩
+        try {
+          const profile = await fetchProfileById(actualUserId);
+          setProfile(profile);
+          
+          // 채팅 주제 데이터도 함께 불러오기
+          const topics = await fetchUserChatTopics(actualUserId);
+          setChatTopics(topics);
+          
+          // 선택된 채팅 주제 불러오기
+          try {
+            const selectedTopics = await fetchSelectedChatTopics(actualUserId);
+            console.log('fetchSelectedChatTopics 결과:', selectedTopics);
+            setSelectedChatTopics(selectedTopics);
+          } catch (error) {
+            console.error('fetchSelectedChatTopics 에러:', error);
+            setSelectedChatTopics([]);
+          }
+        } catch (error) {
+          console.error('프로필 로딩 에러:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
       
-      // 선택된 채팅 주제 불러오기
-      fetchSelectedChatTopics(id).then(selectedTopics => {
-        console.log('fetchSelectedChatTopics 결과:', selectedTopics);
-        setSelectedChatTopics(selectedTopics);
-      }).catch(error => {
-        console.error('fetchSelectedChatTopics 에러:', error);
-        setSelectedChatTopics([]);
-      });
+      loadProfile();
     }
   }, [id]);
 
   // 친구 및 즐겨찾기 상태 조회 (로그인한 사용자만, 본인 프로필 제외)
   useEffect(() => {
-    if (myUid && id && typeof id === 'string' && myUid !== id) {
+    if (myUid && actualUserId && myUid !== actualUserId) {
       fetchFriends(myUid).then((friends) => {
-        const friend = friends.find((f) => f.friendId === id);
+        const friend = friends.find((f) => f.friendId === actualUserId);
         setIsFriend(!!friend);
         setIsFavorite(!!friend && !!friend.favorite);
       }).catch(() => {
@@ -132,7 +169,7 @@ const GuestProfilePage: React.FC = () => {
         setIsFavorite(false);
       });
     }
-  }, [myUid, id]);
+  }, [myUid, actualUserId]);
 
   // 프로필 상태 변화에 따른 상세 상태 값 동기화
   useEffect(() => {
@@ -171,7 +208,7 @@ const GuestProfilePage: React.FC = () => {
   // 친구 요청 전송 핸들러
   const handleSendFriendRequest = async () => {
     if (!requireLogin('친구 추가')) return;
-    if (!myUid || !id || typeof id !== 'string') return;
+    if (!myUid || !actualUserId) return;
     setRequesting(true);
 
     try {
@@ -196,7 +233,7 @@ const GuestProfilePage: React.FC = () => {
           },
           body: JSON.stringify({
             userId: myUid,
-            targetId: id,
+            targetId: actualUserId,
           }),
         }
       );
@@ -223,9 +260,9 @@ const GuestProfilePage: React.FC = () => {
   // 즐겨찾기 토글 핸들러
   const handleToggleFavorite = async () => {
     if (!requireLogin('즐겨찾기')) return;
-    if (!myUid || !id || typeof id !== 'string') return;
+    if (!myUid || !actualUserId) return;
     try {
-      await toggleFavorite(myUid, id, !isFavorite);
+      await toggleFavorite(myUid, actualUserId, !isFavorite);
       setIsFavorite(!isFavorite);
     } catch (e) {
       setModal({ show: true, message: '즐겨찾기 변경 중 오류가 발생했습니다.', type: 'error' });
@@ -379,7 +416,7 @@ const GuestProfilePage: React.FC = () => {
         visible={showQRModal}
         profileUrl={typeof window !== 'undefined' ? window.location.href : `https://soundofmemory.com/guest-profile/${id}`}
         userName={profile?.name || '사용자'}
-        userId={profile?.id || ''}
+        userId={actualUserId || ''}
         usePermamentToken={true}
         onClose={() => setShowQRModal(false)}
       />

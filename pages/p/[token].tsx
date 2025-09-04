@@ -55,19 +55,9 @@ const QRTokenPage: React.FC = () => {
         if (userId) {
           console.log('토큰 해석 성공, userId:', userId, '로그인 상태:', !!currentUser);
           
-          // 로그인 상태에 따라 다른 프로필 페이지로 리다이렉트
-          const isLoggedIn = currentUser && currentUser.uid;
-          console.log('최종 로그인 상태 판단:', isLoggedIn ? `로그인됨 (${currentUser.uid})` : '로그인 안됨');
-          
-          if (isLoggedIn) {
-            // 로그인한 사용자 → 일반 프로필 페이지
-            console.log(`로그인 사용자 (${currentUser.uid}) → 일반 프로필로 리다이렉트`);
-            router.replace(`/profile/${userId}`);
-          } else {
-            // 로그인하지 않은 사용자 → 게스트 프로필 페이지
-            console.log('게스트 사용자 → 게스트 프로필로 리다이렉트');
-            router.replace(`/guest-profile/${userId}`);
-          }
+          // QR 스캔은 항상 게스트 프로필로 리다이렉트 (QR 토큰으로)
+          console.log('QR 스캔 → 게스트 프로필로 리다이렉트 (QR 토큰:', token, ')');
+          router.replace(`/guest-profile/${token}`);
         } else {
           console.log('토큰 해석 실패');
           setError('QR 코드가 유효하지 않거나 만료되었습니다.');
