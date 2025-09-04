@@ -133,12 +133,12 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
       } catch (err) {
         console.log('공유 실패:', err);
         // 공유 실패 시 클립보드로 복사
-        navigator.clipboard.writeText(tempUrl);
+        navigator.clipboard.writeText(qrUrl);
         alert('링크가 클립보드에 복사되었습니다!');
       }
     } else {
       // Web Share API 지원하지 않는 경우 클립보드로 복사
-      navigator.clipboard.writeText(tempUrl);
+      navigator.clipboard.writeText(qrUrl);
       alert('링크가 클립보드에 복사되었습니다!');
     }
   };
