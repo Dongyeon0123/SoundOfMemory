@@ -12,10 +12,19 @@ const QRTokenPage: React.FC = () => {
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Firebase 인증 상태 확인
+  // Firebase 인증 상태 확인 (기존 인증 체크 우회)
   useEffect(() => {
     const auth = getAuth();
+    
+    // 즉시 현재 인증 상태 확인
+    const currentUser = auth.currentUser;
+    console.log('QR 토큰 페이지 - 즉시 인증 상태:', currentUser ? `로그인됨 (${currentUser.uid})` : '로그인 안됨');
+    setCurrentUser(currentUser);
+    setIsAuthChecked(true);
+
+    // 인증 상태 변경 감지
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('QR 토큰 페이지 - 인증 상태 변경:', user ? `로그인됨 (${user.uid})` : '로그인 안됨');
       setCurrentUser(user);
       setIsAuthChecked(true);
     });
@@ -33,8 +42,11 @@ const QRTokenPage: React.FC = () => {
 
       if (!isAuthChecked) {
         // 인증 상태 확인이 완료될 때까지 대기
+        console.log('인증 상태 확인 대기 중...');
         return;
       }
+
+      console.log('인증 상태 확인 완료. 현재 사용자:', currentUser ? `로그인됨 (${currentUser.uid})` : '로그인 안됨');
 
       try {
         console.log('QR 토큰 해석 시작:', token);
