@@ -18,8 +18,13 @@ function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      // 온보딩 페이지와 test-onboarding에서는 검사하지 않음
-      if (router.pathname === '/profile/Onboarding' || router.pathname === '/test-onboarding') return;
+      // 온보딩 페이지, test-onboarding, 게스트 프로필 페이지에서는 검사하지 않음
+      if (router.pathname === '/profile/Onboarding' || 
+          router.pathname === '/test-onboarding' || 
+          router.pathname.startsWith('/guest-profile/')) {
+        setIsAuthChecked(true);
+        return;
+      }
       
       if (user) {
         const profile = await fetchProfileById(user.uid);

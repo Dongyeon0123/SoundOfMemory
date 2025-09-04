@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 interface ProfileActionButtonProps {
   isMyProfile: boolean;
+  isGuest?: boolean; // 게스트 모드 여부
   isFriend: boolean;
   requestSent: boolean;
   requesting: boolean;
@@ -13,6 +14,7 @@ interface ProfileActionButtonProps {
 
 function ProfileActionButton({
   isMyProfile,
+  isGuest = false,
   isFriend,
   requestSent,
   requesting,
@@ -21,7 +23,12 @@ function ProfileActionButton({
 }: ProfileActionButtonProps) {
   return (
     <div>
-      {isMyProfile ? (
+      {isGuest ? (
+        // 게스트 모드에서는 항상 대화하기 버튼 표시
+        <Link href={`/chat/${profileId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <button className={styles.chatButton}>대화하기</button>
+        </Link>
+      ) : isMyProfile ? (
         <Link href={`/chat/${profileId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <button className={styles.chatButton}>대화하기</button>
         </Link>
