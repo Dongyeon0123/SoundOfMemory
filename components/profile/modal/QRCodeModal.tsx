@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import QRCode from 'react-qr-code';
-import { FiX, FiDownload, FiShare, FiClock } from 'react-icons/fi';
+import { FiX, FiDownload, FiShare } from 'react-icons/fi';
 import styles from '../../../styles/styles.module.css';
-import { saveTempToken, generateQRToken } from '../../../types/profiles';
 
 interface QRCodeModalProps {
   visible: boolean;
   profileUrl: string;
   userName: string;
   userId: string;
-  usePermamentToken?: boolean; // 영구 토큰 사용 여부
   onClose: () => void;
 }
 
@@ -18,107 +15,43 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
   profileUrl,
   userName,
   userId,
-  usePermamentToken = false,
   onClose,
 }) => {
-  const [tempToken, setTempToken] = useState<string>('');
-  const [permanentToken, setPermanentToken] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<number>(60);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [qrImageUrl, setQrImageUrl] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // 영구 QR 토큰 생성
-  const generatePermanentToken = async () => {
+  // Firebase Storage에서 QR 이미지 로드
+  const loadQRImage = async () => {
     if (!userId) return;
     
-    setIsGenerating(true);
+    setIsLoading(true);
     try {
-      const result = await generateQRToken(userId);
-      if (result) {
-        setPermanentToken(result.token);
-      }
+      // gs:// URL을 HTTP URL로 변환
+      const imageUrl = `https://storage.googleapis.com/numeric-vehicle-453915-j9/qr_images/${userId}/qr.png`;
+      setQrImageUrl(imageUrl);
     } catch (error) {
-      console.error('영구 토큰 생성 실패:', error);
+      console.error('QR 이미지 로드 실패:', error);
     } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
   };
 
-  // 임시 토큰 생성 및 저장
-  const generateNewToken = async () => {
-    if (!userId) return;
-    
-    setIsGenerating(true);
-    try {
-      const token = Math.random().toString(36).substring(2, 15) + 
-                   Math.random().toString(36).substring(2, 15) + 
-                   Date.now().toString();
-      
-      // Firebase에 임시 토큰 저장 (1분 유효)
-      await saveTempToken(userId, token);
-      setTempToken(token);
-      setTimeLeft(60);
-    } catch (error) {
-      console.error('토큰 생성 실패:', error);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // 컴포넌트가 열릴 때 토큰 생성
+  // 컴포넌트가 열릴 때 QR 이미지 로드
   useEffect(() => {
     if (visible && userId) {
-      if (usePermamentToken) {
-        generatePermanentToken();
-      } else {
-        generateNewToken();
-      }
+      loadQRImage();
     }
-  }, [visible, userId, usePermamentToken]);
-
-  // 1분 타이머 및 토큰 갱신 (임시 토큰만)
-  useEffect(() => {
-    if (!visible || usePermamentToken) return;
-
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          generateNewToken();
-          return 60;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [visible, usePermamentToken]); // tempToken 의존성 제거
+  }, [visible, userId]);
 
   if (!visible) return null;
 
-  // QR 코드 URL 생성
-  const qrUrl = usePermamentToken 
-    ? (permanentToken ? `${typeof window !== 'undefined' ? window.location.origin : 'https://soundofmemory.com'}/p/${permanentToken}` : profileUrl)
-    : (tempToken ? `${typeof window !== 'undefined' ? window.location.origin : 'https://soundofmemory.com'}/profile/temp/${tempToken}` : profileUrl);
 
   const handleDownload = () => {
-    const svg = document.getElementById('qr-code-svg');
-    if (svg) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const data = new XMLSerializer().serializeToString(svg);
-      const img = new Image();
-      
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx?.drawImage(img, 0, 0);
-        
-        const link = document.createElement('a');
-        link.download = `${userName}_QR.png`;
-        link.href = canvas.toDataURL();
-        link.click();
-      };
-      
-      img.src = 'data:image/svg+xml;base64,' + btoa(data);
+    if (qrImageUrl) {
+      const link = document.createElement('a');
+      link.download = `${userName}_QR.png`;
+      link.href = qrImageUrl;
+      link.click();
     }
   };
 
@@ -133,12 +66,12 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
       } catch (err) {
         console.log('공유 실패:', err);
         // 공유 실패 시 클립보드로 복사
-        navigator.clipboard.writeText(qrUrl);
+        navigator.clipboard.writeText(profileUrl);
         alert('링크가 클립보드에 복사되었습니다!');
       }
     } else {
       // Web Share API 지원하지 않는 경우 클립보드로 복사
-      navigator.clipboard.writeText(qrUrl);
+      navigator.clipboard.writeText(profileUrl);
       alert('링크가 클립보드에 복사되었습니다!');
     }
   };
@@ -204,7 +137,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
             border: '1px solid #e8e8f0',
             position: 'relative',
           }}>
-            {isGenerating && (
+            {isLoading && (
               <div style={{
                 position: 'absolute',
                 inset: 0,
@@ -215,16 +148,33 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 justifyContent: 'center',
                 zIndex: 1,
               }}>
-                <div style={{ fontSize: 14, color: '#666' }}>토큰 생성 중...</div>
+                <div style={{ fontSize: 14, color: '#666' }}>QR 이미지 로딩 중...</div>
               </div>
             )}
-            <QRCode
-              id="qr-code-svg"
-              value={qrUrl}
-              size={200}
-              style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-              viewBox="0 0 256 256"
-            />
+            {qrImageUrl ? (
+              <img
+                src={qrImageUrl}
+                alt="QR Code"
+                style={{ 
+                  width: 200, 
+                  height: 200,
+                  objectFit: 'contain'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: 200,
+                height: 200,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f8f8fb',
+                color: '#666',
+                fontSize: 14,
+              }}>
+                QR 코드를 불러오는 중...
+              </div>
+            )}
           </div>
           
           <div style={{
@@ -236,28 +186,10 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
             <div style={{ fontWeight: 600, color: '#222', marginBottom: 8 }}>
               {userName}의 프로필
             </div>
-            <div style={{ marginBottom: 12 }}>
+            <div>
               QR 코드를 스캔하여<br />
               프로필 페이지로 이동하세요
             </div>
-            {!usePermamentToken && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                padding: '8px 12px',
-                backgroundColor: timeLeft <= 10 ? '#ffebee' : '#f8f8fb',
-                borderRadius: 20,
-                fontSize: 12,
-                fontWeight: 500,
-                color: timeLeft <= 10 ? '#e53e3e' : '#666',
-                border: `1px solid ${timeLeft <= 10 ? '#ffcdd2' : '#e8e8f0'}`,
-              }}>
-                <FiClock size={14} />
-                {timeLeft}초 후 갱신
-              </div>
-            )}
           </div>
 
           {/* 버튼들 */}

@@ -518,52 +518,6 @@ export async function verifyTempToken(token: string): Promise<string | null> {
   }
 }
 
-// 영구 QR 토큰 생성 (개인별 고유 토큰)
-export async function generateQRToken(userId: string): Promise<{ token: string; qrUrl: string } | null> {
-  try {
-    // 기존 토큰이 있는지 확인
-    const existingTokenQuery = query(
-      collection(db, "qrtokens"),
-      where("ownerUserId", "==", userId),
-      where("isActive", "==", true)
-    );
-    const existingTokenSnap = await getDocs(existingTokenQuery);
-    
-    // 기존 토큰이 있으면 반환
-    if (!existingTokenSnap.empty) {
-      const existingToken = existingTokenSnap.docs[0].data();
-      return {
-        token: existingToken.tokenId,
-        qrUrl: existingToken.deepLink
-      };
-    }
-    
-    // 새 토큰 생성 (고유하고 예측 불가능한 토큰)
-    const token = `qr_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}${Date.now().toString(36)}`;
-    
-    // qrtokens 컬렉션에 저장
-    const qrTokenRef = doc(db, "qrtokens", token);
-    await setDoc(qrTokenRef, {
-      tokenId: token,
-      ownerUserId: userId,          // 실제 사용자 ID (내부 저장만)
-      profileId: userId,            // 또는 별도 프로필 ID
-      type: 'qr',
-      isActive: true,
-      usage: { count: 0, lastUsedAt: null },
-      createdAt: serverTimestamp(),
-      deepLink: `https://www.soundofmemory.io/p/${token}`
-    });
-    
-    console.log('QR 토큰 생성 완료:', token);
-    return {
-      token,
-      qrUrl: `https://www.soundofmemory.io/p/${token}`
-    };
-  } catch (error) {
-    console.error('QR 토큰 생성 실패:', error);
-    return null;
-  }
-}
 
 // 영구 QR 토큰 검증 및 사용자 ID 반환 (Cloud Function 사용)
 export async function verifyQRToken(token: string): Promise<string | null> {
@@ -597,4 +551,4 @@ export async function verifyQRToken(token: string): Promise<string | null> {
     console.error('QR 토큰 검증 실패:', error);
     return null;
   }
-} 
+}
