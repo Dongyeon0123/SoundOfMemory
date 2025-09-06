@@ -518,6 +518,36 @@ export async function verifyTempToken(token: string): Promise<string | null> {
   }
 }
 
+// Firebase에서 기존 QR 토큰 조회 (생성하지 않음)
+export async function getExistingQRToken(userId: string): Promise<{ token: string; qrImageUrl: string } | null> {
+  try {
+    // 기존 토큰이 있는지 확인
+    const existingTokenQuery = query(
+      collection(db, "qrtokens"),
+      where("ownerUserId", "==", userId),
+      where("isActive", "==", true)
+    );
+    const existingTokenSnap = await getDocs(existingTokenQuery);
+    
+    // 기존 토큰이 있으면 반환
+    if (!existingTokenSnap.empty) {
+      const existingToken = existingTokenSnap.docs[0].data();
+      const qrImageUrl = `https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/qr_images%2F${userId}%2Fqr.png?alt=media&token=4cd7e2bb-4fbd-4d6a-9acf-8373c6ab6746`;
+      
+      console.log('기존 QR 토큰 발견:', existingToken.tokenId);
+      return {
+        token: existingToken.tokenId,
+        qrImageUrl
+      };
+    }
+    
+    console.log('해당 사용자의 QR 토큰이 없습니다:', userId);
+    return null;
+  } catch (error) {
+    console.error('QR 토큰 조회 실패:', error);
+    return null;
+  }
+}
 
 // 영구 QR 토큰 검증 및 사용자 ID 반환 (Cloud Function 사용)
 export async function verifyQRToken(token: string): Promise<string | null> {

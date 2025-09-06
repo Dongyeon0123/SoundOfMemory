@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiDownload, FiShare } from 'react-icons/fi';
 import styles from '../../../styles/styles.module.css';
+import { getExistingQRToken } from '../../../types/profiles';
 
 interface QRCodeModalProps {
   visible: boolean;
@@ -18,28 +19,39 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
   onClose,
 }) => {
   const [qrImageUrl, setQrImageUrl] = useState<string>('');
+  const [qrToken, setQrToken] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [hasToken, setHasToken] = useState<boolean>(false);
 
-  // Firebase Storage에서 QR 이미지 로드
-  const loadQRImage = async () => {
+  // Firebase에서 기존 QR 토큰과 이미지 조회
+  const loadExistingQRToken = async () => {
     if (!userId) return;
     
     setIsLoading(true);
     try {
-      // gs:// URL을 HTTP URL로 변환
-      const imageUrl = `https://storage.googleapis.com/numeric-vehicle-453915-j9/qr_images/${userId}/qr.png`;
-      setQrImageUrl(imageUrl);
+      const result = await getExistingQRToken(userId);
+      if (result) {
+        setQrToken(result.token);
+        setQrImageUrl(result.qrImageUrl);
+        setHasToken(true);
+        console.log('QR 토큰 로드 성공:', result.token);
+        console.log('QR 이미지 URL:', result.qrImageUrl);
+      } else {
+        console.log('해당 사용자의 QR 토큰이 없습니다');
+        setHasToken(false);
+      }
     } catch (error) {
-      console.error('QR 이미지 로드 실패:', error);
+      console.error('QR 토큰 로드 실패:', error);
+      setHasToken(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 컴포넌트가 열릴 때 QR 이미지 로드
+  // 컴포넌트가 열릴 때 기존 QR 토큰 로드
   useEffect(() => {
     if (visible && userId) {
-      loadQRImage();
+      loadExistingQRToken();
     }
   }, [visible, userId]);
 
@@ -56,22 +68,24 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
   };
 
   const handleShare = async () => {
+    const shareUrl = qrToken ? `https://www.soundofmemory.io/p/${qrToken}` : profileUrl;
+    
     if (navigator.share) {
       try {
         await navigator.share({
           title: `${userName}의 프로필`,
           text: `${userName}의 프로필을 확인해보세요!`,
-          url: profileUrl,
+          url: shareUrl,
         });
       } catch (err) {
         console.log('공유 실패:', err);
         // 공유 실패 시 클립보드로 복사
-        navigator.clipboard.writeText(profileUrl);
+        navigator.clipboard.writeText(shareUrl);
         alert('링크가 클립보드에 복사되었습니다!');
       }
     } else {
       // Web Share API 지원하지 않는 경우 클립보드로 복사
-      navigator.clipboard.writeText(profileUrl);
+      navigator.clipboard.writeText(shareUrl);
       alert('링크가 클립보드에 복사되었습니다!');
     }
   };
@@ -151,7 +165,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 <div style={{ fontSize: 14, color: '#666' }}>QR 이미지 로딩 중...</div>
               </div>
             )}
-            {qrImageUrl ? (
+            {hasToken && qrImageUrl ? (
               <img
                 src={qrImageUrl}
                 alt="QR Code"
@@ -161,6 +175,26 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   objectFit: 'contain'
                 }}
               />
+            ) : !isLoading && !hasToken ? (
+              <div style={{
+                width: 200,
+                height: 200,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#ffebee',
+                color: '#d32f2f',
+                fontSize: 14,
+                textAlign: 'center',
+                padding: 20,
+                gap: 10,
+              }}>
+                <div>QR 코드가 없습니다</div>
+                <div style={{ fontSize: 12, opacity: 0.8 }}>
+                  관리자에게 QR 코드 생성을 요청하세요
+                </div>
+              </div>
             ) : (
               <div style={{
                 width: 200,
