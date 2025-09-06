@@ -33,7 +33,7 @@ const ICON_SIZE = 24;
 
 const GuestProfilePage: React.FC = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, from, token } = router.query;
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,9 +103,14 @@ const GuestProfilePage: React.FC = () => {
       const loadProfile = async () => {
         let actualUserId = id;
         
-        // QR 토큰인지 확인 (qr_로 시작하는지)
-        if (id.startsWith('qr_')) {
-          console.log('QR 토큰 감지:', id, '→ 토큰 해석 시작');
+        // QR에서 온 요청이면 이미 검증된 실제 userId 사용
+        if (from === 'qr' && token) {
+          console.log('QR에서 리다이렉트된 요청, 실제 userId 사용:', id, 'QR 토큰:', token);
+          actualUserId = id; // 이미 실제 userId로 변환됨
+          setActualUserId(id);
+        } else if (id.startsWith('qr_')) {
+          // 직접 QR 토큰으로 접근한 경우 (예외적인 경우)
+          console.log('직접 QR 토큰 접근:', id, '→ 토큰 해석 시작');
           try {
             const resolvedUserId = await verifyQRToken(id);
             if (resolvedUserId) {

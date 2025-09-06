@@ -11,6 +11,7 @@ const QRTokenPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Firebase 인증 상태 확인 (기존 인증 체크 우회)
   useEffect(() => {
@@ -47,6 +48,13 @@ const QRTokenPage: React.FC = () => {
         return;
       }
 
+      // 중복 실행 방지
+      if (isProcessing) {
+        console.log('이미 처리 중입니다. 중복 실행 방지.');
+        return;
+      }
+
+      setIsProcessing(true);
       console.log('인증 상태 확인 완료. 현재 사용자:', currentUser ? `로그인됨 (${currentUser.uid})` : '로그인 안됨');
 
       try {
@@ -56,23 +64,25 @@ const QRTokenPage: React.FC = () => {
         if (userId) {
           console.log('토큰 해석 성공, userId:', userId, '로그인 상태:', !!currentUser);
           
-          // QR 스캔은 항상 게스트 프로필로 리다이렉트 (QR 토큰으로)
-          console.log('QR 스캔 → 게스트 프로필로 리다이렉트 (QR 토큰:', token, ')');
-          router.replace(`/guest-profile/${token}`);
+          // QR 스캔은 실제 userId로 리다이렉트 (한 번만 호출되도록)
+          console.log('QR 스캔 → 게스트 프로필로 리다이렉트 (실제 userId:', userId, ')');
+          router.replace(`/guest-profile/${userId}?from=qr&token=${token}`);
         } else {
           console.log('토큰 해석 실패');
           setError('QR 코드가 유효하지 않거나 만료되었습니다.');
           setLoading(false);
+          setIsProcessing(false);
         }
       } catch (error) {
         console.error('QR 토큰 검증 중 오류:', error);
         setError('QR 코드 검증 중 오류가 발생했습니다.');
         setLoading(false);
+        setIsProcessing(false);
       }
     };
 
     verifyAndRedirect();
-  }, [token, router, isAuthChecked, currentUser]);
+  }, [token, router, isAuthChecked, currentUser, isProcessing]);
 
   if (loading) {
     return (
