@@ -532,7 +532,7 @@ export async function getExistingQRToken(userId: string): Promise<{ token: strin
     // 기존 토큰이 있으면 반환
     if (!existingTokenSnap.empty) {
       const existingToken = existingTokenSnap.docs[0].data();
-      const qrImageUrl = `https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/qr_images%2F${userId}%2Fqr.png?alt=media&token=4cd7e2bb-4fbd-4d6a-9acf-8373c6ab6746`;
+      const qrImageUrl = `https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/qr_images%2F${userId}%2Fqr.png?alt=media&token=cccc8ff4-43e6-4bb2-98b7-408add1c2042`;
       
       console.log('기존 QR 토큰 발견:', existingToken.tokenId);
       return {
