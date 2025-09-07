@@ -82,8 +82,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(destinationUrl);
       }
 
-      // 2. Firestore REST API로 qrMappings 컬렉션 조회
-      const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${process.env.FIREBASE_PROJECT_ID}/databases/(default)/documents/qrMappings/${shortId}`;
+      // 2. Firestore REST API로 qrRedirects 컬렉션 조회
+      const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${process.env.FIREBASE_PROJECT_ID}/databases/(default)/documents/qrRedirects/${shortId}`;
 
       // 서버에서만 사용할 액세스 토큰 필요
       const accessToken = await getAccessToken();

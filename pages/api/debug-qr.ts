@@ -22,13 +22,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       usersPrivateQr: []
     };
 
-    // 1. qrRedirets 컬렉션 확인
+    // 1. qrRedirects 컬렉션 확인
     try {
-      const qrRedirectRef = doc(db, 'qrRedirets', shortId);
+      const qrRedirectRef = doc(db, 'qrRedirects', shortId);
       const qrRedirectSnap = await getDoc(qrRedirectRef);
       results.qrMappings = qrRedirectSnap.exists() ? qrRedirectSnap.data() : null;
     } catch (error) {
-      console.error('qrRedirets 조회 오류:', error);
+      console.error('qrRedirects 조회 오류:', error);
     }
 
     // 2. qrtokens 컬렉션 확인

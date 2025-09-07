@@ -37,15 +37,13 @@ export async function getMyQrData(userId: string): Promise<PrivateQrData | null>
 }
 
 /**
- * [수정] QR 토큰을 검증하는 함수 (내부 API 호출)
+ * [수정] QR 토큰을 검증하는 함수 (기존 qr-lookup API 사용)
  * - 이 함수는 게스트 프로필 페이지 등에서 최종 권한을 확인할 때 사용됩니다.
  */
 export async function verifyQRToken(token: string): Promise<{ ownerUserId: string } | null> {
   try {
-    const response = await fetch('/api/verify-qr', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
+    const response = await fetch(`/api/qr-lookup?shortId=${encodeURIComponent(token)}`, {
+      method: 'GET',
     });
 
     if (!response.ok) {

@@ -570,15 +570,11 @@ export async function getExistingQRToken(userId: string): Promise<{ token: strin
   }
 }
 
-// 영구 QR 토큰 검증 및 사용자 ID 반환 (내부 API 사용)
+// 영구 QR 토큰 검증 및 사용자 ID 반환 (기존 qr-lookup API 사용)
 export async function verifyQRToken(token: string): Promise<string | null> {
   try {
-    const response = await fetch('/api/verify-qr', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token }),
+    const response = await fetch(`/api/qr-lookup?shortId=${encodeURIComponent(token)}`, {
+      method: 'GET',
     });
 
     if (!response.ok) {
