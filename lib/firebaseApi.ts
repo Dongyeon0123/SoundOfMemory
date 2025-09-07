@@ -37,15 +37,12 @@ export async function getMyQrData(userId: string): Promise<PrivateQrData | null>
 }
 
 /**
- * [수정] QR 토큰을 검증하는 함수 (Cloud Function 호출)
+ * [수정] QR 토큰을 검증하는 함수 (내부 API 호출)
  * - 이 함수는 게스트 프로필 페이지 등에서 최종 권한을 확인할 때 사용됩니다.
  */
 export async function verifyQRToken(token: string): Promise<{ ownerUserId: string } | null> {
   try {
-    // 'resolveToken' Cloud Function의 URL
-    const functionUrl = 'https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/resolveToken';
-    
-    const response = await fetch(functionUrl, {
+    const response = await fetch('/api/verify-qr', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
