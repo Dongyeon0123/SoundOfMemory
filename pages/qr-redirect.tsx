@@ -17,7 +17,7 @@ const QRRedirectPage: React.FC = () => {
       }
 
       try {
-        // 기존 verifyQRToken 함수 사용 (Cloud Function 호출)
+        // verifyQRToken 함수 사용 (내부 API 호출)
         console.log('QR 리다이렉트 시도:', shortId);
         
         const result = await verifyQRToken(shortId);

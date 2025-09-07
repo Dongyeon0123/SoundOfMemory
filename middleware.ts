@@ -74,6 +74,14 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
+      // 환경 변수 체크
+      if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY) {
+        console.error('Firebase 환경 변수가 설정되지 않음. QR 리다이렉트 페이지로 fallback');
+        const destinationUrl = new URL('/qr-redirect', request.url);
+        destinationUrl.searchParams.set('shortId', shortId);
+        return NextResponse.redirect(destinationUrl);
+      }
+
       // 2. Firestore REST API로 qrMappings 컬렉션 조회
       const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${process.env.FIREBASE_PROJECT_ID}/databases/(default)/documents/qrMappings/${shortId}`;
 
@@ -108,7 +116,10 @@ export async function middleware(request: NextRequest) {
 
     } catch (error) {
       console.error('QR 리다이렉트 미들웨어 에러:', error);
-      return NextResponse.redirect(new URL('/error?code=MIDDLEWARE_FAILED', request.url));
+      // 에러 발생 시 QR 리다이렉트 페이지로 fallback
+      const destinationUrl = new URL('/qr-redirect', request.url);
+      destinationUrl.searchParams.set('shortId', shortId);
+      return NextResponse.redirect(destinationUrl);
     }
   }
 
