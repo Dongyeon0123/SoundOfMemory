@@ -5,9 +5,20 @@ import type { NextRequest } from 'next/server';
 async function getAccessToken(): Promise<string> {
   try {
     // 서비스 계정 키 정보 (환경 변수에서 가져옴)
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64;
+    
+    // Base64로 인코딩된 경우 디코딩
+    if (privateKey && !privateKey.includes('BEGIN PRIVATE KEY')) {
+      try {
+        privateKey = Buffer.from(privateKey, 'base64').toString('utf8');
+      } catch (e) {
+        console.log('미들웨어: Base64 디코딩 실패');
+      }
+    }
+    
     const serviceAccount = {
       client_email: process.env.FIREBASE_CLIENT_EMAIL,
-      private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      private_key: privateKey?.replace(/\\n/g, '\n'),
       project_id: process.env.FIREBASE_PROJECT_ID,
     };
 
@@ -32,11 +43,11 @@ async function getAccessToken(): Promise<string> {
 
     // 간단한 JWT 생성 (실제 환경에서는 jose 라이브러리 사용 권장)
     const { importPKCS8, SignJWT } = await import('jose');
-    const privateKey = await importPKCS8(serviceAccount.private_key, 'RS256');
+    const cryptoKey = await importPKCS8(serviceAccount.private_key, 'RS256');
     
     const jwt = await new SignJWT(payload)
       .setProtectedHeader(header)
-      .sign(privateKey);
+      .sign(cryptoKey);
 
     // Google OAuth2 토큰 엔드포인트에 JWT로 액세스 토큰 요청
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -74,8 +85,12 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      // 환경 변수 체크
-      if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY) {
+      // 환경 변수 체크 (배포에서는 항상 fallback 사용)
+      const hasAllEnvVars = process.env.FIREBASE_PROJECT_ID && 
+                           process.env.FIREBASE_CLIENT_EMAIL && 
+                           (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64);
+      
+      if (!hasAllEnvVars) {
         console.error('Firebase 환경 변수가 설정되지 않음. QR 리다이렉트 페이지로 fallback');
         const destinationUrl = new URL('/qr-redirect', request.url);
         destinationUrl.searchParams.set('shortId', shortId);
