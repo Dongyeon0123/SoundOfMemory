@@ -24,6 +24,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           router.pathname.startsWith('/guest-profile/') ||
           router.pathname.startsWith('/p/') ||
           router.pathname.startsWith('/q/') ||
+          router.pathname === '/qr-redirect' ||
           router.pathname.startsWith('/profile/')) {
         setIsAuthChecked(true);
         return;
