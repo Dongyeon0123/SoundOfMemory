@@ -532,13 +532,34 @@ export async function getExistingQRToken(userId: string): Promise<{ token: strin
     // 기존 토큰이 있으면 반환
     if (!existingTokenSnap.empty) {
       const existingToken = existingTokenSnap.docs[0].data();
-      const qrImageUrl = `https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/qr_images%2F${userId}%2Fqr.png?alt=media&token=cccc8ff4-43e6-4bb2-98b7-408add1c2042`;
       
-      console.log('기존 QR 토큰 발견:', existingToken.tokenId);
-      return {
-        token: existingToken.tokenId,
-        qrImageUrl
-      };
+      // Firestore에서 QR 이미지 URL 가져오기
+      try {
+        const qrDocRef = doc(db, `users/${userId}/private/qr`);
+        const qrDocSnap = await getDoc(qrDocRef);
+        
+        let qrImageUrl = '';
+        if (qrDocSnap.exists()) {
+          const qrData = qrDocSnap.data();
+          qrImageUrl = qrData.qrimageurl || '';
+          console.log('QR 이미지 URL 가져오기 성공:', qrImageUrl);
+        } else {
+          console.log('QR 문서가 존재하지 않습니다:', userId);
+        }
+        
+        console.log('기존 QR 토큰 발견:', existingToken.tokenId);
+        return {
+          token: existingToken.tokenId,
+          qrImageUrl
+        };
+      } catch (error) {
+        console.error('QR 이미지 URL 가져오기 실패:', error);
+        console.log('기존 QR 토큰 발견 (이미지 URL 없음):', existingToken.tokenId);
+        return {
+          token: existingToken.tokenId,
+          qrImageUrl: ''
+        };
+      }
     }
     
     console.log('해당 사용자의 QR 토큰이 없습니다:', userId);
