@@ -23,6 +23,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           router.pathname === '/test-onboarding' || 
           router.pathname.startsWith('/guest-profile/') ||
           router.pathname.startsWith('/p/') ||
+          router.pathname.startsWith('/q/') ||
           router.pathname.startsWith('/profile/')) {
         setIsAuthChecked(true);
         return;
