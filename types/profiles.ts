@@ -603,3 +603,6 @@ export async function verifyQRToken(token: string): Promise<string | null> {
     return null;
   }
 }
+
+// QR 관련 함수들은 lib/firebaseApi.ts로 이동되었습니다.
+// 백엔드에서 모든 QR 생성/수정 로직을 처리하므로 클라이언트에서는 읽기만 합니다.

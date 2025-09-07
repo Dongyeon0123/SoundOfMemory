@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiDownload, FiShare } from 'react-icons/fi';
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import styles from '../../../styles/styles.module.css';
-import { getExistingQRToken } from '../../../types/profiles';
+import { getMyQrData, PrivateQrData } from '../../../lib/firebaseApi';
 
 interface QRCodeModalProps {
   visible: boolean;
@@ -18,40 +19,76 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
   userId,
   onClose,
 }) => {
+  const [qrData, setQrData] = useState<PrivateQrData | null>(null);
   const [qrImageUrl, setQrImageUrl] = useState<string>('');
-  const [qrToken, setQrToken] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [hasToken, setHasToken] = useState<boolean>(false);
+  const [hasQrData, setHasQrData] = useState<boolean>(false);
 
-  // Firebase에서 기존 QR 토큰과 이미지 조회
-  const loadExistingQRToken = async () => {
+  // QR 데이터 조회 (백엔드에서 생성된 데이터만 읽기)
+  const loadMyQrData = async () => {
     if (!userId) return;
     
     setIsLoading(true);
     try {
-      const result = await getExistingQRToken(userId);
+      const result = await getMyQrData(userId);
       if (result) {
-        setQrToken(result.token);
-        setQrImageUrl(result.qrImageUrl);
-        setHasToken(true);
-        console.log('QR 토큰 로드 성공:', result.token);
-        console.log('QR 이미지 URL:', result.qrImageUrl);
+        setQrData(result);
+        setHasQrData(true);
+        console.log('QR 데이터 로드 성공:', result.shortId);
+        console.log('Deep Link:', result.qrDeepLink);
+        console.log('전체 QR 데이터:', result); // 디버깅용
+        
+        // Firebase Storage에서 QR 이미지 불러오기
+        // qrImageUrl이 있으면 사용하고, 없으면 기본 경로 사용
+        const imagePath = result.qrImageUrl || `qr_images/${userId}/qr.png`;
+        await loadQRImageFromStorage(imagePath);
       } else {
-        console.log('해당 사용자의 QR 토큰이 없습니다');
-        setHasToken(false);
+        console.log('QR 데이터가 아직 생성되지 않았습니다');
+        setHasQrData(false);
       }
     } catch (error) {
-      console.error('QR 토큰 로드 실패:', error);
-      setHasToken(false);
+      console.error('QR 데이터 로드 실패:', error);
+      setHasQrData(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 컴포넌트가 열릴 때 기존 QR 토큰 로드
+  // Firebase Storage에서 QR 이미지 불러오기
+  const loadQRImageFromStorage = async (imageUrl: string | undefined) => {
+    try {
+      // imageUrl이 없거나 빈 문자열인 경우
+      if (!imageUrl) {
+        console.log('QR 이미지 URL이 없습니다');
+        setQrImageUrl('');
+        return;
+      }
+
+      // 이미 URL이 완전한 경우 그대로 사용
+      if (imageUrl.startsWith('http')) {
+        setQrImageUrl(imageUrl);
+        console.log('QR 이미지 URL 설정:', imageUrl);
+        return;
+      }
+      
+      // gs:// URL인 경우 다운로드 URL로 변환
+      const storage = getStorage();
+      const qrImageRef = ref(storage, imageUrl);
+      
+      // Firebase Storage에서 다운로드 URL 가져오기
+      const downloadURL = await getDownloadURL(qrImageRef);
+      setQrImageUrl(downloadURL);
+      console.log('QR 이미지 URL 설정:', downloadURL);
+    } catch (error) {
+      console.error('QR 이미지 불러오기 실패:', error);
+      setQrImageUrl('');
+    }
+  };
+
+  // 컴포넌트가 열릴 때 QR 데이터 로드
   useEffect(() => {
     if (visible && userId) {
-      loadExistingQRToken();
+      loadMyQrData();
     }
   }, [visible, userId]);
 
@@ -60,15 +97,25 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
   const handleDownload = () => {
     if (qrImageUrl) {
+      // QR 코드 이미지 다운로드
       const link = document.createElement('a');
       link.download = `${userName}_QR.png`;
       link.href = qrImageUrl;
       link.click();
+    } else if (qrData?.qrDeepLink) {
+      // 이미지가 없으면 deepLink를 텍스트 파일로 저장
+      const blob = new Blob([qrData.qrDeepLink], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `${userName}_QR_Link.txt`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
     }
   };
 
   const handleShare = async () => {
-    const shareUrl = qrToken ? `https://www.soundofmemory.io/p/${qrToken}` : profileUrl;
+    const shareUrl = qrData?.qrDeepLink || profileUrl;
     
     if (navigator.share) {
       try {
@@ -162,20 +209,98 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 justifyContent: 'center',
                 zIndex: 1,
               }}>
-                <div style={{ fontSize: 14, color: '#666' }}>QR 이미지 로딩 중...</div>
+                <div style={{ fontSize: 14, color: '#666' }}>QR 링크 생성 중...</div>
               </div>
             )}
-            {hasToken && qrImageUrl ? (
-              <img
-                src={qrImageUrl}
-                alt="QR Code"
-                style={{ 
-                  width: 200, 
+            {hasQrData && qrData ? (
+              qrImageUrl ? (
+                <img
+                  src={qrImageUrl}
+                  alt={`${userName}님의 QR 코드`}
+                  style={{
+                    width: 200,
+                    height: 200,
+                    objectFit: 'contain',
+                    borderRadius: 8,
+                  }}
+                  onError={(e) => {
+                    // 이미지 로드 실패 시 대체 텍스트 표시
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `
+                        <div style="
+                          width: 200px;
+                          height: 200px;
+                          display: flex;
+                          flex-direction: column;
+                          align-items: center;
+                          justify-content: center;
+                          background-color: #f8f9fa;
+                          border: 2px dashed #636AE8;
+                          border-radius: 12px;
+                          padding: 20px;
+                          gap: 12px;
+                        ">
+                          <div style="
+                            font-size: 24px;
+                            font-weight: 600;
+                            color: #636AE8;
+                            text-align: center;
+                            word-break: break-all;
+                          ">
+                            ${qrData.shortId}
+                          </div>
+                          <div style="
+                            font-size: 12px;
+                            color: #666;
+                            text-align: center;
+                            line-height: 1.4;
+                          ">
+                            QR 이미지를 불러올 수 없습니다<br />
+                            위 코드를 NFC/QR에 인코딩하세요
+                          </div>
+                        </div>
+                      `;
+                    }
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: 200,
                   height: 200,
-                  objectFit: 'contain'
-                }}
-              />
-            ) : !isLoading && !hasToken ? (
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#f8f9fa',
+                  border: '2px dashed #636AE8',
+                  borderRadius: 12,
+                  padding: 20,
+                  gap: 12,
+                }}>
+                  <div style={{
+                    fontSize: 24,
+                    fontWeight: 600,
+                    color: '#636AE8',
+                    textAlign: 'center',
+                    wordBreak: 'break-all',
+                  }}>
+                    {qrData.shortId}
+                  </div>
+                  <div style={{
+                    fontSize: 12,
+                    color: '#666',
+                    textAlign: 'center',
+                    lineHeight: 1.4,
+                  }}>
+                    QR 이미지 로딩 중...<br />
+                    위 코드를 NFC/QR에 인코딩하세요
+                  </div>
+                </div>
+              )
+            ) : !isLoading && !hasQrData ? (
               <div style={{
                 width: 200,
                 height: 200,
@@ -190,9 +315,9 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 padding: 20,
                 gap: 10,
               }}>
-                <div>QR 코드가 없습니다</div>
+                <div>QR 데이터가 없습니다</div>
                 <div style={{ fontSize: 12, opacity: 0.8 }}>
-                  관리자에게 QR 코드 생성을 요청하세요
+                  백엔드에서 QR 데이터를 생성 중입니다
                 </div>
               </div>
             ) : (
@@ -206,7 +331,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 color: '#666',
                 fontSize: 14,
               }}>
-                QR 코드를 불러오는 중...
+                QR 데이터를 불러오는 중...
               </div>
             )}
           </div>
