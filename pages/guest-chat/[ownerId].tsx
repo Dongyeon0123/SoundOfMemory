@@ -96,15 +96,18 @@ export default function GuestChatPage() {
           };
         });
         
-        // AI 인삿말이 없으면 추가 (첫 번째 메시지가 사용자 메시지인 경우)
-        if (arr.length > 0 && arr[0].sender === 'user' && profileInfo?.aiIntro) {
-          const aiIntro = {
-            id: 'ai_intro',
-            content: profileInfo.aiIntro,
-            sender: 'ai' as const,
-            timestamp: new Date(),
-          };
-          arr.unshift(aiIntro);
+        // AI 인삿말을 항상 맨 앞에 추가 (중복 방지)
+        if (profileInfo?.aiIntro) {
+          const hasAiIntro = arr.some(msg => msg.id === 'ai_intro' || msg.content === profileInfo.aiIntro);
+          if (!hasAiIntro) {
+            const aiIntro = {
+              id: 'ai_intro',
+              content: profileInfo.aiIntro,
+              sender: 'ai' as const,
+              timestamp: new Date(),
+            };
+            arr.unshift(aiIntro);
+          }
         }
         
         console.log('파싱된 메시지들:', arr);
