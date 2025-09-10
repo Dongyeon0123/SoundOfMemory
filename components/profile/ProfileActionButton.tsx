@@ -24,8 +24,8 @@ function ProfileActionButton({
   return (
     <div>
       {isGuest ? (
-        // 게스트 모드에서는 항상 대화하기 버튼 표시
-        <Link href={`/chat/${profileId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        // 게스트 모드에서는 항상 대화하기 버튼 표시 (게스트 채팅 경로)
+        <Link href={`/guest-chat/${profileId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <button className={styles.chatButton}>대화하기</button>
         </Link>
       ) : isMyProfile ? (
