@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../types/firebase';
 import cardStyles from '../../styles/styles.module.css';
 import styles from '../../styles/chat.module.css';
@@ -8,6 +8,7 @@ import ChatHeader from '../../components/chat/ChatHeader';
 import ProfileSection from '../../components/chat/ProfileSection';
 import MessageList from '../../components/chat/MessageList';
 import ChatInput from '../../components/chat/ChatInput';
+import GuestLimitModal from '../../components/chat/GuestLimitModal';
 import { getOrCreateGuestId } from '../../lib/guest';
 import { fetchProfileById } from '../../types/profiles';
 
@@ -22,6 +23,9 @@ export default function GuestChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string; tag?: string[]; aiIntro?: string } | null>(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [messageCount, setMessageCount] = useState(0);
+  const GUEST_MESSAGE_LIMIT = 5;
 
   const chatDocPath = () => {
     if (!ownerId || typeof ownerId !== 'string' || !guestId) return null;
@@ -56,7 +60,46 @@ export default function GuestChatPage() {
     loadOwnerProfile();
   }, [ownerId]);
 
-  // 리스너: 문서가 없으면 로컬 인삿말만 표시 (Firestore 쓰기 금지)
+  // 게스트 채팅방 초기화: 문서 생성 및 AI 인사말 저장
+  useEffect(() => {
+    const initializeGuestChat = async () => {
+      if (!ownerId || typeof ownerId !== 'string' || !guestId || !profileInfo?.aiIntro) {
+        console.log('초기화 조건 미충족:', { ownerId, guestId, aiIntro: profileInfo?.aiIntro });
+        return;
+      }
+
+      const ref = chatDocPath();
+      if (!ref) {
+        console.log('chatDocPath가 null');
+        return;
+      }
+
+      try {
+        // 문서 존재 여부 확인
+        const docSnap = await getDoc(ref);
+        
+        if (!docSnap.exists()) {
+          console.log('게스트 채팅 문서 생성 중...');
+          // 새 문서 생성 및 AI 인사말을 index 0에 저장
+          await setDoc(ref, {
+            messages: [profileInfo.aiIntro], // index 0: AI 인사말
+            createdAt: new Date(),
+            guestId: guestId,
+            ownerId: ownerId
+          });
+          console.log('게스트 채팅 문서 생성 완료');
+        } else {
+          console.log('게스트 채팅 문서 이미 존재');
+        }
+      } catch (error) {
+        console.error('게스트 채팅 초기화 실패:', error);
+      }
+    };
+
+    initializeGuestChat();
+  }, [ownerId, guestId, profileInfo?.aiIntro]);
+
+  // 리스너: Firestore 문서 변경 감지
   useEffect(() => {
     if (!ownerId || typeof ownerId !== 'string' || !guestId) {
       console.log('리스너 조건 미충족:', { ownerId, guestId });
@@ -71,13 +114,6 @@ export default function GuestChatPage() {
     console.log('게스트 채팅 리스너 시작:', ref.path);
     setLoading(true);
     
-    // 즉시 문서 존재 여부 확인
-    getDoc(ref).then(docSnap => {
-      console.log('초기 문서 상태:', docSnap.exists(), docSnap.data());
-    }).catch(err => {
-      console.error('초기 문서 조회 실패:', err);
-    });
-    
     const unsub = onSnapshot(ref, (snap) => {
       console.log('Firestore 문서 변경 감지:', snap.exists(), snap.data());
       if (snap.exists()) {
@@ -86,13 +122,14 @@ export default function GuestChatPage() {
         console.log('메시지 배열:', messagesArray);
         
         const arr = messagesArray.map((c: any, idx: number) => {
-          // Firestore 배열에서 실제 sender 정보가 있으면 사용, 없으면 패턴으로 추정
-          let sender = 'user';
-          if (typeof c === 'object' && c?.sender) {
-            sender = c.sender;
+          // 올바른 인덱싱: 0=AI 인사말, 1=사용자, 2=AI, 3=사용자, 4=AI, ...
+          let sender: 'user' | 'ai' = 'ai';
+          if (idx === 0) {
+            sender = 'ai'; // index 0: AI 인사말
+          } else if (idx % 2 === 1) {
+            sender = 'user'; // index 1, 3, 5...: 사용자 메시지
           } else {
-            // 패턴: 0=사용자, 1=AI, 2=사용자, 3=AI, ...
-            sender = idx % 2 === 0 ? 'user' : 'ai';
+            sender = 'ai'; // index 2, 4, 6...: AI 답변
           }
           
           return {
@@ -102,20 +139,10 @@ export default function GuestChatPage() {
             timestamp: new Date(),
           };
         });
-        
-        // AI 인삿말을 항상 맨 앞에 추가 (중복 방지)
-        if (profileInfo?.aiIntro) {
-          const hasAiIntro = arr.some(msg => msg.id === 'ai_intro' || msg.content === profileInfo.aiIntro);
-          if (!hasAiIntro) {
-            const aiIntro = {
-              id: 'ai_intro',
-              content: profileInfo.aiIntro,
-              sender: 'ai' as const,
-              timestamp: new Date(),
-            };
-            arr.unshift(aiIntro);
-          }
-        }
+
+        // 사용자 메시지 개수 계산 (AI 인사말 제외)
+        const userMessageCount = arr.filter(msg => msg.sender === 'user').length;
+        setMessageCount(userMessageCount);
         
         console.log('파싱된 메시지들:', arr);
         setMessages(arr);
@@ -156,13 +183,36 @@ export default function GuestChatPage() {
     const text = input.trim();
     if (!text || !ownerId || typeof ownerId !== 'string' || !guestId) return;
 
+    // 횟수 제한 체크
+    if (messageCount >= GUEST_MESSAGE_LIMIT) {
+      setShowLimitModal(true);
+      return;
+    }
+
     setIsWaitingForReply(true);
     try {
-      // 로컬 낙관적 업데이트 (게스트는 Firestore 직접 쓰지 않음)
+      // Firestore에 사용자 메시지 저장
+      const ref = chatDocPath();
+      if (ref) {
+        try {
+          const docSnap = await getDoc(ref);
+          if (docSnap.exists()) {
+            const currentMessages = docSnap.data().messages || [];
+            // 사용자 메시지를 배열에 추가 (다음 홀수 인덱스에)
+            const updatedMessages = [...currentMessages, text];
+            await setDoc(ref, { messages: updatedMessages }, { merge: true });
+            console.log('게스트 메시지 Firestore 저장 완료');
+          }
+        } catch (firestoreError) {
+          console.error('Firestore 저장 실패:', firestoreError);
+        }
+      }
+
+      // 로컬 낙관적 업데이트
       setMessages(prev => [...prev, { id: `user_${Date.now()}`, content: text, sender: 'user', timestamp: new Date() }]);
       setInput('');
 
-      // POST JSON 방식으로 전송
+      // POST JSON 방식으로 전송 (AI 답변을 위해)
       const url = 'https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/guestchat/guest';
       const payload = { ownerId, guestId, message: text };
       
@@ -187,6 +237,10 @@ export default function GuestChatPage() {
     } finally {
       setIsWaitingForReply(false);
     }
+  };
+
+  const handleSignUp = () => {
+    router.push('/register/login');
   };
 
   return (
@@ -215,11 +269,18 @@ export default function GuestChatPage() {
           onInputChange={setInput}
           onResize={handleResize}
           onKeyDown={() => {}}
-          disabled={isWaitingForReply}
+          disabled={isWaitingForReply || messageCount >= GUEST_MESSAGE_LIMIT}
           isWaitingForReply={isWaitingForReply}
           onSend={sendMessage}
           onCancel={() => {}}
           textareaRef={textareaRef}
+        />
+
+        {/* 게스트 제한 모달 */}
+        <GuestLimitModal
+          visible={showLimitModal}
+          onClose={() => setShowLimitModal(false)}
+          onSignUp={handleSignUp}
         />
       </div>
     </div>
