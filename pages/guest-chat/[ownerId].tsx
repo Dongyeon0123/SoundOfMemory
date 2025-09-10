@@ -86,8 +86,15 @@ export default function GuestChatPage() {
         console.log('메시지 배열:', messagesArray);
         
         const arr = messagesArray.map((c: any, idx: number) => {
-          const isEven = idx % 2 === 0;
-          const sender = (typeof c === 'object' && c?.sender) ? c.sender : (isEven ? 'ai' : 'user');
+          // Firestore 배열에서 실제 sender 정보가 있으면 사용, 없으면 패턴으로 추정
+          let sender = 'user';
+          if (typeof c === 'object' && c?.sender) {
+            sender = c.sender;
+          } else {
+            // 패턴: 0=사용자, 1=AI, 2=사용자, 3=AI, ...
+            sender = idx % 2 === 0 ? 'user' : 'ai';
+          }
+          
           return {
             id: `msg_${idx}`,
             content: typeof c === 'string' ? c : c?.content || '',
