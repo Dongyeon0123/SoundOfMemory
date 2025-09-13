@@ -367,6 +367,19 @@ export default function GuestChatPage() {
         }
       } else {
         console.error('guest 전송 실패:', res.status, responseText);
+        
+        // 429 에러 (체험 횟수 소진) 처리
+        if (res.status === 429) {
+          try {
+            const errorData = JSON.parse(responseText);
+            if (errorData.code === 'GUEST_TRIAL_EXPIRED') {
+              setShowLimitModal(true);
+              return;
+            }
+          } catch (parseError) {
+            console.error('에러 응답 파싱 실패:', parseError);
+          }
+        }
       }
     } catch (e) {
       console.error('게스트 메시지 전송 실패:', e);
