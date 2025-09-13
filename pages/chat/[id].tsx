@@ -219,19 +219,8 @@ const Chat = () => {
       return;
     }
   
-    let messagesArr: string[] = [];
-    try {
-      const docSnap = await getDoc(chatDocRef);
-      if (docSnap.exists() && Array.isArray(docSnap.data().messages)) {
-        messagesArr = docSnap.data().messages;
-      }
-      messagesArr = [...messagesArr, text];
-      await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
-    } catch (e) {
-      alert("채팅 저장 실패: " + (e as any).message);
-      setIsWaitingForReply(false); // 에러 시 상태 복구
-      return;
-    }
+    // 사용자 메시지는 Redux store에만 저장하고, AI 응답 후에 한 번에 Firestore에 저장
+    // 이렇게 하면 중복 저장을 방지할 수 있습니다
     
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
@@ -263,10 +252,21 @@ const Chat = () => {
   
       if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
       if (data?.response) {
-        messagesArr = [...messagesArr, data.response];
-        await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
-        // 전송 성공 시 디바운싱 시간 업데이트
-        setLastSendTime(Date.now());
+        // AI 응답을 받은 후에 사용자 메시지와 AI 응답을 함께 저장
+        try {
+          const docSnap = await getDoc(chatDocRef);
+          let messagesArr: string[] = [];
+          if (docSnap.exists() && Array.isArray(docSnap.data().messages)) {
+            messagesArr = docSnap.data().messages;
+          }
+          // 사용자 메시지와 AI 응답을 함께 추가
+          messagesArr = [...messagesArr, text, data.response];
+          await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
+          // 전송 성공 시 디바운싱 시간 업데이트
+          setLastSendTime(Date.now());
+        } catch (e) {
+          console.error("AI 응답 저장 실패:", e);
+        }
       }
     } catch (error: any) {
       if (error.name !== "AbortError") {

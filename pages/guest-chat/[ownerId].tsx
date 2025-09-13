@@ -52,9 +52,26 @@ export default function GuestChatPage() {
               ? String(profile.aiIntro).trim()
               : '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!'
           });
+        } else {
+          // 프로필이 없는 경우에도 기본 정보로 설정
+          setProfileInfo({
+            id: ownerId,
+            name: '사용자',
+            img: '',
+            tag: [],
+            aiIntro: '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!'
+          });
         }
       } catch (e) {
         console.error('게스트 채팅용 프로필 로드 실패:', e);
+        // 에러가 발생해도 기본 정보로 설정
+        setProfileInfo({
+          id: ownerId,
+          name: '사용자',
+          img: '',
+          tag: [],
+          aiIntro: '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!'
+        });
       }
     };
     loadOwnerProfile();
@@ -63,8 +80,8 @@ export default function GuestChatPage() {
   // 게스트 채팅방 초기화: 문서 생성 및 AI 인사말 저장
   useEffect(() => {
     const initializeGuestChat = async () => {
-      if (!ownerId || typeof ownerId !== 'string' || !guestId || !profileInfo?.aiIntro) {
-        console.log('초기화 조건 미충족:', { ownerId, guestId, aiIntro: profileInfo?.aiIntro });
+      if (!ownerId || typeof ownerId !== 'string' || !guestId) {
+        console.log('초기화 조건 미충족:', { ownerId, guestId });
         return;
       }
 
@@ -80,14 +97,17 @@ export default function GuestChatPage() {
         
         if (!docSnap.exists()) {
           console.log('게스트 채팅 문서 생성 중...');
+          // AI 인사말이 없으면 기본 메시지 사용
+          const aiIntro = profileInfo?.aiIntro || '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
+          
           // 새 문서 생성 및 AI 인사말을 index 0에 저장
           await setDoc(ref, {
-            messages: [profileInfo.aiIntro], // index 0: AI 인사말
+            messages: [aiIntro], // index 0: AI 인사말
             createdAt: new Date(),
             guestId: guestId,
             ownerId: ownerId
           });
-          console.log('게스트 채팅 문서 생성 완료');
+          console.log('게스트 채팅 문서 생성 완료, AI 인사말:', aiIntro);
         } else {
           console.log('게스트 채팅 문서 이미 존재');
         }
@@ -149,11 +169,8 @@ export default function GuestChatPage() {
       } else {
         console.log('문서가 존재하지 않음 - 로컬 인삿말 표시');
         // 로컬로만 인삿말 표시
-        if (profileInfo?.aiIntro) {
-          setMessages([{ id: 'ai_intro', content: profileInfo.aiIntro, sender: 'ai', timestamp: new Date() }]);
-        } else {
-          setMessages([]);
-        }
+        const aiIntro = profileInfo?.aiIntro || '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
+        setMessages([{ id: 'ai_intro', content: aiIntro, sender: 'ai', timestamp: new Date() }]);
       }
       setLoading(false);
       requestAnimationFrame(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }));
