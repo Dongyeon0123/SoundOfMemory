@@ -191,24 +191,43 @@ export default function GuestChatPage() {
         const messagesArray = data?.messages || [];
         console.log('메시지 배열:', messagesArray);
         
-        const arr = messagesArray.map((c: any, idx: number) => {
-          // 올바른 인덱싱: 0=AI 인사말, 1=사용자, 2=AI, 3=사용자, 4=AI, ...
-          let sender: 'user' | 'ai' = 'ai';
-          if (idx === 0) {
-            sender = 'ai'; // index 0: AI 인사말
-          } else if (idx % 2 === 1) {
-            sender = 'user'; // index 1, 3, 5...: 사용자 메시지
-          } else {
-            sender = 'ai'; // index 2, 4, 6...: AI 답변
-          }
-          
-          return {
-            id: `msg_${idx}`,
-            content: typeof c === 'string' ? c : c?.content || '',
-            sender,
-            timestamp: new Date(),
-          };
-        });
+        const arr = messagesArray
+          .filter((c: any) => c && (typeof c === 'string' ? c.trim() : c?.content?.trim()))
+          .map((c: any, idx: number) => {
+            // 올바른 인덱싱: 0=AI 인사말, 1=사용자, 2=AI, 3=사용자, 4=AI, ...
+            let sender: 'user' | 'ai' = 'ai';
+            if (idx === 0) {
+              sender = 'ai'; // index 0: AI 인사말
+            } else if (idx % 2 === 1) {
+              sender = 'user'; // index 1, 3, 5...: 사용자 메시지
+            } else {
+              sender = 'ai'; // index 2, 4, 6...: AI 답변
+            }
+            
+            return {
+              id: `msg_${idx}`,
+              content: typeof c === 'string' ? c.trim() : (c?.content?.trim() || ''),
+              sender,
+              timestamp: new Date(),
+            };
+          });
+
+        // 중복 메시지 제거: Firestore 데이터를 우선으로 하되, 로컬에만 있는 최신 메시지는 유지
+        const currentLocalMessages = messages.filter(msg => msg.id.startsWith('user_'));
+        const firestoreUserMessages = arr.filter(msg => msg.sender === 'user');
+        
+        // Firestore에 있는 사용자 메시지가 더 많으면 Firestore 데이터 사용, 아니면 현재 로컬 상태 유지
+        if (firestoreUserMessages.length >= currentLocalMessages.length) {
+          console.log('Firestore 데이터 사용:', firestoreUserMessages.length, 'vs 로컬:', currentLocalMessages.length);
+        } else {
+          console.log('로컬 데이터 유지:', currentLocalMessages.length, 'vs Firestore:', firestoreUserMessages.length);
+          // 로컬 데이터가 더 최신이면 Firestore 데이터를 로컬 데이터로 교체
+          const aiMessages = arr.filter(msg => msg.sender === 'ai');
+          const combinedMessages = [...aiMessages, ...currentLocalMessages];
+          setMessages(combinedMessages);
+          setLoading(false);
+          return;
+        }
 
         // 사용자 메시지 개수 계산 (AI 인사말 제외)
         const userMessageCount = arr.filter(msg => msg.sender === 'user').length;
@@ -261,6 +280,10 @@ export default function GuestChatPage() {
     }
 
     setIsWaitingForReply(true);
+    
+    // 로컬 상태에 사용자 메시지 즉시 추가 (UI 반응성 향상)
+    const userMessage = { id: `user_${Date.now()}`, content: text, sender: 'user' as const, timestamp: new Date() };
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
 
     try {
@@ -281,7 +304,7 @@ export default function GuestChatPage() {
             const currentMessages = docSnap.data().messages || [];
             // 사용자 메시지를 배열에 추가
             const updatedMessages = [...currentMessages, text];
-            await setDoc(ref, { messages: updatedMessages }, { merge: true });
+            await setDoc(ref, { messages: updatedMessages });
             console.log('게스트 메시지 Firestore 저장 완료');
           }
         } catch (firestoreError) {
@@ -318,7 +341,7 @@ export default function GuestChatPage() {
                 const currentMessages = docSnap.data().messages || [];
                 // AI 응답을 배열에 추가
                 const updatedMessages = [...currentMessages, responseData.response];
-                await setDoc(ref, { messages: updatedMessages }, { merge: true });
+                await setDoc(ref, { messages: updatedMessages });
                 console.log('AI 응답 Firestore 저장 완료:', responseData.response);
               }
             }
