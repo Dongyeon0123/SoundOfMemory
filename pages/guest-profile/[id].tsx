@@ -388,7 +388,7 @@ const GuestProfilePage: React.FC = () => {
               onSendFriendRequest={handleSendFriendRequest}
               onStartFriendChat={handleStartFriendChat}
               onStartGuestChat={handleStartGuestChat}
-              showFriendButton={myUid && !isAnonymous}
+              showFriendButton={false}
               isAnonymous={isAnonymous}
             />
 
