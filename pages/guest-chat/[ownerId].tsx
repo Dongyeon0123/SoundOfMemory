@@ -333,21 +333,37 @@ export default function GuestChatPage() {
           // AI 응답을 JSON으로 파싱
           const responseData = JSON.parse(responseText);
           if (responseData.response) {
-            // AI 응답을 Firestore에 저장
+            // AI 응답을 Firestore에 저장 시도
             const ref = chatDocPath();
             if (ref) {
-              const docSnap = await getDoc(ref);
-              if (docSnap.exists()) {
-                const currentMessages = docSnap.data().messages || [];
-                // AI 응답을 배열에 추가
-                const updatedMessages = [...currentMessages, responseData.response];
-                await setDoc(ref, { messages: updatedMessages });
-                console.log('AI 응답 Firestore 저장 완료:', responseData.response);
+              try {
+                const docSnap = await getDoc(ref);
+                if (docSnap.exists()) {
+                  const currentMessages = docSnap.data().messages || [];
+                  // AI 응답을 배열에 추가
+                  const updatedMessages = [...currentMessages, responseData.response];
+                  await setDoc(ref, { messages: updatedMessages });
+                  console.log('AI 응답 Firestore 저장 완료:', responseData.response);
+                }
+              } catch (firestoreError) {
+                console.error('AI 응답 Firestore 저장 실패:', firestoreError);
+                // Firestore 저장 실패해도 로컬 상태에 AI 응답 추가
+                const aiMessage = { id: `ai_${Date.now()}`, content: responseData.response, sender: 'ai' as const, timestamp: new Date() };
+                setMessages(prev => [...prev, aiMessage]);
               }
+            } else {
+              // ref가 없어도 로컬 상태에 AI 응답 추가
+              const aiMessage = { id: `ai_${Date.now()}`, content: responseData.response, sender: 'ai' as const, timestamp: new Date() };
+              setMessages(prev => [...prev, aiMessage]);
             }
           }
         } catch (parseError) {
           console.error('AI 응답 파싱 실패:', parseError);
+          // 파싱 실패해도 로컬 상태에 AI 응답 추가
+          if (responseText) {
+            const aiMessage = { id: `ai_${Date.now()}`, content: responseText, sender: 'ai' as const, timestamp: new Date() };
+            setMessages(prev => [...prev, aiMessage]);
+          }
         }
       } else {
         console.error('guest 전송 실패:', res.status, responseText);
