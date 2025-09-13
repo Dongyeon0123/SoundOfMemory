@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { fetchProfileById, updateProfileField, fetchFriends, toggleFavorite, fetchUserChatTopics, fetchSelectedChatTopics, verifyQRToken } from '../../types/profiles';
 import type { Profile, ChatTopic } from '../../types/profiles';
 
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 
 import styles from '../../styles/styles.module.css';
 import profileStyles from '../../styles/profile.module.css';
@@ -38,6 +38,7 @@ const GuestProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [myUid, setMyUid] = useState<string | null>(null);
+  const [isAnonymous, setIsAnonymous] = useState<boolean | null>(null);
   const [actualUserId, setActualUserId] = useState<string | null>(null);
 
   const [isFriend, setIsFriend] = useState(false);
@@ -82,6 +83,7 @@ const GuestProfilePage: React.FC = () => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setMyUid(user ? user.uid : null);
+      setIsAnonymous(user ? !!user.isAnonymous : null);
     });
     return () => unsubscribe();
   }, []);
@@ -200,14 +202,36 @@ const GuestProfilePage: React.FC = () => {
     return allTags;
   }, [selectedChatTopics, profile?.tag]);
 
-  // 로그인 체크 함수 (게스트용 - 항상 로그인 모달 표시)
+  // 로그인 체크 함수 (게스트용 - 정식 로그인 필요)
   const requireLogin = (actionName: string) => {
-    if (!myUid) {
+    if (!myUid || isAnonymous) {
       setLoginModalAction(actionName);
       setShowLoginModal(true);
       return false;
     }
     return true;
+  };
+
+  // 친구 채팅 시작 (case1: 로그인 O, 친구 O)
+  const handleStartFriendChat = async () => {
+    if (!myUid || !actualUserId) return;
+    router.push(`/chat/${actualUserId}`);
+  };
+
+  // 게스트 채팅 시작 (case3: 로그인 X 또는 익명)
+  const handleStartGuestChat = async () => {
+    const auth = getAuth();
+    if (!auth.currentUser) {
+      try {
+        await signInAnonymously(auth);
+      } catch (error) {
+        console.error('익명 로그인 실패:', error);
+        return;
+      }
+    }
+    if (actualUserId) {
+      router.push(`/guest-chat/${actualUserId}`);
+    }
   };
 
   // 친구 요청 전송 핸들러
@@ -362,6 +386,10 @@ const GuestProfilePage: React.FC = () => {
               requesting={requesting}
               profileId={profile.id}
               onSendFriendRequest={handleSendFriendRequest}
+              onStartFriendChat={handleStartFriendChat}
+              onStartGuestChat={handleStartGuestChat}
+              showFriendButton={myUid && !isAnonymous}
+              isAnonymous={isAnonymous}
             />
 
 

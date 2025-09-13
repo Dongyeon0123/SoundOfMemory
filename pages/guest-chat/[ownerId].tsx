@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from '../../types/firebase';
 import cardStyles from '../../styles/styles.module.css';
 import styles from '../../styles/chat.module.css';
@@ -32,9 +33,19 @@ export default function GuestChatPage() {
     return doc(db, 'users', ownerId, 'guestchat', `${guestId}_avatar_chat`);
   };
 
+  // 인증 상태 구독 - guestId = auth.uid 사용
   useEffect(() => {
-    setGuestId(getOrCreateGuestId());
-  }, []);
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setGuestId(user.uid);
+      } else {
+        // 인증되지 않은 경우 로그인 페이지로 리다이렉트
+        router.push('/register/login');
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   // 소유자 프로필 로드 (이름/사진/태그/aiIntro)
   useEffect(() => {
@@ -97,8 +108,22 @@ export default function GuestChatPage() {
         
         if (!docSnap.exists()) {
           console.log('게스트 채팅 문서 생성 중...');
-          // AI 인사말이 없으면 기본 메시지 사용
-          const aiIntro = profileInfo?.aiIntro || '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
+          
+          // 소유자 프로필에서 aiIntro 가져오기
+          let aiIntro = '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
+          if (profileInfo?.aiIntro) {
+            aiIntro = profileInfo.aiIntro;
+          } else {
+            // profileInfo가 아직 로드되지 않은 경우 직접 조회
+            try {
+              const ownerProfile = await fetchProfileById(ownerId);
+              if (ownerProfile?.aiIntro && String(ownerProfile.aiIntro).trim().length > 0) {
+                aiIntro = String(ownerProfile.aiIntro).trim();
+              }
+            } catch (e) {
+              console.log('소유자 프로필 조회 실패, 기본 인사말 사용');
+            }
+          }
           
           // 새 문서 생성 및 AI 인사말을 index 0에 저장
           await setDoc(ref, {
