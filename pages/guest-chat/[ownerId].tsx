@@ -261,9 +261,6 @@ export default function GuestChatPage() {
     }
 
     setIsWaitingForReply(true);
-    
-    // 로컬 상태에 사용자 메시지 추가
-    setMessages(prev => [...prev, { id: `user_${Date.now()}`, content: text, sender: 'user', timestamp: new Date() }]);
     setInput('');
 
     try {

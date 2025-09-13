@@ -167,10 +167,12 @@ const GuestProfilePage: React.FC = () => {
   useEffect(() => {
     if (myUid && actualUserId && myUid !== actualUserId) {
       fetchFriends(myUid).then((friends) => {
-        const friend = friends.find((f) => f.friendId === actualUserId);
+        const friend = friends.find((f) => f.id === actualUserId);
         setIsFriend(!!friend);
         setIsFavorite(!!friend && !!friend.favorite);
-      }).catch(() => {
+        console.log('친구 관계 확인:', { myUid, actualUserId, isFriend: !!friend, friends: friends.length });
+      }).catch((error) => {
+        console.error('친구 정보 조회 실패:', error);
         // 게스트 사용자의 경우 친구 정보를 가져올 수 없으므로 무시
         setIsFriend(false);
         setIsFavorite(false);
@@ -201,6 +203,19 @@ const GuestProfilePage: React.FC = () => {
     
     return allTags;
   }, [selectedChatTopics, profile?.tag]);
+
+  // 친구 관계 확인 함수
+  const checkFriendStatus = async (myUid: string, targetUid: string) => {
+    try {
+      const friends = await fetchFriends(myUid);
+      const isFriendWithTarget = friends.some(friend => friend.id === targetUid);
+      setIsFriend(isFriendWithTarget);
+      console.log('친구 관계 확인:', { myUid, targetUid, isFriendWithTarget });
+    } catch (error) {
+      console.error('친구 관계 확인 실패:', error);
+      setIsFriend(false);
+    }
+  };
 
   // 로그인 체크 함수 (게스트용 - 정식 로그인 필요)
   const requireLogin = (actionName: string) => {
@@ -380,7 +395,7 @@ const GuestProfilePage: React.FC = () => {
 
             <ProfileActionButton
               isMyProfile={!!isMyProfile}
-              isGuest={true}
+              isGuest={false}
               isFriend={isFriend}
               requestSent={requestSent}
               requesting={requesting}
@@ -388,7 +403,7 @@ const GuestProfilePage: React.FC = () => {
               onSendFriendRequest={handleSendFriendRequest}
               onStartFriendChat={handleStartFriendChat}
               onStartGuestChat={handleStartGuestChat}
-              showFriendButton={false}
+              showFriendButton={myUid && !isAnonymous}
               isAnonymous={isAnonymous}
             />
 
