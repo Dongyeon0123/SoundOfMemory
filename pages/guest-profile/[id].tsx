@@ -395,7 +395,7 @@ const GuestProfilePage: React.FC = () => {
 
             <ProfileActionButton
               isMyProfile={!!isMyProfile}
-              isGuest={false}
+              isGuest={!myUid || isAnonymous}
               isFriend={isFriend}
               requestSent={requestSent}
               requesting={requesting}
