@@ -38,6 +38,7 @@ export default function GuestChatPage() {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        console.log('익명 사용자 인증 완료:', user.uid, 'isAnonymous:', user.isAnonymous);
         setGuestId(user.uid);
       } else {
         // 인증되지 않은 경우 로그인 페이지로 리다이렉트
@@ -96,6 +97,13 @@ export default function GuestChatPage() {
         return;
       }
 
+      // 인증 상태 확인
+      const auth = getAuth();
+      if (!auth.currentUser) {
+        console.log('인증되지 않은 사용자, 초기화 건너뜀');
+        return;
+      }
+
       const ref = chatDocPath();
       if (!ref) {
         console.log('chatDocPath가 null');
@@ -103,6 +111,8 @@ export default function GuestChatPage() {
       }
 
       try {
+        console.log('게스트 채팅 초기화 시작:', { ownerId, guestId, authUid: auth.currentUser.uid });
+        
         // 문서 존재 여부 확인
         const docSnap = await getDoc(ref);
         
@@ -138,10 +148,17 @@ export default function GuestChatPage() {
         }
       } catch (error) {
         console.error('게스트 채팅 초기화 실패:', error);
+        // 초기화 실패 시 로컬 인사말이라도 표시
+        if (profileInfo?.aiIntro) {
+          setMessages([{ id: 'ai_intro', content: profileInfo.aiIntro, sender: 'ai', timestamp: new Date() }]);
+        }
       }
     };
 
-    initializeGuestChat();
+    // guestId가 설정된 후에만 초기화 실행
+    if (guestId) {
+      initializeGuestChat();
+    }
   }, [ownerId, guestId, profileInfo?.aiIntro]);
 
   // 리스너: Firestore 문서 변경 감지
@@ -150,6 +167,14 @@ export default function GuestChatPage() {
       console.log('리스너 조건 미충족:', { ownerId, guestId });
       return;
     }
+
+    // 인증 상태 확인
+    const auth = getAuth();
+    if (!auth.currentUser) {
+      console.log('인증되지 않은 사용자, 리스너 건너뜀');
+      return;
+    }
+
     const ref = chatDocPath();
     if (!ref) {
       console.log('chatDocPath가 null');
@@ -202,6 +227,10 @@ export default function GuestChatPage() {
     }, (err) => {
       console.error('게스트 채팅 리스너 오류:', err);
       setLoading(false);
+      // 리스너 실패 시 로컬 인사말이라도 표시
+      if (profileInfo?.aiIntro) {
+        setMessages([{ id: 'ai_intro', content: profileInfo.aiIntro, sender: 'ai', timestamp: new Date() }]);
+      }
     });
     return () => unsub();
   }, [ownerId, guestId, profileInfo?.aiIntro]);
@@ -232,7 +261,20 @@ export default function GuestChatPage() {
     }
 
     setIsWaitingForReply(true);
+    
+    // 로컬 상태에 사용자 메시지 추가
+    setMessages(prev => [...prev, { id: `user_${Date.now()}`, content: text, sender: 'user', timestamp: new Date() }]);
+    setInput('');
+
     try {
+      // 인증 상태 확인
+      const auth = getAuth();
+      if (!auth.currentUser) {
+        console.error('인증되지 않은 사용자');
+        setIsWaitingForReply(false);
+        return;
+      }
+
       // Firestore에 사용자 메시지 저장
       const ref = chatDocPath();
       if (ref) {
@@ -240,7 +282,7 @@ export default function GuestChatPage() {
           const docSnap = await getDoc(ref);
           if (docSnap.exists()) {
             const currentMessages = docSnap.data().messages || [];
-            // 사용자 메시지를 배열에 추가 (다음 홀수 인덱스에)
+            // 사용자 메시지를 배열에 추가
             const updatedMessages = [...currentMessages, text];
             await setDoc(ref, { messages: updatedMessages }, { merge: true });
             console.log('게스트 메시지 Firestore 저장 완료');
@@ -249,10 +291,6 @@ export default function GuestChatPage() {
           console.error('Firestore 저장 실패:', firestoreError);
         }
       }
-
-      // 로컬 낙관적 업데이트
-      setMessages(prev => [...prev, { id: `user_${Date.now()}`, content: text, sender: 'user', timestamp: new Date() }]);
-      setInput('');
 
       // POST JSON 방식으로 전송 (AI 답변을 위해)
       const url = 'https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/guestchat/guest';
@@ -271,6 +309,26 @@ export default function GuestChatPage() {
       
       if (res.ok) {
         console.log('guest 전송 성공:', responseText);
+        try {
+          // AI 응답을 JSON으로 파싱
+          const responseData = JSON.parse(responseText);
+          if (responseData.response) {
+            // AI 응답을 Firestore에 저장
+            const ref = chatDocPath();
+            if (ref) {
+              const docSnap = await getDoc(ref);
+              if (docSnap.exists()) {
+                const currentMessages = docSnap.data().messages || [];
+                // AI 응답을 배열에 추가
+                const updatedMessages = [...currentMessages, responseData.response];
+                await setDoc(ref, { messages: updatedMessages }, { merge: true });
+                console.log('AI 응답 Firestore 저장 완료:', responseData.response);
+              }
+            }
+          }
+        } catch (parseError) {
+          console.error('AI 응답 파싱 실패:', parseError);
+        }
       } else {
         console.error('guest 전송 실패:', res.status, responseText);
       }
