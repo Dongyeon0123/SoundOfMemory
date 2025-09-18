@@ -41,6 +41,20 @@ function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileIma
             onLoad={() => setBackgroundLoaded(true)}
             onError={() => setBackgroundLoaded(true)}
           />
+          {/* W-B 로고 */}
+          <img
+            src="/W-B.png"
+            alt="W-B Logo"
+            style={{
+              position: 'absolute',
+              top: 5,
+              left: 5,
+              width: 50,
+              height: 50,
+              opacity: 0.8,
+              zIndex: 3
+            }}
+          />
         </div>
         {/* 반투명 카드 */}
         <div style={{
