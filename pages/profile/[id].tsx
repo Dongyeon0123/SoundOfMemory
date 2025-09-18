@@ -285,6 +285,10 @@ const ProfilePage: React.FC = () => {
               /* 필요 시 구현 */
             }}
             onShowQR={() => setShowQRModal(true)}
+            onEditMBTI={() => setShowMBTIModal(true)}
+            onEditIntroduce={() => setShowIntroModal(true)}
+            onEditHistory={() => setShowHistoryModal(true)}
+            onEditCareer={() => setShowCareerModal(true)}
             onBlock={() => {
               if (requireLogin('차단')) {
                 // 차단 로직 구현
