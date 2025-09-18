@@ -32,6 +32,12 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
       
       if (user) {
+        // 익명 사용자(게스트)인 경우 온보딩으로 리다이렉트하지 않음
+        if (user.isAnonymous) {
+          setIsAuthChecked(true);
+          return;
+        }
+        
         const profile = await fetchProfileById(user.uid);
         if (!profile || !profile.name) {
           router.replace('/test-onboarding');

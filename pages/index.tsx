@@ -63,7 +63,16 @@ const Home: React.FC = () => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        // 익명 사용자(게스트)인 경우 홈은 보여주되, 보호된 데이터 조회 방지를 위해 userId를 설정하지 않음
+        if (user.isAnonymous) {
+          setUserId(null);
+          setMyProfile(null);
+          setLoading(false);
+          return;
+        }
+        
         setUserId(user.uid);
+        
         const profile = await fetchProfileById(user.uid);
         setMyProfile(profile);
         

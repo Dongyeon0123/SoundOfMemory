@@ -163,9 +163,9 @@ const GuestProfilePage: React.FC = () => {
     }
   }, [id]);
 
-  // 친구 및 즐겨찾기 상태 조회 (로그인한 사용자만, 본인 프로필 제외)
+  // 친구 및 즐겨찾기 상태 조회 (정식 로그인 사용자만, 본인 프로필 제외)
   useEffect(() => {
-    if (myUid && actualUserId && myUid !== actualUserId) {
+    if (myUid && actualUserId && myUid !== actualUserId && !isAnonymous) {
       fetchFriends(myUid).then((friends) => {
         const friend = friends.find((f) => f.id === actualUserId);
         setIsFriend(!!friend);
@@ -178,7 +178,7 @@ const GuestProfilePage: React.FC = () => {
         setIsFavorite(false);
       });
     }
-  }, [myUid, actualUserId]);
+  }, [myUid, actualUserId, isAnonymous]);
 
   // 프로필 상태 변화에 따른 상세 상태 값 동기화
   useEffect(() => {

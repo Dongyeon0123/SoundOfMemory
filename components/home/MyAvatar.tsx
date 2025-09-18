@@ -37,10 +37,55 @@ const MyAvatar: React.FC<Props> = ({ loading, userId, myProfile }) => {
           </div>
         </Link>
       ) : (
-                  <div style={{ textAlign: 'center', color: '#888', margin: 24, fontSize: 15 }}>
-          로그인 후 나의 아바타가 표시됩니다.
-          <Link href="/register/login" style={{ color: '#636AE8', textDecoration: 'underline', marginLeft: 4 }}>
-            로그인 하러가기
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 12,
+            margin: 24,
+            padding: 20,
+            border: '1px solid #EEEFFB',
+            borderRadius: 12,
+            background: '#FAFBFF',
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              background: '#E8EAFE',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#636AE8',
+              fontSize: 24,
+              fontWeight: 600,
+            }}
+          >
+            🙂
+          </div>
+          <div style={{ fontWeight: 700, color: '#2B2C34', fontSize: 16 }}>
+            로그인이 필요합니다
+          </div>
+          <div style={{ color: '#6B7280', fontSize: 14 }}>
+            로그인하면 나의 아바타가 표시돼요.
+          </div>
+          <Link
+            href="/register/login"
+            style={{
+              marginTop: 4,
+              background: '#636AE8',
+              color: '#FFFFFF',
+              padding: '8px 14px',
+              borderRadius: 8,
+              textDecoration: 'none',
+              fontWeight: 600,
+              boxShadow: '0 2px 6px rgba(99, 106, 232, 0.25)'
+            }}
+          >
+            로그인 하러 가기
           </Link>
         </div>
       )}

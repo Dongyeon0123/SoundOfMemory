@@ -29,7 +29,6 @@ const Chat = () => {
   const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string; tag?: string[]; aiIntro?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
-  const [showNoChatModal, setShowNoChatModal] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
@@ -163,16 +162,7 @@ const Chat = () => {
 
   useEffect(() => { handleResize(); }, [input]);
 
-  useEffect(() => {
-    const modalKey = `noChatModalShown_${safeId}`;
-    const alreadyShown = typeof window !== 'undefined' ? localStorage.getItem(modalKey) : null;
-    if (!loading && messages.length === 0 && !alreadyShown) {
-      setShowNoChatModal(true);
-      if (typeof window !== 'undefined') localStorage.setItem(modalKey, "true");
-      const timer = setTimeout(() => setShowNoChatModal(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [loading, messages.length, safeId]);
+  // 처음 대화 안내 모달은 사용하지 않음
 
   const handleResize = () => {
     const el = textareaRef.current;
@@ -342,21 +332,7 @@ const Chat = () => {
           scrollRef={scrollRef}
         />
   
-        {showNoChatModal && (
-          <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.18)', zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <div style={{
-              background: '#fff', borderRadius: 12, padding: '36px 48px',
-              fontSize: 20, fontWeight: 700, color: '#636AE8',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.12)'
-            }}>
-              채팅을 시작해보세요
-            </div>
-          </div>
-        )}
+        {/* 처음 대화 안내 오버레이 제거 */}
   
         <ChatInput
           input={input}
