@@ -16,7 +16,6 @@ export function ProfileMBTIBox({ mbti, isMyProfile, onEdit }: ProfileMBTIBoxProp
     <div className={`${styles.mbtiBox} ${mbtiStyles.mbtiBox}`} style={{ marginTop: 15 }}>
       <span className={mbtiStyles.mbtiBoxTitle}>MBTI</span>
       <span className={mbtiStyles.mbtiBoxContent}>{mbti || 'MBTI가 입력되지 않았습니다.'}</span>
-      {/* 내 프로필 편집 아이콘은 헤더 드롭다운으로 이동했습니다 */}
     </div>
   );
 }
@@ -41,7 +40,6 @@ export function ProfileIntroduceBox({ introduce, isMyProfile, onEdit }: ProfileI
               <span style={{ fontSize: 14, color: '#888', fontWeight: 500, marginTop: 12, lineHeight: '1.6' }}>
         {introduce || '소개를 작성해보세요 !'}
       </span>
-      {/* 내 프로필 편집 아이콘은 헤더 드롭다운으로 이동했습니다 */}
     </div>
   );
 }
@@ -66,7 +64,6 @@ export function ProfileHistoryBox({ history, isMyProfile, onEdit }: ProfileHisto
                 <MdDiamond size={12} color="#257EFE" />
                 <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>이력</span>
               </div>
-      {/* 내 프로필 편집 아이콘은 헤더 드롭다운으로 이동했습니다 */}
       <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
         {history && history.length > 0 ? (
           history.map((h, i) => (
@@ -138,7 +135,6 @@ export function ProfileCareerBox({ career, isMyProfile, onEdit }: ProfileCareerB
         <MdDiamond size={12} color="#257EFE" />
         <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>경력</span>
       </div>
-      {/* 내 프로필 편집 아이콘은 헤더 드롭다운으로 이동했습니다 */}
       <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
         {career && career.length > 0 ? (
           career.map((c, i) => (

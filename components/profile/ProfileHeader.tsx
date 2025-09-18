@@ -60,7 +60,7 @@ function ProfileHeader({
   }, []);
 
   return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 80, padding: '-0 5px', paddingTop: 45 }}>
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 80, padding: '-0 5px', paddingTop: 35, marginBottom: -15 }}>
       {/* 게스트 모드가 아닐 때만 뒤로가기 버튼 표시 */}
       {!isGuest && (
         <button
