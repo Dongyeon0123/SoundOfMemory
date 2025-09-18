@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiEdit2, FiMoreVertical } from 'react-icons/fi';
+import { FiEdit2, FiMoreVertical, FiType, FiFileText, FiBook, FiBriefcase } from 'react-icons/fi';
 import { MdDocumentScanner, MdNotificationsActive, MdBlock } from 'react-icons/md';
 import { BiQrScan } from 'react-icons/bi';
 import { FaStar } from 'react-icons/fa';
@@ -60,7 +60,7 @@ function ProfileHeader({
   }, []);
 
   return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 80, padding: '-0 5px', paddingTop: 30 }}>
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 80, padding: '-0 5px', paddingTop: 45 }}>
       {/* 게스트 모드가 아닐 때만 뒤로가기 버튼 표시 */}
       {!isGuest && (
         <button
@@ -214,7 +214,7 @@ function ProfileHeader({
                       color: '#333',
                     }}
                   >
-                    <span style={{ width: 18, textAlign: 'center' }}>🔤</span>
+                    <FiType size={18} color="#000" />
                     MBTI 수정
                   </button>
                   <button
@@ -236,7 +236,7 @@ function ProfileHeader({
                       color: '#333',
                     }}
                   >
-                    <span style={{ width: 18, textAlign: 'center' }}>✏️</span>
+                    <FiFileText size={18} color="#000" />
                     소개 수정
                   </button>
                   <button
@@ -258,7 +258,7 @@ function ProfileHeader({
                       color: '#333',
                     }}
                   >
-                    <span style={{ width: 18, textAlign: 'center' }}>📜</span>
+                    <FiBook size={18} color="#000" />
                     이력 수정
                   </button>
                   <button
@@ -280,7 +280,7 @@ function ProfileHeader({
                       color: '#333',
                     }}
                   >
-                    <span style={{ width: 18, textAlign: 'center' }}>🏢</span>
+                    <FiBriefcase size={18} color="#000" />
                     경력 수정
                   </button>
                 </>
