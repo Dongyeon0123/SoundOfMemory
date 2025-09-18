@@ -291,12 +291,15 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   </div>
                   <div style={{
                     fontSize: 12,
-                    color: '#666',
+                    color: '#636AE8',
                     textAlign: 'center',
                     lineHeight: 1.4,
+                    fontWeight: 500,
                   }}>
-                    QR 이미지 로딩 중...<br />
-                    위 코드를 NFC/QR에 인코딩하세요
+                    QR 코드를 생성하는 중...<br />
+                    <span style={{ color: '#8B94A5', fontSize: 11 }}>
+                      잠시만 기다려주세요
+                    </span>
                   </div>
                 </div>
               )

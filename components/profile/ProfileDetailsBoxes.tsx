@@ -2,6 +2,7 @@ import React from 'react';
 import styles from '../../styles/styles.module.css';
 import mbtiStyles from '../../styles/MbtiModal.module.css';
 import { FiEdit2 } from 'react-icons/fi';
+import { MdDiamond } from 'react-icons/md';
 
 // 1) MBTI 박스
 interface ProfileMBTIBoxProps {
@@ -33,8 +34,11 @@ export function ProfileIntroduceBox({ introduce, isMyProfile, onEdit }: ProfileI
       className={styles.introduceBox}
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', position: 'relative', marginTop: 10 }}
     >
-              <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>소개</span>
-              <span style={{ fontSize: 14, color: '#888', fontWeight: 500, marginTop: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <MdDiamond size={12} color="#257EFE" />
+                <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>소개</span>
+              </div>
+              <span style={{ fontSize: 14, color: '#888', fontWeight: 500, marginTop: 12, lineHeight: '1.6' }}>
         {introduce || '소개를 작성해보세요 !'}
       </span>
       {/* 내 프로필 편집 아이콘은 헤더 드롭다운으로 이동했습니다 */}
@@ -58,7 +62,10 @@ interface ProfileHistoryBoxProps {
 export function ProfileHistoryBox({ history, isMyProfile, onEdit }: ProfileHistoryBoxProps) {
   return (
     <div className={styles.historyBox} style={{ position: 'relative' }}>
-              <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>이력</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <MdDiamond size={12} color="#257EFE" />
+                <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>이력</span>
+              </div>
       {/* 내 프로필 편집 아이콘은 헤더 드롭다운으로 이동했습니다 */}
       <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
         {history && history.length > 0 ? (
@@ -67,8 +74,8 @@ export function ProfileHistoryBox({ history, isMyProfile, onEdit }: ProfileHisto
               key={i}
               className={styles.historyContent}
               style={{
-                background: '#f6f8ff',
-                borderRadius: 12,
+                background: '#fff',
+                borderRadius: 24,
                 boxShadow: '0 1px 6px 0 rgba(99,106,232,0.07)',
                 padding: '15px 16px 13px 16px',
                 marginBottom: 8,
@@ -84,12 +91,12 @@ export function ProfileHistoryBox({ history, isMyProfile, onEdit }: ProfileHisto
               </div>
               <span
                 style={{
-                  color: '#636AE8FF',
+                  color: '#000',
                   fontWeight: 500,
                   fontSize: 12,
-                  background: '#fff',
-                  border: '1px solid rgb(170, 170, 170)',
-                  borderRadius: 8,
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: 0,
                   padding: '8px 4px',
                   marginLeft: 16,
                   display: 'inline-block',
@@ -127,7 +134,10 @@ interface ProfileCareerBoxProps {
 export function ProfileCareerBox({ career, isMyProfile, onEdit }: ProfileCareerBoxProps) {
   return (
     <div className={styles.historyBox} style={{ position: 'relative', marginTop: 10, marginBottom: 10 }}>
-      <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>경력</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <MdDiamond size={12} color="#257EFE" />
+        <span style={{ fontSize: 17, color: '#222', fontWeight: 600 }}>경력</span>
+      </div>
       {/* 내 프로필 편집 아이콘은 헤더 드롭다운으로 이동했습니다 */}
       <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
         {career && career.length > 0 ? (
@@ -136,8 +146,8 @@ export function ProfileCareerBox({ career, isMyProfile, onEdit }: ProfileCareerB
               key={i}
               className={styles.historyContent}
               style={{
-                background: '#f6f8ff',
-                borderRadius: 12,
+                background: '#fff',
+                borderRadius: 24,
                 boxShadow: '0 1px 6px 0 rgba(99,106,232,0.07)',
                 padding: '15px 16px 13px 16px',
                 marginBottom: 8,
@@ -154,17 +164,17 @@ export function ProfileCareerBox({ career, isMyProfile, onEdit }: ProfileCareerB
                 </span>
                 <span style={{ color: '#888', fontWeight: 400, fontSize: 12, marginTop: 2 }}>
                   {c.period}
-                  <span style={{ color: '#000', fontSize: 12, fontWeight: 600 }}>{c.months}개월</span>
+                  <span style={{ color: '#888', fontSize: 12, fontWeight: 500, marginLeft: 10 }}>{c.months}개월</span>
                 </span>
               </div>
               <span
                 style={{
-                  color: '#636AE8FF',
+                  color: '#000',
                   fontWeight: 500,
                   fontSize: 12,
-                  background: '#fff',
-                  border: '1px solid rgb(170, 170, 170)',
-                  borderRadius: 8,
+                  background: 'transparent',
+                  border: 'none',
+                  borderRadius: 0,
                   padding: '8px 4px',
                   marginLeft: 16,
                   display: 'inline-block',

@@ -93,24 +93,117 @@ const QRTokenPage: React.FC = () => {
           alignItems: 'center', 
           justifyContent: 'center', 
           minHeight: 400,
-          gap: 20 
+          background: '#ffffff',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
+          {/* 배경 애니메이션 */}
           <div style={{
-            width: 40,
-            height: 40,
-            border: '3px solid #e8e8f0',
-            borderTop: '3px solid #636AE8',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <div style={{ fontSize: 16, color: '#666' }}>
-            QR 코드를 확인하는 중...
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: 'radial-gradient(circle, rgba(99, 106, 232, 0.1) 0%, transparent 70%)',
+            animation: 'pulse 3s ease-in-out infinite'
+          }} />
+          
+          {/* 메인 로딩 컨텐츠 */}
+          <div style={{
+            position: 'relative',
+            zIndex: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 24
+          }}>
+            {/* 커스텀 스피너 */}
+            <div style={{
+              position: 'relative',
+              width: 80,
+              height: 80
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                border: '4px solid rgba(99, 106, 232, 0.1)',
+                borderTop: '4px solid #636AE8',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+              <div style={{
+                position: 'absolute',
+                top: 8,
+                left: 8,
+                width: 'calc(100% - 16px)',
+                height: 'calc(100% - 16px)',
+                border: '2px solid rgba(99, 106, 232, 0.1)',
+                borderTop: '2px solid #257EFE',
+                borderRadius: '50%',
+                animation: 'spin 1.5s linear infinite reverse'
+              }} />
+            </div>
+            
+            {/* 로딩 텍스트 */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8
+            }}>
+              <div style={{ 
+                fontSize: 20, 
+                color: '#636AE8', 
+                fontWeight: 700,
+                letterSpacing: '-0.5px'
+              }}>
+                QR 코드를 확인하는 중
+              </div>
+              <div style={{
+                fontSize: 14,
+                color: '#8B94A5',
+                fontWeight: 500
+              }}>
+                잠시만 기다려주세요...
+              </div>
+            </div>
+            
+            {/* 점 애니메이션 */}
+            <div style={{
+              display: 'flex',
+              gap: 4
+            }}>
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    backgroundColor: '#636AE8',
+                    borderRadius: '50%',
+                    animation: `bounce 1.4s ease-in-out ${i * 0.2}s infinite`
+                  }}
+                />
+              ))}
+            </div>
           </div>
           
+          {/* CSS 애니메이션 */}
           <style jsx>{`
             @keyframes spin {
               0% { transform: rotate(0deg); }
               100% { transform: rotate(360deg); }
+            }
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); opacity: 0.5; }
+              50% { transform: scale(1.1); opacity: 0.8; }
+            }
+            @keyframes bounce {
+              0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+              40% { transform: scale(1.2); opacity: 1; }
             }
           `}</style>
         </div>

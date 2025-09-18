@@ -112,12 +112,40 @@ function ProfileLinks({ socialLinks }: ProfileLinksProps) {
 
   return (
     <>
-      <div className={styles.socialLinksGrid}>
-        {activeLinks.map(([type, url]) => (
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '12px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: '20px 0',
+        maxWidth: '100%'
+      }}>
+        {activeLinks.slice(0, 6).map(([type, url]) => (
           <div 
             key={type} 
-            className={styles.profileIcons}
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: '#f8f9fa',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              border: '1px solid #e9ecef',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
             onClick={() => handleLinkClick(type, url)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            }}
             title={type}
           >
             {getIcon(type, url)}

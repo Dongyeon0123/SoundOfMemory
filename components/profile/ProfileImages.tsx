@@ -8,10 +8,15 @@ interface ProfileImagesProps {
   backgroundImg?: string;
   img?: string;
   name?: string;
+  desc?: string;
+  mbti?: string;
+  tag?: string[];
 }
 
-function ProfileImages({ backgroundImg, img, name }: ProfileImagesProps) {
+function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileImagesProps) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const handleImageClick = () => {
     if (img) {
@@ -29,32 +34,107 @@ function ProfileImages({ backgroundImg, img, name }: ProfileImagesProps) {
             style={{
               width: '100%',
               height: '100%',
-              objectPosition: 'center'
+              objectPosition: 'center',
+              opacity: backgroundLoaded ? 1 : 0,
+              transition: 'opacity 0.3s ease'
             }}
+            onLoad={() => setBackgroundLoaded(true)}
+            onError={() => setBackgroundLoaded(true)}
           />
         </div>
-        <div className={styles.avatarWrap}>
-          {img && (
-            <img
-              src={img}
-              alt={name}
-              width={100}
-              height={100}
-              className={styles.avatarImg}
-              style={{ 
-                objectFit: 'cover', 
-                borderRadius: '50%',
-                cursor: 'pointer',
-                transition: 'transform 0.2s ease'
-              }}
-              onClick={handleImageClick}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            />
+        {/* 반투명 카드 */}
+        <div style={{
+          position: 'absolute',
+          bottom: 16,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: 20,
+          padding: '20px 22px',
+          width: 'calc(100% - 60px)',
+          maxWidth: '300px',
+          minWidth: '280px',
+          minHeight: 110,
+          boxShadow: '0 10px 36px rgba(0, 0, 0, 0.14)',
+          overflow: 'hidden'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+            {img && (
+              <img
+                src={img}
+                alt={name}
+                width={70}
+                height={70}
+                style={{ 
+                  objectFit: 'cover', 
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease, opacity 0.3s ease',
+                  border: '2px solid rgba(255, 255, 255, 0.8)',
+                  flexShrink: 0,
+                  opacity: profileLoaded ? 1 : 0
+                }}
+                onClick={handleImageClick}
+                onLoad={() => setProfileLoaded(true)}
+                onError={() => setProfileLoaded(true)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              />
+            )}
+            <div style={{ flex: 1, position: 'relative' }}>
+              <h2 style={{ 
+                margin: 0, 
+                fontSize: 15, 
+                fontWeight: 700, 
+                color: '#1F2937',
+                marginBottom: 2
+              }}>
+                {name || '사용자'}
+              </h2>
+              {(desc || mbti) && (
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: 12, 
+                  color: '#4B5563',
+                  fontWeight: 600,
+                  marginTop: 5,
+                }}>
+                  {(desc || '').trim()} {(desc && mbti) ? ' | ' : ''} {(mbti || '').trim()}
+                </p>
+              )}
+            </div>
+          </div>
+          
+          {/* 태그: 카드 오른쪽 아래 작게 표시 */}
+          {tag && tag.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              right: 12,
+              bottom: 12,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 6,
+              maxWidth: '65%'
+            }}>
+              {tag.map((t, index) => (
+                <span key={index} style={{
+                  background: 'rgba(88, 88, 88, 0.4)',
+                  color: '#FFFFFF',
+                  padding: '4px 8px',
+                  borderRadius: 14,
+                  fontSize: 10,
+                  fontWeight: 400,
+                  whiteSpace: 'nowrap'
+                }}>
+                  {t}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>
