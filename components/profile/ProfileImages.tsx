@@ -59,17 +59,17 @@ function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileIma
         {/* 반투명 카드 */}
         <div style={{
           position: 'absolute',
-          bottom: 16,
+          bottom: 32,
           left: '50%',
           transform: 'translateX(-50%)',
           background: 'rgba(255, 255, 255, 0.4)',
           backdropFilter: 'blur(3px)',
           borderRadius: 20,
-          padding: '20px 22px',
-          width: '80%',
-          minHeight: 110,
+          padding: '15px',
+          width: '85%',
+          minHeight: 130,
           boxShadow: '0 10px 36px rgba(0, 0, 0, 0.14)',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
             {img && (
