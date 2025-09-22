@@ -119,26 +119,43 @@ const Chat = () => {
     setLoading(true);
 
     const unsubscribe = onSnapshot(chatDocRef, async (docSnap) => {
+      const trimmedAiIntro = profileInfo?.aiIntro?.trim();
+      const aiIntro = (trimmedAiIntro && trimmedAiIntro.length > 0)
+        ? trimmedAiIntro
+        : '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
+
       if (docSnap.exists()) {
         const raw = docSnap.data();
-        const msgs = parseMessages(raw);
-        if (msgs.length === 0) {
-          const trimmedAiIntro = profileInfo?.aiIntro?.trim();
-          const aiIntro = (trimmedAiIntro && trimmedAiIntro.length > 0)
-            ? trimmedAiIntro
-            : '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
-          dispatch(setMessages([{ id: 'ai_intro', content: aiIntro, sender: 'ai', timestamp: new Date() }]));
-        } else {
-          // 서버가 저장한 상태로 단일 소스 동기화
-          dispatch(setMessages(msgs));
+        const arr: any[] = Array.isArray(raw?.messages) ? raw.messages : [];
+
+        // 1) 문서는 있는데 메시지가 비어있으면 인삿말을 index 0으로 저장
+        if (arr.length === 0) {
+          try {
+            await setDoc(chatDocRef, { messages: [aiIntro] }, { merge: false });
+            return; // 저장 후 다음 스냅샷에서 렌더
+          } catch (e) {
+            console.error('인삿말 초기 저장 실패:', e);
+          }
         }
+
+        // 2) 렌더: 인삿말이 없으면 맨 앞에만 UI에서 보여주기(서버 기록은 유지)
+        const msgs = parseMessages(raw);
+        const hasIntro = msgs.some(m => m.sender === 'ai' && m.content === aiIntro);
+        const finalMsgs = hasIntro
+          ? msgs
+          : [{ id: 'ai_intro', content: aiIntro, sender: 'ai' as const, timestamp: new Date() }, ...msgs];
+
+        dispatch(setMessages(finalMsgs));
       } else {
-        // 문서가 없으면 임시 인삿말을 표시 (서버가 생성 전까지)
-        const trimmedAiIntro = profileInfo?.aiIntro?.trim();
-        const aiIntro = (trimmedAiIntro && trimmedAiIntro.length > 0)
-          ? trimmedAiIntro
-          : '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
-        dispatch(setMessages([{ id: 'ai_intro', content: aiIntro, sender: 'ai', timestamp: new Date() }]));
+        // 0) 문서가 없으면 생성하며 인삿말을 index 0으로 저장
+        try {
+          await setDoc(chatDocRef, { messages: [aiIntro] }, { merge: false });
+          return; // 저장 후 다음 스냅샷에서 렌더
+        } catch (e) {
+          console.error('인삿말로 최초 문서 생성 실패:', e);
+          // 실패 시 임시 인삿말만 UI 표시
+          dispatch(setMessages([{ id: 'ai_intro', content: aiIntro, sender: 'ai' as const, timestamp: new Date() }]));
+        }
       }
       setLoading(false);
     }, (error) => {
@@ -210,7 +227,7 @@ const Chat = () => {
     const optimisticUserMessage: Message = {
       id: `user_${Date.now()}`,
       content: text,
-      sender: 'user',
+      sender: 'user' as const,
       timestamp: new Date(),
     };
     dispatch(setMessages([...(messages || []), optimisticUserMessage]));
