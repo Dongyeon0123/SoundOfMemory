@@ -32,6 +32,23 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
   // URL이 있는 링크만 필터링
   const activeLinks = socialLinks ? Object.entries(socialLinks).filter(([key, url]) => url && url.trim() !== '') : [];
   
+  // 링크 순서 정렬: 전화번호 → 이메일 → 나머지
+  const sortedLinks = activeLinks.sort((a, b) => {
+    const [keyA] = a;
+    const [keyB] = b;
+    
+    // 전화번호가 가장 우선
+    if (keyA === 'number') return -1;
+    if (keyB === 'number') return 1;
+    
+    // 이메일이 두 번째 우선
+    if (keyA === 'email') return -1;
+    if (keyB === 'email') return 1;
+    
+    // 나머지는 원래 순서 유지
+    return 0;
+  });
+  
 
 
   // 복사 모달 상태
@@ -122,7 +139,7 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
         margin: '20px 0',
         maxWidth: '100%'
       }}>
-        {activeLinks.slice(0, 6).map(([type, url]) => (
+        {sortedLinks.slice(0, 6).map(([type, url]) => (
           <div 
             key={type} 
             style={{

@@ -26,7 +26,7 @@ const SOCIAL_LINKS = [
   { key: 'behanceUrl', label: 'Behance', icon: <FaBehance /> },
 ];
 
-const MAX_SELECTION = 8;
+const MAX_SELECTION = 6;
 
 interface SocialModalProps {
   visible: boolean;
@@ -104,7 +104,7 @@ const SocialModal: React.FC<SocialModalProps> = ({ visible, initialSelectedKeys,
 
         {/* Info */}
         <div className={styles.socialModalInfo}>
-          {`선택된 링크: ${selectedKeys.length} / ${MAX_SELECTION}개 최대 8개`}
+          {`선택된 링크: ${selectedKeys.length} / ${MAX_SELECTION}개 최대 6개`}
         </div>
 
       </div>
