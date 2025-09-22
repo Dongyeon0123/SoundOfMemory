@@ -23,9 +23,10 @@ interface ProfileLinksProps {
     blogUrl?: string;
     behanceUrl?: string;
   };
+  obscured?: boolean;
 }
 
-function ProfileLinks({ socialLinks }: ProfileLinksProps) {
+function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
 
   
   // URL이 있는 링크만 필터링
@@ -132,19 +133,25 @@ function ProfileLinks({ socialLinks }: ProfileLinksProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: 'pointer',
+              cursor: obscured ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s ease',
               border: '1px solid #e9ecef',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              filter: obscured ? 'blur(4px)' : 'none',
+              pointerEvents: obscured ? 'none' : 'auto'
             }}
-            onClick={() => handleLinkClick(type, url)}
+            onClick={() => !obscured && handleLinkClick(type, url)}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+              if (!obscured) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+              if (!obscured) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+              }
             }}
             title={type}
           >

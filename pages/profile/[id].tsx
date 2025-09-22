@@ -428,7 +428,7 @@ const ProfilePage: React.FC = () => {
 
             {/* ProfileBasicInfo는 반투명 카드로 이동하여 제거 */}
 
-            <ProfileLinks socialLinks={profile.socialLinks} />
+            <ProfileLinks socialLinks={profile.socialLinks} obscured={!isMyProfile && !isFriend} />
 
             <ProfileActionButton
               isMyProfile={!!isMyProfile}
