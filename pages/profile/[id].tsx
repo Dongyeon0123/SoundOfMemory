@@ -448,6 +448,7 @@ const ProfilePage: React.FC = () => {
               introduce={introduce}
               isMyProfile={!!isMyProfile}
               onEdit={() => setShowIntroModal(true)}
+              obscured={!isMyProfile && !isFriend}
             />
             {isMyProfile && showIntroModal && (
               <IntroduceModal
@@ -457,7 +458,7 @@ const ProfilePage: React.FC = () => {
               />
             )}
 
-            <ProfileHistoryBox history={history} isMyProfile={!!isMyProfile} onEdit={() => setShowHistoryModal(true)} />
+            <ProfileHistoryBox history={history} isMyProfile={!!isMyProfile} onEdit={() => setShowHistoryModal(true)} obscured={!isMyProfile && !isFriend} />
             {isMyProfile && (
               <HistoryModal
                 open={showHistoryModal}
@@ -467,7 +468,7 @@ const ProfilePage: React.FC = () => {
               />
             )}
 
-            <ProfileCareerBox career={career} isMyProfile={!!isMyProfile} onEdit={() => setShowCareerModal(true)} />
+            <ProfileCareerBox career={career} isMyProfile={!!isMyProfile} onEdit={() => setShowCareerModal(true)} obscured={!isMyProfile && !isFriend} />
             {isMyProfile && (
               <CareerModal
                 open={showCareerModal}
