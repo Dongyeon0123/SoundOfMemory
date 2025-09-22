@@ -95,12 +95,20 @@ const Chat = () => {
 
   const parseMessages = (data: any): Message[] => {
     const messagesArray = data?.messages || [];
-    return messagesArray.map((msg: any, index: number) => ({
+    const arr = messagesArray.map((msg: any, index: number) => ({
       id: `msg_${index}`,
       content: typeof msg === "string" ? msg : msg.content,
-      sender: msg?.sender || (index % 2 === 1 ? 'user' : 'ai'),
+      sender: index === 0 ? 'ai' : (index % 2 === 1 ? 'user' : 'ai'),
       timestamp: new Date(),
     }));
+    // 연속 중복 제거
+    const dedup: Message[] = [];
+    for (const m of arr) {
+      const last = dedup[dedup.length - 1];
+      if (last && last.sender === m.sender && last.content === m.content) continue;
+      dedup.push(m);
+    }
+    return dedup;
   };
 
     useEffect(() => {
@@ -112,36 +120,25 @@ const Chat = () => {
 
     const unsubscribe = onSnapshot(chatDocRef, async (docSnap) => {
       if (docSnap.exists()) {
-        const msgs = parseMessages(docSnap.data());
-        dispatch(setMessages(msgs));
-      } else {
-        dispatch(setMessages([]));
-        
-        // profileInfo가 로딩된 후에만 AI 인사말 생성
-        if (profileInfo) {
-          // aiIntro가 비어있거나 사용자가 입력하지 않았을 때만 기본 메시지 사용
-          const trimmedAiIntro = profileInfo.aiIntro?.trim();
-          const aiIntro = trimmedAiIntro && trimmedAiIntro.length > 0 
-            ? trimmedAiIntro 
-            : `안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!`;
-          
-          const aiMessage = {
-            id: `ai_intro_${Date.now()}`,
-            content: aiIntro,
-            sender: 'ai' as const,
-            timestamp: new Date(),
-          };
-          
-          // AI 인사말을 Firebase에 저장 (merge 대신 overwrite 사용)
-          try {
-            await setDoc(chatDocRef, {
-              messages: [aiMessage.content],
-              lastUpdated: new Date(),
-            });
-          } catch (error) {
-            console.error('AI 인사말 저장 중 오류:', error);
-          }
+        const raw = docSnap.data();
+        const msgs = parseMessages(raw);
+        if (msgs.length === 0) {
+          const trimmedAiIntro = profileInfo?.aiIntro?.trim();
+          const aiIntro = (trimmedAiIntro && trimmedAiIntro.length > 0)
+            ? trimmedAiIntro
+            : '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
+          dispatch(setMessages([{ id: 'ai_intro', content: aiIntro, sender: 'ai', timestamp: new Date() }]));
+        } else {
+          // 서버가 저장한 상태로 단일 소스 동기화
+          dispatch(setMessages(msgs));
         }
+      } else {
+        // 문서가 없으면 임시 인삿말을 표시 (서버가 생성 전까지)
+        const trimmedAiIntro = profileInfo?.aiIntro?.trim();
+        const aiIntro = (trimmedAiIntro && trimmedAiIntro.length > 0)
+          ? trimmedAiIntro
+          : '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
+        dispatch(setMessages([{ id: 'ai_intro', content: aiIntro, sender: 'ai', timestamp: new Date() }]));
       }
       setLoading(false);
     }, (error) => {
@@ -209,9 +206,14 @@ const Chat = () => {
       return;
     }
   
-    // 사용자 메시지는 Redux store에만 저장하고, AI 응답 후에 한 번에 Firestore에 저장
-    // 이렇게 하면 중복 저장을 방지할 수 있습니다
-    
+    // 사용자 메시지를 UI에 즉시 반영 (낙관적 업데이트)
+    const optimisticUserMessage: Message = {
+      id: `user_${Date.now()}`,
+      content: text,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+    dispatch(setMessages([...(messages || []), optimisticUserMessage]));
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
   
@@ -219,50 +221,86 @@ const Chat = () => {
     setAbortController(controller);
   
     try {
-      const isAvatarMine = currentUserId === profileInfo?.id;
-  
-      const endpoint = isAvatarMine
-        ? isProMode
-          ? "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarpaid"
-          : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree"
-        : "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/otherchat";
-  
+      const isAvatarMine = !!currentUserId && (currentUserId === (profileInfo?.id || "") || currentUserId === (typeof safeId === 'string' ? safeId : ""));
+
+      const endpointCandidates = isAvatarMine
+        ? (
+            isProMode
+              ? [
+                  "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarpaid",
+                  "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatar",
+                ]
+              : [
+                  "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatarfree",
+                  "https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/myavatar",
+                ]
+          )
+        : ["https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/otherchat"];
+
       const requestBody = isAvatarMine
-        ? { userId: profileInfo?.id || safeId, message: text } // 내 아바타
-        : { userId: currentUserId, targetId: profileInfo?.id || safeId, message: text }; // 타인
-  
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-        signal: controller.signal,
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
-      if (data?.response) {
-        // AI 응답을 받은 후에 사용자 메시지와 AI 응답을 함께 저장
-        try {
-          const docSnap = await getDoc(chatDocRef);
-          let messagesArr: string[] = [];
-          if (docSnap.exists() && Array.isArray(docSnap.data().messages)) {
-            messagesArr = docSnap.data().messages;
+        ? { userId: profileInfo?.id || safeId, message: text }
+        : { userId: currentUserId, targetId: profileInfo?.id || safeId, message: text };
+
+      // 내 아바타인 경우: 서버가 사용자 메시지를 저장하지 않을 수 있으므로
+      // 전송 직후 사용자 메시지를 Firestore에 한 번만 기록해 사라지지 않게 함
+      if (isAvatarMine) {
+        const chatDocRef = getChatDocRef();
+        if (chatDocRef) {
+          try {
+            const docSnap = await getDoc(chatDocRef);
+            let messagesArr: string[] = [];
+            if (docSnap.exists() && Array.isArray(docSnap.data().messages)) {
+              messagesArr = docSnap.data().messages;
+            }
+            // 마지막 항목이 동일 텍스트면 중복 추가 방지
+            if (messagesArr[messagesArr.length - 1] !== text) {
+              await setDoc(chatDocRef, { messages: [...messagesArr, text] }, { merge: true });
+            }
+          } catch (err) {
+            console.warn('내 아바타 사용자 메시지 사전 저장 실패(무시 가능):', err);
           }
-          // 사용자 메시지와 AI 응답을 함께 추가
-          messagesArr = [...messagesArr, text, data.response];
-          await setDoc(chatDocRef, { messages: messagesArr }, { merge: true });
-          // 전송 성공 시 디바운싱 시간 업데이트
-          setLastSendTime(Date.now());
-        } catch (e) {
-          console.error("AI 응답 저장 실패:", e);
         }
+      }
+
+      let lastError: any = null;
+      let ok = false;
+      let data: any = null;
+      for (const endpoint of endpointCandidates) {
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal,
+          });
+          if (response.status === 404) {
+            console.warn("엔드포인트 404 → 다음 후보 시도:", endpoint);
+            lastError = new Error("404 Not Found");
+            continue;
+          }
+          const json = await response.json().catch(() => null);
+          if (!response.ok) {
+            lastError = new Error(`서버 응답 오류: ${response.status}`);
+            continue;
+          }
+          data = json;
+          ok = true;
+          break;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+
+      if (!ok) throw lastError || new Error("요청 실패");
+      if (data?.response) {
+        // Firestore 저장은 서버가 수행. onSnapshot이 동기화해줌
+        setLastSendTime(Date.now());
       }
     } catch (error: any) {
       if (error.name !== "AbortError") {
         alert("메시지 전송 실패: " + error.message);
         // AI 응답 실패 시 마지막 내 메시지 제거
-        const newMessages = removeLastUserMessage(messages);
+        const newMessages = removeLastUserMessage([...(messages || []), optimisticUserMessage]);
         dispatch(setMessages(newMessages));
       }
     } finally {
