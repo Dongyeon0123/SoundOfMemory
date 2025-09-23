@@ -108,17 +108,27 @@
 /* 아이콘 그룹 */
 .icon {
   display: flex;
-  gap: 12px;
+  gap: 0px;
   cursor: pointer;
   align-items: center;
   height: 60px;
 }
 
+/* 헤더 아이콘 버튼 래퍼: 간격/배지 기준 */
+.headerIconBtn {
+  width: 36px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
 /* 알림 뱃지 */
 .plusBadge {
   position: absolute;
-  right: -4px;
-  top: 9px;
+  right: 4px;
+  top: 30px;
   background: #ff0000;
   border: 1px solid #000000;
   color: white;
