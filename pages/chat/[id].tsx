@@ -326,7 +326,21 @@ const Chat = () => {
         ? { userId: profileInfo?.id || safeId, message: text }
         : { userId: currentUserId, targetId: profileInfo?.id || safeId, message: text };
 
-      // 내 아바타인 경우: 서버가 사용자 메시지를 저장하므로 클라이언트에서는 저장하지 않음
+      // 내 아바타인 경우: 서버 저장이 지연/누락될 수 있어 즉시 Firestore에 사용자 메시지를 append
+      if (isAvatarMine) {
+        try {
+          const snap = await getDoc(chatDocRef);
+          const arr: any[] = Array.isArray(snap.data()?.messages) ? snap.data()!.messages : [];
+          const last = arr[arr.length - 1];
+          const isSameAsLast = typeof last === 'string' ? last === text : (last && last.content === text && last.sender === 'user');
+          if (!isSameAsLast) {
+            const toSave = [...arr, text]; // 문자열로 저장해 기존 포맷 유지
+            await setDoc(chatDocRef, { messages: toSave }, { merge: false });
+          }
+        } catch (e) {
+          console.warn('내 아바타 사용자 메시지 즉시 저장 실패(무시):', e);
+        }
+      }
 
       let lastError: any = null;
       let ok = false;
