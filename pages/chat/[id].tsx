@@ -51,7 +51,7 @@ const Chat = () => {
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // 마지막 내 메시지를 삭제하는 함수
+  // 실패/취소 시 마지막 사용자 메시지를 제거하기 위한 유틸
   const removeLastUserMessage = (msgs: Message[]): Message[] => {
     for (let i = msgs.length - 1; i >= 0; i--) {
       if (msgs[i].sender === 'user') {
@@ -120,46 +120,111 @@ const Chat = () => {
 
     setLoading(true);
 
-    const unsubscribe = onSnapshot(chatDocRef, async (docSnap) => {
+    const unsubscribe = onSnapshot(chatDocRef, (docSnap) => {
       const trimmedAiIntro = profileInfo?.aiIntro?.trim();
       const userAiIntro = (trimmedAiIntro && trimmedAiIntro.length > 0) ? trimmedAiIntro : null;
       const defaultAiIntro = '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
 
       if (docSnap.exists()) {
         const raw = docSnap.data();
-        const arr: any[] = Array.isArray(raw?.messages) ? raw.messages : [];
+        let arr: any[] = Array.isArray(raw?.messages) ? raw.messages : [];
 
-        // 1) 문서는 있는데 메시지가 비어있으면 인삿말을 index 0으로 저장
-        if (arr.length === 0) {
-          const introToSave = userAiIntro || defaultAiIntro;
-          try {
-            await setDoc(chatDocRef, { messages: [introToSave] }, { merge: false });
-            return; // 저장 후 다음 스냅샷에서 렌더
-          } catch (e) {
-            console.error('인삿말 초기 저장 실패:', e);
+        // 0번 인덱스에 '원하는' 인삿말(사용자 설정 우선)을 보장하고,
+        // 기본 인삿말/사용자 인삿말의 중복을 모두 제거
+        const desiredIntro = userAiIntro || defaultAiIntro;
+        const hasUserIntro = !!userAiIntro; // 사용자 인삿말 준비 여부
+        const isIntroCandidate = (m: any) => {
+          if (typeof m === 'string') return m === desiredIntro || m === defaultAiIntro || (!!userAiIntro && m === userAiIntro);
+          return m && m.sender === 'ai' && (
+            m.content === desiredIntro || m.content === defaultAiIntro || (!!userAiIntro && m.content === userAiIntro)
+          );
+        };
+
+        if (Array.isArray(arr)) {
+          const hasDesiredAtZero = arr.length > 0 && (
+            (typeof arr[0] === 'string' && arr[0] === desiredIntro) ||
+            (typeof arr[0] === 'object' && arr[0]?.sender === 'ai' && arr[0]?.content === desiredIntro)
+          );
+
+          // 사용자 인삿말이 아직 준비되지 않았다면 기본 인삿말로 재정렬/저장을 하지 않음
+          let toSave = arr;
+          if (hasUserIntro) {
+            // 중복 인삿말 전체 제거
+            const filtered = arr.filter((m: any, idx: number) => !isIntroCandidate(m) || idx === 0);
+            // 만약 0번이 원하는 인삿말이 아니면 0번에 원하는 인삿말을 추가
+            toSave = filtered;
+            if (!hasDesiredAtZero) {
+              // 0번이 다른 메시지거나 다른 인삿말이라면, 모든 인삿말 제거 후 prepend
+              const removedAllIntros = arr.filter((m: any) => !isIntroCandidate(m));
+              toSave = [desiredIntro, ...removedAllIntros];
+            } else {
+              // 0번이 이미 원하는 인삿말이면, 0번을 제외한 나머지에서 인삿말 후보 제거
+              toSave = [filtered[0], ...filtered.slice(1).filter((m: any) => !isIntroCandidate(m))];
+            }
+          }
+
+          // 변경사항이 있을 때만 저장
+          const changed = JSON.stringify(arr) !== JSON.stringify(toSave);
+          if (changed) {
+            setDoc(chatDocRef, { messages: toSave }, { merge: false }).catch((e) => console.error('인삿말 정렬 저장 실패:', e));
+            arr = toSave;
           }
         }
 
-        // 2) 서버 저장 메시지는 사용하지 않고, 서버의 AI 인사말만 사용
-        const introToShow = userAiIntro || defaultAiIntro;
-        const introMessage = { id: 'ai_intro', content: introToShow, sender: 'ai' as const, timestamp: new Date() };
+        if (arr.length > 0) {
+          // 서버 메시지를 그대로 맵핑하여 사용
+          const mapped: Message[] = arr.map((msg: any, index: number) => {
+            if (typeof msg === 'string') {
+              return {
+                id: `msg_${index}`,
+                content: msg,
+                sender: index % 2 === 1 ? 'user' : 'ai',
+                timestamp: new Date(),
+              };
+            }
+            return {
+              id: msg.id || `msg_${index}`,
+              content: msg.content,
+              sender: msg.sender || (index % 2 === 1 ? 'user' : 'ai'),
+              timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+            };
+          });
+          // 문서에 0번 인삿말을 이미 보장했으므로 클라이언트에서 별도 prepend 불필요
+          const withIntro = mapped;
 
-        // 로컬에만 유지되는 사용자/AI 메시지들 (인사말 제외)
-        const localNonIntroMessages = messagesRef.current.filter(m => m.id !== 'ai_intro');
-
-        // 최종 메시지: 서버 AI 인사말 + 로컬 메시지들
-        const finalMessages = [introMessage, ...localNonIntroMessages];
-        setMessages(finalMessages);
+          // 낙관적 메시지가 아직 서버에 반영되지 않았다면 잠시 유지
+          const lastLocal = messagesRef.current[messagesRef.current.length - 1];
+          const hasPendingLocalUser = lastLocal && lastLocal.sender === 'user' && isWaitingForReply;
+          const existsInMapped = hasPendingLocalUser
+            ? withIntro.some(m => m.sender === 'user' && m.content === lastLocal.content)
+            : false;
+          if (hasPendingLocalUser && !existsInMapped) {
+            setMessages([...withIntro, lastLocal]);
+          } else {
+            setMessages(withIntro);
+          }
+        } else {
+          // 문서는 있으나 비어있음: 사용자 인삿말이 준비된 경우에만 저장/표시
+          if (userAiIntro) {
+            const introToShow = userAiIntro;
+            setDoc(chatDocRef, { messages: [introToShow] }, { merge: false })
+              .catch((e) => console.error('빈 문서 인삿말 저장 실패:', e));
+            setMessages([{ id: 'ai_intro', content: introToShow, sender: 'ai', timestamp: new Date() }]);
+          } else {
+            // 사용자 인삿말이 아직 없으면 깜빡임 방지를 위해 기본 인삿말도 표시하지 않음
+            setMessages([]);
+          }
+        }
       } else {
-        // 0) 문서가 없으면 생성하며 인삿말을 index 0으로 저장
-        const introToSave = userAiIntro || defaultAiIntro;
-        try {
-          await setDoc(chatDocRef, { messages: [introToSave] }, { merge: false });
-          return; // 저장 후 다음 스냅샷에서 렌더
-        } catch (e) {
-          console.error('인삿말로 최초 문서 생성 실패:', e);
-          // 실패 시 인삿말만 UI 표시
-          setMessages([{ id: 'ai_intro', content: introToSave, sender: 'ai' as const, timestamp: new Date() }]);
+        // 문서가 없으면 사용자 인삿말이 준비된 경우에만 생성
+        if (userAiIntro) {
+          const introToShow = userAiIntro;
+          setDoc(chatDocRef, { messages: [introToShow] }, { merge: false })
+            .catch((e) => console.error('최초 문서 인삿말 저장 실패:', e));
+          setMessages([{ id: 'ai_intro', content: introToShow, sender: 'ai', timestamp: new Date() }]);
+        } else {
+          // 사용자 인삿말이 아직 없으면 표시/생성을 지연하여 깜빡임 방지
+          setMessages([]);
         }
       }
       setLoading(false);
@@ -180,8 +245,6 @@ const Chat = () => {
   }, [messages, isWaitingForReply]);
 
   useEffect(() => { handleResize(); }, [input]);
-
-  // 처음 대화 안내 모달은 사용하지 않음
 
   const handleResize = () => {
     const el = textareaRef.current;
@@ -228,12 +291,12 @@ const Chat = () => {
       return;
     }
   
-    // 게스트 채팅과 동일한 방식: 사용자 메시지를 로컬 상태에 추가
-    const userMessage = { 
-      id: `user_${Date.now()}`, 
-      content: text, 
-      sender: 'user' as const, 
-      timestamp: new Date() 
+    // 낙관적 업데이트: 내 메시지를 즉시 화면에 추가 (스냅샷 오면 대체)
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      content: text,
+      sender: 'user' as const,
+      timestamp: new Date()
     };
     setMessages(prev => [...prev, userMessage]);
     dispatch(setInput(""));
@@ -295,23 +358,13 @@ const Chat = () => {
       }
 
       if (!ok) throw lastError || new Error("요청 실패");
-      if (data?.response) {
-        // 일반 채팅: 서버가 AI 응답을 저장하므로 클라이언트에서는 로컬에만 추가
-        const aiMessage = { 
-          id: `ai_${Date.now()}`, 
-          content: data.response, 
-          sender: 'ai' as const, 
-          timestamp: new Date() 
-        };
-        setMessages(prev => [...prev, aiMessage]);
-        setLastSendTime(Date.now());
-      }
+      // 응답 본문은 무시하고 Firestore 스냅샷 갱신으로만 렌더
+      if (data?.response) setLastSendTime(Date.now());
     } catch (error: any) {
       if (error.name !== "AbortError") {
         alert("메시지 전송 실패: " + error.message);
-        // AI 응답 실패 시 마지막 내 메시지 제거
-        const newMessages = removeLastUserMessage([...messagesRef.current, userMessage]);
-        setMessages(newMessages);
+        // 실패 시 방금 추가한 내 메시지 롤백
+        setMessages(prev => removeLastUserMessage(prev));
       }
     } finally {
       setIsWaitingForReply(false);
@@ -324,9 +377,8 @@ const Chat = () => {
       abortController.abort();
       setAbortController(null);
       setIsWaitingForReply(false);
-      // 전송 중 메시지 취소 시 마지막 내 메시지도 제거
-      const newMessages = removeLastUserMessage(messagesRef.current);
-      setMessages(newMessages);
+      // 전송 취소 시 마지막 내 메시지 제거
+      setMessages(prev => removeLastUserMessage(prev));
       dispatch(setInput(""));
     }
   };
@@ -379,8 +431,6 @@ const Chat = () => {
           profileInfo={profileInfo}
           scrollRef={scrollRef}
         />
-  
-        {/* 처음 대화 안내 오버레이 제거 */}
   
         <ChatInput
           input={input}
