@@ -4,7 +4,7 @@ import cardStyles from "../../styles/styles.module.css";
 import styles from "../../styles/chat.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../types/store";
-import { setInput, setMessages, setProMode, Message } from "../../types/chat";
+import { setInput, setMessages, setProMode, addMessage, Message } from "../../types/chat";
 import { fetchProfileById } from "../../types/profiles";
 import { doc, onSnapshot, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../types/firebase";
@@ -20,8 +20,27 @@ const Chat = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
-  const { messages, input, isProMode } = useSelector((state: RootState) => state.chat);
+  const { input, isProMode } = useSelector((state: RootState) => state.chat);
   const { id } = router.query;
+  
+  // 게스트 채팅과 동일하게 useState 사용
+  const [messages, setMessagesState] = useState<Message[]>([]);
+  // 최신 메시지 상태를 참조하기 위한 ref
+  const messagesRef = useRef<Message[]>([]);
+  
+  // setMessages 함수를 래핑하여 ref도 함께 업데이트
+  const setMessages = (newMessages: Message[] | ((prev: Message[]) => Message[])) => {
+    if (typeof newMessages === 'function') {
+      setMessagesState(prev => {
+        const updated = newMessages(prev);
+        messagesRef.current = updated;
+        return updated;
+      });
+    } else {
+      setMessagesState(newMessages);
+      messagesRef.current = newMessages;
+    }
+  };
   
   // 중복 전송 방지를 위한 디바운싱
   const [lastSendTime, setLastSendTime] = useState(0);
@@ -93,23 +112,6 @@ const Chat = () => {
     return doc(db, "users", currentUserId, "chats", `${safeId}_avatar_chat`);
   };
 
-  const parseMessages = (data: any): Message[] => {
-    const messagesArray = data?.messages || [];
-    const arr = messagesArray.map((msg: any, index: number) => ({
-      id: `msg_${index}`,
-      content: typeof msg === "string" ? msg : msg.content,
-      sender: index === 0 ? 'ai' : (index % 2 === 1 ? 'user' : 'ai'),
-      timestamp: new Date(),
-    }));
-    // 연속 중복 제거
-    const dedup: Message[] = [];
-    for (const m of arr) {
-      const last = dedup[dedup.length - 1];
-      if (last && last.sender === m.sender && last.content === m.content) continue;
-      dedup.push(m);
-    }
-    return dedup;
-  };
 
     useEffect(() => {
     if (!currentUserId || typeof safeId !== "string") return;
@@ -138,31 +140,16 @@ const Chat = () => {
           }
         }
 
-        // 2) 렌더: 인삿말이 없으면 맨 앞에만 UI에서 보여주기(서버 기록은 유지)
-        const msgs = parseMessages(raw);
-        
-        // AI 인삿말 필터링: 사용자 설정 인삿말이 있으면 그것만 남기고, 없으면 기본 인삿말만 남김
-        const filteredMsgs = msgs.filter(msg => {
-          if (msg.sender !== 'ai') return true; // AI 메시지가 아니면 통과
-          
-          if (userAiIntro) {
-            // 사용자 설정 인삿말이 있으면, 사용자 설정 인삿말만 통과
-            return msg.content === userAiIntro;
-          } else {
-            // 사용자 설정 인삿말이 없으면, 기본 인삿말만 통과
-            return msg.content === defaultAiIntro;
-          }
-        });
-        
-        // 인삿말이 없으면 추가
-        const hasIntro = filteredMsgs.some(m => m.sender === 'ai');
-        let finalMsgs = filteredMsgs;
-        if (!hasIntro) {
-          const introToShow = userAiIntro || defaultAiIntro;
-          finalMsgs = [{ id: 'ai_intro', content: introToShow, sender: 'ai' as const, timestamp: new Date() }, ...filteredMsgs];
-        }
+        // 2) 서버 저장 메시지는 사용하지 않고, 서버의 AI 인사말만 사용
+        const introToShow = userAiIntro || defaultAiIntro;
+        const introMessage = { id: 'ai_intro', content: introToShow, sender: 'ai' as const, timestamp: new Date() };
 
-        dispatch(setMessages(finalMsgs));
+        // 로컬에만 유지되는 사용자/AI 메시지들 (인사말 제외)
+        const localNonIntroMessages = messagesRef.current.filter(m => m.id !== 'ai_intro');
+
+        // 최종 메시지: 서버 AI 인사말 + 로컬 메시지들
+        const finalMessages = [introMessage, ...localNonIntroMessages];
+        setMessages(finalMessages);
       } else {
         // 0) 문서가 없으면 생성하며 인삿말을 index 0으로 저장
         const introToSave = userAiIntro || defaultAiIntro;
@@ -172,7 +159,7 @@ const Chat = () => {
         } catch (e) {
           console.error('인삿말로 최초 문서 생성 실패:', e);
           // 실패 시 인삿말만 UI 표시
-          dispatch(setMessages([{ id: 'ai_intro', content: introToSave, sender: 'ai' as const, timestamp: new Date() }]));
+          setMessages([{ id: 'ai_intro', content: introToSave, sender: 'ai' as const, timestamp: new Date() }]);
         }
       }
       setLoading(false);
@@ -241,14 +228,14 @@ const Chat = () => {
       return;
     }
   
-    // 사용자 메시지를 UI에 즉시 반영 (낙관적 업데이트)
-    const optimisticUserMessage: Message = {
-      id: `user_${Date.now()}`,
-      content: text,
-      sender: 'user' as const,
-      timestamp: new Date(),
+    // 게스트 채팅과 동일한 방식: 사용자 메시지를 로컬 상태에 추가
+    const userMessage = { 
+      id: `user_${Date.now()}`, 
+      content: text, 
+      sender: 'user' as const, 
+      timestamp: new Date() 
     };
-    dispatch(setMessages([...(messages || []), optimisticUserMessage]));
+    setMessages(prev => [...prev, userMessage]);
     dispatch(setInput(""));
     if (textareaRef.current) textareaRef.current.style.height = "auto";
   
@@ -276,26 +263,7 @@ const Chat = () => {
         ? { userId: profileInfo?.id || safeId, message: text }
         : { userId: currentUserId, targetId: profileInfo?.id || safeId, message: text };
 
-      // 내 아바타인 경우: 서버가 사용자 메시지를 저장하지 않을 수 있으므로
-      // 전송 직후 사용자 메시지를 Firestore에 한 번만 기록해 사라지지 않게 함
-      if (isAvatarMine) {
-        const chatDocRef = getChatDocRef();
-        if (chatDocRef) {
-          try {
-            const docSnap = await getDoc(chatDocRef);
-            let messagesArr: string[] = [];
-            if (docSnap.exists() && Array.isArray(docSnap.data().messages)) {
-              messagesArr = docSnap.data().messages;
-            }
-            // 마지막 항목이 동일 텍스트면 중복 추가 방지
-            if (messagesArr[messagesArr.length - 1] !== text) {
-              await setDoc(chatDocRef, { messages: [...messagesArr, text] }, { merge: true });
-            }
-          } catch (err) {
-            console.warn('내 아바타 사용자 메시지 사전 저장 실패(무시 가능):', err);
-          }
-        }
-      }
+      // 내 아바타인 경우: 서버가 사용자 메시지를 저장하므로 클라이언트에서는 저장하지 않음
 
       let lastError: any = null;
       let ok = false;
@@ -328,15 +296,22 @@ const Chat = () => {
 
       if (!ok) throw lastError || new Error("요청 실패");
       if (data?.response) {
-        // Firestore 저장은 서버가 수행. onSnapshot이 동기화해줌
+        // 일반 채팅: 서버가 AI 응답을 저장하므로 클라이언트에서는 로컬에만 추가
+        const aiMessage = { 
+          id: `ai_${Date.now()}`, 
+          content: data.response, 
+          sender: 'ai' as const, 
+          timestamp: new Date() 
+        };
+        setMessages(prev => [...prev, aiMessage]);
         setLastSendTime(Date.now());
       }
     } catch (error: any) {
       if (error.name !== "AbortError") {
         alert("메시지 전송 실패: " + error.message);
         // AI 응답 실패 시 마지막 내 메시지 제거
-        const newMessages = removeLastUserMessage([...(messages || []), optimisticUserMessage]);
-        dispatch(setMessages(newMessages));
+        const newMessages = removeLastUserMessage([...messagesRef.current, userMessage]);
+        setMessages(newMessages);
       }
     } finally {
       setIsWaitingForReply(false);
@@ -350,8 +325,8 @@ const Chat = () => {
       setAbortController(null);
       setIsWaitingForReply(false);
       // 전송 중 메시지 취소 시 마지막 내 메시지도 제거
-      const newMessages = removeLastUserMessage(messages);
-      dispatch(setMessages(newMessages));
+      const newMessages = removeLastUserMessage(messagesRef.current);
+      setMessages(newMessages);
       dispatch(setInput(""));
     }
   };
