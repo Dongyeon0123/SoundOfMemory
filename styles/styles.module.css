@@ -110,6 +110,8 @@
   display: flex;
   gap: 12px;
   cursor: pointer;
+  align-items: center;
+  height: 60px;
 }
 
 /* 알림 뱃지 */

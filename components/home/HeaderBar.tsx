@@ -46,7 +46,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
             flexDirection: 'column',
           }}
         >
-          <div className={styles.icon} style={{ marginTop: 30 }}>
+          <div className={styles.icon}>
             <FiSearch
               size={ICON_SIZE}
               color="#222"
@@ -88,22 +88,8 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
             />
           </div>
 
-          {/* 로그인/로그아웃 */}
-          {userId ? (
-            <button onClick={onLogout} style={{
-                background: '#fff',
-                color: '#636AE8',
-                border: '1.5px solid #636AE8',
-                borderRadius: 6,
-                padding: '6px 18px',
-                fontWeight: 600,
-                fontSize: 13,
-                cursor: 'pointer',
-                marginRight: 8
-              }}>
-              로그아웃
-            </button>
-          ) : (
+          {/* 로그인 버튼만 표시 (로그아웃 버튼 제거) */}
+          {!userId ? (
             <Link href="/register/login">
               <button style={{
                     background: '#fff',
@@ -117,7 +103,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                     marginRight: 8
                   }}>로그인</button>
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
