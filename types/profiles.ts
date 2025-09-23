@@ -82,7 +82,6 @@ export type FriendRequest = {
 // 친구요청 보내기
 export async function sendFriendRequest(fromUserId: string, toUserId: string): Promise<boolean> {
   try {
-    console.log('친구요청 시작:', { fromUserId, toUserId });
     
     // 요청자 정보 가져오기
     const fromUserProfile = await fetchProfileById(fromUserId);
@@ -90,12 +89,10 @@ export async function sendFriendRequest(fromUserId: string, toUserId: string): P
       console.error('요청자 프로필을 찾을 수 없습니다.');
       return false;
     }
-    console.log('요청자 프로필:', fromUserProfile);
 
     // 중복 친구요청 체크
     const isDuplicate = await checkDuplicateFriendRequest(fromUserId, toUserId);
     if (isDuplicate) {
-      console.log('이미 친구요청이 존재합니다 (보냈거나 받음).');
       return false;
     }
 
@@ -109,7 +106,6 @@ export async function sendFriendRequest(fromUserId: string, toUserId: string): P
       createdAt: serverTimestamp(),
     };
 
-    console.log('저장할 친구요청 데이터:', friendRequestData);
     
     // users/{toUserId}/friendRequests 서브컬렉션에만 저장
     const userRequestRef = doc(collection(db, "users", toUserId, "friendRequests"));
@@ -117,11 +113,9 @@ export async function sendFriendRequest(fromUserId: string, toUserId: string): P
       ...friendRequestData,
       requestId: userRequestRef.id, // 문서 ID도 함께 저장
     });
-    console.log('users/{toUserId}/friendRequests에만 저장 완료:', userRequestRef.id);
     
     // 저장된 데이터 확인
     const savedDoc = await getDoc(userRequestRef);
-    console.log('저장된 문서 데이터:', savedDoc.data());
     
     return true;
   } catch (error) {
@@ -133,7 +127,6 @@ export async function sendFriendRequest(fromUserId: string, toUserId: string): P
 // 받은 친구요청 목록 가져오기
 export async function getReceivedFriendRequests(userId: string): Promise<FriendRequest[]> {
   try {
-    console.log('받은 친구요청 조회 시작:', userId);
     
     // users/{userId}/friendRequests 서브컬렉션에서 조회
     const q = query(
@@ -142,11 +135,9 @@ export async function getReceivedFriendRequests(userId: string): Promise<FriendR
     );
 
     const querySnapshot = await getDocs(q);
-    console.log('쿼리 결과 문서 수:', querySnapshot.docs.length);
     
     const requests = querySnapshot.docs.map(doc => {
       const data = doc.data();
-      console.log('문서 데이터:', { id: doc.id, ...data });
       return {
         requestId: doc.id,
         ...data,
@@ -155,7 +146,6 @@ export async function getReceivedFriendRequests(userId: string): Promise<FriendR
     
     // duplicate 상태 제외하고 필터링
     const validRequests = requests.filter(req => req.status !== 'duplicate');
-    console.log('유효한 친구요청들:', validRequests);
     
     // 클라이언트에서 정렬
     validRequests.sort((a, b) => {
@@ -165,7 +155,6 @@ export async function getReceivedFriendRequests(userId: string): Promise<FriendR
       return 0;
     });
     
-    console.log('최종 친구요청 목록:', validRequests);
     return validRequests;
   } catch (error) {
     console.error('친구요청 목록 가져오기 실패:', error);
@@ -179,7 +168,6 @@ export async function updateFriendRequestStatus(requestId: string, status: 'acce
     // users/{toUserId}/friendRequests 서브컬렉션 상태 변경
     const userRequestRef = doc(db, "users", toUserId, "friendRequests", requestId);
     await updateDoc(userRequestRef, { status: status });
-    console.log(`users/${toUserId}/friendRequests/${requestId} 상태 변경: ${status}`);
     return true;
   } catch (error) {
     console.error('친구요청 상태 업데이트 실패:', error);
@@ -190,7 +178,6 @@ export async function updateFriendRequestStatus(requestId: string, status: 'acce
 // 보낸 친구요청 목록 가져오기
 export async function getSentFriendRequests(fromUserId: string): Promise<FriendRequest[]> {
   try {
-    console.log('보낸 친구요청 조회 시작:', fromUserId);
     
     // 모든 사용자의 friendRequests 서브컬렉션에서 fromUserId가 일치하는 요청 찾기
     const allUsers = await fetchProfiles();
@@ -211,13 +198,11 @@ export async function getSentFriendRequests(fromUserId: string): Promise<FriendR
         
         allRequests.push(...userRequests);
       } catch (error) {
-        console.log(`사용자 ${user.id}의 친구요청 조회 실패:`, error);
         // 특정 사용자의 서브컬렉션이 없어도 계속 진행
         continue;
       }
     }
     
-    console.log('보낸 친구요청들:', allRequests);
     
     // 클라이언트에서 정렬
     allRequests.sort((a, b) => {
@@ -256,7 +241,6 @@ export async function checkDuplicateFriendRequest(fromUserId: string, toUserId: 
     const receivedRequests = await getReceivedFriendRequests(fromUserId);
     const hasReceived = receivedRequests.some(req => req.fromUserId === toUserId && req.status === 'pending');
     
-    console.log('중복 체크 결과:', { hasSent, hasReceived, fromUserId, toUserId });
     
     return hasSent || hasReceived;
   } catch (error) {
@@ -268,7 +252,6 @@ export async function checkDuplicateFriendRequest(fromUserId: string, toUserId: 
 // 모든 친구요청 조회 (디버깅용)
 export async function getAllFriendRequests(): Promise<FriendRequest[]> {
   try {
-    console.log('모든 친구요청 조회 시작');
     
     // 모든 사용자의 friendRequests 서브컬렉션에서 모든 요청 수집
     const allUsers = await fetchProfiles();
@@ -279,7 +262,6 @@ export async function getAllFriendRequests(): Promise<FriendRequest[]> {
         const querySnapshot = await getDocs(collection(db, "users", user.id, "friendRequests"));
         const userRequests = querySnapshot.docs.map(doc => {
           const data = doc.data();
-          console.log(`사용자 ${user.id}의 친구요청 문서:`, { id: doc.id, ...data });
           return {
             requestId: doc.id,
             ...data,
@@ -288,13 +270,11 @@ export async function getAllFriendRequests(): Promise<FriendRequest[]> {
         
         allRequests.push(...userRequests);
       } catch (error) {
-        console.log(`사용자 ${user.id}의 친구요청 조회 실패:`, error);
         // 특정 사용자의 서브컬렉션이 없어도 계속 진행
         continue;
       }
     }
     
-    console.log('전체 친구요청 목록:', allRequests);
     return allRequests;
   } catch (error) {
     console.error('전체 친구요청 조회 실패:', error);
@@ -305,7 +285,6 @@ export async function getAllFriendRequests(): Promise<FriendRequest[]> {
 // 중복 친구요청 정리 (관리자용)
 export async function cleanupDuplicateFriendRequests(): Promise<number> {
   try {
-    console.log('중복 친구요청 정리 시작');
     
     const allRequests = await getAllFriendRequests();
     const duplicates: string[] = [];
@@ -323,7 +302,6 @@ export async function cleanupDuplicateFriendRequests(): Promise<number> {
       }
     });
     
-    console.log('중복 요청 ID들:', duplicates);
     
     // 중복 요청 처리 (가장 오래된 것만 남기고 나머지는 duplicate 상태로 변경)
     let deletedCount = 0;
@@ -335,14 +313,12 @@ export async function cleanupDuplicateFriendRequests(): Promise<number> {
           const userRequestRef = doc(db, "users", request.toUserId, "friendRequests", requestId);
           await updateDoc(userRequestRef, { status: 'duplicate' });
           deletedCount++;
-          console.log('중복 요청 처리됨:', requestId);
         }
       } catch (error) {
         console.error('중복 요청 처리 실패:', requestId, error);
       }
     }
     
-    console.log(`중복 친구요청 정리 완료: ${deletedCount}개 처리됨`);
     return deletedCount;
   } catch (error) {
     console.error('중복 친구요청 정리 실패:', error);
@@ -398,10 +374,8 @@ export async function fetchUserChatTopics(userId: string): Promise<ChatTopic[]> 
 // 채팅 주제 정보 업데이트 (information 배열 저장)
 export async function updateChatTopicInformation(userId: string, topicName: string, information: string[]) {
   try {
-    console.log('updateChatTopicInformation 시작, userId:', userId, 'topicName:', topicName, 'information:', information);
     const chatDataRef = doc(db, "users", userId, "chatData", topicName);
     await setDoc(chatDataRef, { information }, { merge: true });
-    console.log('채팅 주제 정보 업데이트 완료');
   } catch (error) {
     console.error('채팅 주제 정보 업데이트 실패:', error);
     throw error;
@@ -411,10 +385,8 @@ export async function updateChatTopicInformation(userId: string, topicName: stri
 // 채팅 주제 삭제
 export async function deleteChatTopic(userId: string, topicName: string) {
   try {
-    console.log('deleteChatTopic 시작, userId:', userId, 'topicName:', topicName);
     const chatDataRef = doc(db, "users", userId, "chatData", topicName);
     await deleteDoc(chatDataRef);
-    console.log('채팅 주제 삭제 완료');
   } catch (error) {
     console.error('채팅 주제 삭제 실패:', error);
     throw error;
@@ -424,27 +396,21 @@ export async function deleteChatTopic(userId: string, topicName: string) {
 // 선택된 채팅 주제 불러오기
 export async function fetchSelectedChatTopics(userId: string): Promise<string[]> {
   try {
-    console.log('fetchSelectedChatTopics 시작, userId:', userId);
     const ref = doc(db, "users", userId);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
-      console.log('사용자 문서가 존재하지 않음');
       return [];
     }
     
     const data = snap.data();
-    console.log('사용자 문서 데이터:', data);
-    console.log('selectedChatTopics 필드:', data.selectedChatTopics);
     
     // selectedChatTopics 필드가 없는 경우 빈 배열 반환
     if (!data.selectedChatTopics) {
-      console.log('selectedChatTopics 필드가 없음');
       return [];
     }
     
     // 배열인 경우 그대로 반환
     if (Array.isArray(data.selectedChatTopics)) {
-      console.log('selectedChatTopics가 배열임:', data.selectedChatTopics);
       return data.selectedChatTopics;
     }
     
@@ -452,16 +418,13 @@ export async function fetchSelectedChatTopics(userId: string): Promise<string[]>
     if (typeof data.selectedChatTopics === 'string') {
       try {
         const parsed = JSON.parse(data.selectedChatTopics);
-        console.log('JSON 파싱 결과:', parsed);
         return Array.isArray(parsed) ? parsed : [data.selectedChatTopics];
       } catch {
-        console.log('JSON 파싱 실패, 문자열 그대로 반환');
         return [data.selectedChatTopics];
       }
     }
     
     // 기타 타입의 경우 빈 배열 반환
-    console.log('기타 타입, 빈 배열 반환');
     return [];
   } catch (error) {
     console.error('선택된 채팅 주제 불러오기 실패:', error);
@@ -481,7 +444,6 @@ export async function saveTempToken(userId: string, token: string) {
       createdAt: serverTimestamp()
     });
     
-    console.log('임시 토큰 저장 완료:', token);
   } catch (error) {
     console.error('임시 토큰 저장 실패:', error);
     throw error;
@@ -495,7 +457,6 @@ export async function verifyTempToken(token: string): Promise<string | null> {
     const snap = await getDoc(tempTokenRef);
     
     if (!snap.exists()) {
-      console.log('토큰이 존재하지 않음');
       return null;
     }
     
@@ -504,13 +465,11 @@ export async function verifyTempToken(token: string): Promise<string | null> {
     const now = new Date();
     
     if (now > expiryTime) {
-      console.log('토큰이 만료됨');
       // 만료된 토큰 삭제
       await deleteDoc(tempTokenRef);
       return null;
     }
     
-    console.log('토큰 검증 성공:', data.userId);
     return data.userId;
   } catch (error) {
     console.error('토큰 검증 실패:', error);
@@ -542,19 +501,15 @@ export async function getExistingQRToken(userId: string): Promise<{ token: strin
         if (qrDocSnap.exists()) {
           const qrData = qrDocSnap.data();
           qrImageUrl = qrData.qrimageurl || '';
-          console.log('QR 이미지 URL 가져오기 성공:', qrImageUrl);
         } else {
-          console.log('QR 문서가 존재하지 않습니다:', userId);
         }
         
-        console.log('기존 QR 토큰 발견:', existingToken.tokenId);
         return {
           token: existingToken.tokenId,
           qrImageUrl
         };
       } catch (error) {
         console.error('QR 이미지 URL 가져오기 실패:', error);
-        console.log('기존 QR 토큰 발견 (이미지 URL 없음):', existingToken.tokenId);
         return {
           token: existingToken.tokenId,
           qrImageUrl: ''
@@ -562,7 +517,6 @@ export async function getExistingQRToken(userId: string): Promise<{ token: strin
       }
     }
     
-    console.log('해당 사용자의 QR 토큰이 없습니다:', userId);
     return null;
   } catch (error) {
     console.error('QR 토큰 조회 실패:', error);
@@ -578,17 +532,14 @@ export async function verifyQRToken(token: string): Promise<string | null> {
     });
 
     if (!response.ok) {
-      console.log('QR 토큰 검증 요청 실패:', response.status);
       return null;
     }
 
     const result = await response.json();
     
     if (result.ownerUserId) {
-      console.log('QR 토큰 검증 성공:', result.ownerUserId);
       return result.ownerUserId;
     } else {
-      console.log('QR 토큰이 유효하지 않음');
       return null;
     }
   } catch (error) {

@@ -14,7 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('QR 토큰 검증 시작:', token);
 
     // 1. qrRedirects 컬렉션에서 조회 (메인 구조)
     try {
@@ -23,14 +22,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (qrRedirectSnap.exists()) {
         const data = qrRedirectSnap.data();
-        console.log('qrRedirects에서 찾음:', data);
         
         if (data.ownerUserId) {
           return res.status(200).json({ ownerUserId: data.ownerUserId });
         }
       }
     } catch (error) {
-      console.log('qrRedirects 조회 실패:', error);
     }
 
     // 3. qrtokens 컬렉션에서 조회 (또 다른 구조)
@@ -40,17 +37,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       if (qrTokenSnap.exists()) {
         const data = qrTokenSnap.data();
-        console.log('qrtokens에서 찾음:', data);
         
         if (data.ownerUserId) {
           return res.status(200).json({ ownerUserId: data.ownerUserId });
         }
       }
     } catch (error) {
-      console.log('qrtokens 조회 실패:', error);
     }
 
-    console.log('모든 컬렉션에서 QR 토큰을 찾을 수 없음:', token);
     return res.status(404).json({ error: 'QR token not found' });
 
   } catch (error) {

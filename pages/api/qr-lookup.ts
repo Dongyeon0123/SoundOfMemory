@@ -73,7 +73,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('QR lookup request for shortId:', shortId);
     
     // 환경 변수 체크
     if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY) {
@@ -89,7 +88,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const collections = ['qrRedirects', 'qrMappings', 'qrRedirets', 'qrtokens'];
     
     for (const collectionName of collections) {
-      console.log(`${collectionName} 컬렉션에서 검색 중...`);
       
       const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collectionName}/${shortId}`;
       
@@ -104,7 +102,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const ownerUserId = data.fields?.ownerUserId?.stringValue;
 
         if (ownerUserId) {
-          console.log(`${collectionName}에서 찾음:`, { shortId, ownerUserId });
           
           return res.status(200).json({
             ownerUserId,
@@ -116,7 +113,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    console.log('모든 컬렉션에서 QR redirect를 찾을 수 없음:', shortId);
     return res.status(404).json({ error: 'QR redirect not found' });
 
   } catch (error) {

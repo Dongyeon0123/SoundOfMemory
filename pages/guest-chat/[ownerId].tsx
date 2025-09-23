@@ -38,7 +38,6 @@ export default function GuestChatPage() {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log('익명 사용자 인증 완료:', user.uid, 'isAnonymous:', user.isAnonymous);
         setGuestId(user.uid);
       } else {
         // 인증되지 않은 경우 로그인 페이지로 리다이렉트
@@ -75,7 +74,6 @@ export default function GuestChatPage() {
           });
         }
       } catch (e) {
-        console.error('게스트 채팅용 프로필 로드 실패:', e);
         // 에러가 발생해도 기본 정보로 설정
         setProfileInfo({
           id: ownerId,
@@ -93,31 +91,26 @@ export default function GuestChatPage() {
   useEffect(() => {
     const initializeGuestChat = async () => {
       if (!ownerId || typeof ownerId !== 'string' || !guestId) {
-        console.log('초기화 조건 미충족:', { ownerId, guestId });
         return;
       }
 
       // 인증 상태 확인
       const auth = getAuth();
       if (!auth.currentUser) {
-        console.log('인증되지 않은 사용자, 초기화 건너뜀');
         return;
       }
 
       const ref = chatDocPath();
       if (!ref) {
-        console.log('chatDocPath가 null');
         return;
       }
 
       try {
-        console.log('게스트 채팅 초기화 시작:', { ownerId, guestId, authUid: auth.currentUser.uid });
         
         // 문서 존재 여부 확인
         const docSnap = await getDoc(ref);
         
         if (!docSnap.exists()) {
-          console.log('게스트 채팅 문서 생성 중...');
           
           // 소유자 프로필에서 aiIntro 가져오기
           let aiIntro = '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
@@ -131,7 +124,6 @@ export default function GuestChatPage() {
                 aiIntro = String(ownerProfile.aiIntro).trim();
               }
             } catch (e) {
-              console.log('소유자 프로필 조회 실패, 기본 인사말 사용');
             }
           }
           
@@ -142,12 +134,9 @@ export default function GuestChatPage() {
             guestId: guestId,
             ownerId: ownerId
           });
-          console.log('게스트 채팅 문서 생성 완료, AI 인사말:', aiIntro);
         } else {
-          console.log('게스트 채팅 문서 이미 존재');
         }
       } catch (error) {
-        console.error('게스트 채팅 초기화 실패:', error);
         // 초기화 실패 시 로컬 인사말이라도 표시
         if (profileInfo?.aiIntro) {
           setMessages([{ id: 'ai_intro', content: profileInfo.aiIntro, sender: 'ai', timestamp: new Date() }]);
@@ -164,32 +153,26 @@ export default function GuestChatPage() {
   // 리스너: Firestore 문서 변경 감지
   useEffect(() => {
     if (!ownerId || typeof ownerId !== 'string' || !guestId) {
-      console.log('리스너 조건 미충족:', { ownerId, guestId });
       return;
     }
 
     // 인증 상태 확인
     const auth = getAuth();
     if (!auth.currentUser) {
-      console.log('인증되지 않은 사용자, 리스너 건너뜀');
       return;
     }
 
     const ref = chatDocPath();
     if (!ref) {
-      console.log('chatDocPath가 null');
       return;
     }
 
-    console.log('게스트 채팅 리스너 시작:', ref.path);
     setLoading(true);
     
     const unsub = onSnapshot(ref, (snap) => {
-      console.log('Firestore 문서 변경 감지:', snap.exists(), snap.data());
       if (snap.exists()) {
         const data = snap.data();
         const messagesArray = data?.messages || [];
-        console.log('메시지 배열:', messagesArray);
         
         const arr = messagesArray
           .filter((c: any) => c && (typeof c === 'string' ? c.trim() : c?.content?.trim()))
@@ -218,9 +201,7 @@ export default function GuestChatPage() {
         
         // Firestore에 있는 사용자 메시지가 더 많으면 Firestore 데이터 사용, 아니면 현재 로컬 상태 유지
         if (firestoreUserMessages.length >= currentLocalMessages.length) {
-          console.log('Firestore 데이터 사용:', firestoreUserMessages.length, 'vs 로컬:', currentLocalMessages.length);
         } else {
-          console.log('로컬 데이터 유지:', currentLocalMessages.length, 'vs Firestore:', firestoreUserMessages.length);
           // 로컬 데이터가 더 최신이면 Firestore 데이터를 로컬 데이터로 교체
           const aiMessages = arr.filter(msg => msg.sender === 'ai');
           const combinedMessages = [...aiMessages, ...currentLocalMessages];
@@ -233,10 +214,8 @@ export default function GuestChatPage() {
         const userMessageCount = arr.filter(msg => msg.sender === 'user').length;
         setMessageCount(userMessageCount);
         
-        console.log('파싱된 메시지들:', arr);
         setMessages(arr);
       } else {
-        console.log('문서가 존재하지 않음 - 로컬 인삿말 표시');
         // 로컬로만 인삿말 표시
         const aiIntro = profileInfo?.aiIntro || '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!';
         setMessages([{ id: 'ai_intro', content: aiIntro, sender: 'ai', timestamp: new Date() }]);
@@ -244,7 +223,6 @@ export default function GuestChatPage() {
       setLoading(false);
       requestAnimationFrame(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }));
     }, (err) => {
-      console.error('게스트 채팅 리스너 오류:', err);
       setLoading(false);
       // 리스너 실패 시 로컬 인사말이라도 표시
       if (profileInfo?.aiIntro) {
@@ -257,7 +235,6 @@ export default function GuestChatPage() {
   // guestId가 로드된 후 리스너 재시작을 위한 별도 useEffect
   useEffect(() => {
     if (guestId) {
-      console.log('guestId 로드 완료:', guestId);
     }
   }, [guestId]);
 
@@ -290,7 +267,6 @@ export default function GuestChatPage() {
       // 인증 상태 확인
       const auth = getAuth();
       if (!auth.currentUser) {
-        console.error('인증되지 않은 사용자');
         setIsWaitingForReply(false);
         return;
       }
@@ -305,10 +281,8 @@ export default function GuestChatPage() {
             // 사용자 메시지를 배열에 추가
             const updatedMessages = [...currentMessages, text];
             await setDoc(ref, { messages: updatedMessages });
-            console.log('게스트 메시지 Firestore 저장 완료');
           }
         } catch (firestoreError) {
-          console.error('Firestore 저장 실패:', firestoreError);
         }
       }
 
@@ -316,8 +290,6 @@ export default function GuestChatPage() {
       const url = 'https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/guestchat/guest';
       const payload = { ownerId, guestId, message: text };
       
-      console.log('guest POST 요청 파라미터:', payload);
-      console.log('guest POST 요청 URL:', url);
       const res = await fetch(url, {
         method: 'POST',
         headers: {
@@ -328,7 +300,6 @@ export default function GuestChatPage() {
       const responseText = await res.text().catch(() => '');
       
       if (res.ok) {
-        console.log('guest 전송 성공:', responseText);
         try {
           // AI 응답을 JSON으로 파싱
           const responseData = JSON.parse(responseText);
@@ -343,10 +314,8 @@ export default function GuestChatPage() {
                   // AI 응답을 배열에 추가
                   const updatedMessages = [...currentMessages, responseData.response];
                   await setDoc(ref, { messages: updatedMessages });
-                  console.log('AI 응답 Firestore 저장 완료:', responseData.response);
                 }
               } catch (firestoreError) {
-                console.error('AI 응답 Firestore 저장 실패:', firestoreError);
                 // Firestore 저장 실패해도 로컬 상태에 AI 응답 추가
                 const aiMessage = { id: `ai_${Date.now()}`, content: responseData.response, sender: 'ai' as const, timestamp: new Date() };
                 setMessages(prev => [...prev, aiMessage]);
@@ -358,7 +327,6 @@ export default function GuestChatPage() {
             }
           }
         } catch (parseError) {
-          console.error('AI 응답 파싱 실패:', parseError);
           // 파싱 실패해도 로컬 상태에 AI 응답 추가
           if (responseText) {
             const aiMessage = { id: `ai_${Date.now()}`, content: responseText, sender: 'ai' as const, timestamp: new Date() };
@@ -366,7 +334,6 @@ export default function GuestChatPage() {
           }
         }
       } else {
-        console.error('guest 전송 실패:', res.status, responseText);
         
         // 429 에러 (체험 횟수 소진) 처리
         if (res.status === 429) {
@@ -377,12 +344,10 @@ export default function GuestChatPage() {
               return;
             }
           } catch (parseError) {
-            console.error('에러 응답 파싱 실패:', parseError);
           }
         }
       }
     } catch (e) {
-      console.error('게스트 메시지 전송 실패:', e);
     } finally {
       setIsWaitingForReply(false);
     }

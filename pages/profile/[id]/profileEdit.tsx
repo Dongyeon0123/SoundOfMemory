@@ -114,11 +114,9 @@ const ProfileEditPage: React.FC = () => {
   // 프로필 로딩 후 기존 tag 필드를 selectedChatTopics에 반영하고, 없는 주제는 chatTopics에 추가
   useEffect(() => {
     if (profile && profile.tag && profile.tag.length > 0) {
-      console.log('기존 tag 필드 데이터:', profile.tag);
       setSelectedChatTopics(prev => {
         // 기존 selectedChatTopics와 profile.tag를 합치되 중복 제거
         const combined = [...new Set([...prev, ...profile.tag])];
-        console.log('combined selectedChatTopics:', combined);
         return combined;
       });
 
@@ -127,7 +125,6 @@ const ProfileEditPage: React.FC = () => {
       const missingTopics = profile.tag.filter(tag => !existingTopicNames.includes(tag));
       
       if (missingTopics.length > 0) {
-        console.log('chatTopics에 없는 기존 태그들:', missingTopics);
         const newTopics: ChatTopic[] = missingTopics.map(topicName => ({
           topicName,
           information: [] // 빈 배열로 초기화
@@ -142,9 +139,7 @@ const ProfileEditPage: React.FC = () => {
 
   // 1) 초기 프로필 데이터에서 socialLinks 객체를 배열로 변환
   useEffect(() => {
-    console.log('프로필 로딩 시 profile:', profile);
     if (profile && socialLinks.length === 0) { // socialLinks가 비어있을 때만 초기화
-      console.log('profile.socialLinks:', profile.socialLinks);
       if (profile.socialLinks) {
         // socialLinks 객체에서 값이 있는 것만 배열로 변환
         const arr = SOCIAL_FIELDS
@@ -153,7 +148,6 @@ const ProfileEditPage: React.FC = () => {
             type: f.key,
             url: profile.socialLinks![f.key as keyof typeof profile.socialLinks] || '',
           }));
-        console.log('socialLinks 객체에서 변환된 배열:', arr);
         setSocialLinks(arr);
         setSelectedSocial(arr.map(item => item.type));
       } else {
@@ -167,7 +161,6 @@ const ProfileEditPage: React.FC = () => {
             type: f.key,
             url: (profile[f.key as keyof Profile] as string) || '',
           }));
-        console.log('개별 필드에서 변환된 배열:', arr);
         setSocialLinks(arr);
         setSelectedSocial(arr.map(item => item.type));
       }
@@ -263,7 +256,6 @@ const ProfileEditPage: React.FC = () => {
           });
         }
         
-        console.log('프로필 이미지 업로드 완료. UI가 업데이트되었습니다.');
       } catch (error) {
         console.error('프로필 이미지 업로드 실패:', error);
         
@@ -370,7 +362,6 @@ const ProfileEditPage: React.FC = () => {
       };
       
       // 선택된 채팅 주제도 함께 저장 (기존 기능 유지)
-      console.log('프로필 저장 시 selectedChatTopics:', selectedChatTopics);
 
 
       for (const topic of chatTopics) {
@@ -852,7 +843,6 @@ const ProfileEditPage: React.FC = () => {
           initialSelectedKeys={selectedSocial}
           onClose={() => setShowSocialModal(false)}
                       onSave={(keys) => {
-              console.log('SocialModal onSave keys:', keys);
               setSelectedSocial(keys);
 
               // 선택된 소셜링크만 socialLinks로 동기화
@@ -860,7 +850,6 @@ const ProfileEditPage: React.FC = () => {
                 const prev = socialLinks.find(item => item.type === key);
                 return { type: key, url: prev?.url ?? '' };
               });
-              console.log('updatedSocialLinks:', updatedSocialLinks);
               setSocialLinks(updatedSocialLinks);
               setShowSocialModal(false);
             }}
