@@ -25,10 +25,10 @@ interface Question {
   options?: QuestionOption[];
 }
 
-interface UserProfile {
+  interface UserProfile {
   name?: string;
   tag?: string[];
-  profileImage?: string;
+  img?: string; // Firestore 저장 필드와 일치
 }
 
 export default function TestChat() {
@@ -47,6 +47,12 @@ export default function TestChat() {
   const [isProcessingComplete, setIsProcessingComplete] = useState(false); // 완료 처리 중 상태
   const [userProfile, setUserProfile] = useState<UserProfile>({}); // 사용자 프로필 정보
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const didInitRef = useRef<boolean>(false); // StrictMode 중복 마운트 가드
+  const firstQuestionShownRef = useRef<boolean>(false); // 첫 질문 중복 표시 가드
+  const isSubmittingRef = useRef<boolean>(false); // 주관식 제출 중복 가드
+  const isChatSubmittingRef = useRef<boolean>(false); // 자유 채팅 제출 중복 가드
+  const isOptionSubmittingRef = useRef<boolean>(false); // 객관식 선택 중복 가드
+  const isInterestsSubmittingRef = useRef<boolean>(false); // 관심사 완료 중복 가드
   const auth = getAuth();
 
   // 사용자 프로필 정보 가져오기
@@ -64,7 +70,7 @@ export default function TestChat() {
         setUserProfile({
           name: userData.name || '',
           tag: userData.tag || [],
-          profileImage: userData.profileImage || ''
+          img: userData.img || ''
         });
         console.log('사용자 프로필 로드 완료:', userData);
       }
@@ -303,29 +309,33 @@ export default function TestChat() {
     }
   };
 
-  // 초기 메시지 설정
+  // 초기 로드 (StrictMode에서 2번 호출 방지)
   useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
     fetchQuestions();
     fetchUserProfile(); // 사용자 프로필 정보 가져오기
   }, []);
 
   useEffect(() => {
     if (questions.length > 0) {
+      if (firstQuestionShownRef.current) return;
+      firstQuestionShownRef.current = true;
+
       const firstQuestion: Message = {
         id: '2',
-        text: '', // 빈 텍스트로 시작
+        text: '',
         isUser: false,
         timestamp: new Date(),
         isTyping: true
       };
-      
+
       setMessages([firstQuestion]);
       setCurrentQuestion(questions[0]);
-      
-      // 첫 번째 질문 타이핑 애니메이션 시작
+
       setTimeout(() => {
         typeMessage(questions[0].question, '2');
-      }, 1000); // 1초 후 시작
+      }, 1000);
     }
   }, [questions]);
 
@@ -366,8 +376,11 @@ export default function TestChat() {
 
   // 관심사 선택 완료 처리
   const handleInterestsComplete = async () => {
+    if (isInterestsSubmittingRef.current) return;
+    isInterestsSubmittingRef.current = true;
     if (selectedInterests.length === 0) {
       alert('최소 1개 이상의 관심사를 선택해주세요.');
+      isInterestsSubmittingRef.current = false;
       return;
     }
 
@@ -486,11 +499,15 @@ export default function TestChat() {
        alert('온보딩 완료 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
        // 에러 발생 시에도 버튼 다시 활성화
        setIsProcessingComplete(false);
+     } finally {
+       isInterestsSubmittingRef.current = false;
      }
    };
 
   // 일반 객관식 옵션 선택 처리
   const handleOptionSelect = async (option: QuestionOption) => {
+    if (isOptionSubmittingRef.current) return;
+    isOptionSubmittingRef.current = true;
     // 12번째 질문(관심사 선택)이 아닌 경우에만 처리
     if (currentStep !== 12) {
       // 사용자 답변을 Firebase에 저장
@@ -508,6 +525,7 @@ export default function TestChat() {
       // AI 응답 시뮬레이션
       await simulateAIResponse(option.text);
     }
+    isOptionSubmittingRef.current = false;
   };
 
   // 질문별 맞춤형 AI 응답 생성
@@ -623,7 +641,9 @@ export default function TestChat() {
   };
 
   const handleSubmit = async () => {
-    if (!inputValue.trim()) return;
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    if (!inputValue.trim()) { isSubmittingRef.current = false; return; }
     
     // 사용자 답변을 Firebase에 저장
     await saveUserResponse(currentStep, inputValue);
@@ -641,11 +661,14 @@ export default function TestChat() {
     
     // AI 응답 시뮬레이션
     await simulateAIResponse(inputValue);
+    isSubmittingRef.current = false;
   };
 
   // 자유 채팅 제출 처리
   const handleChatSubmit = async () => {
-    if (!inputValue.trim()) return;
+    if (isChatSubmittingRef.current) return;
+    isChatSubmittingRef.current = true;
+    if (!inputValue.trim()) { isChatSubmittingRef.current = false; return; }
     
     // 사용자 메시지 추가
     const userMessage: Message = {
@@ -681,6 +704,7 @@ export default function TestChat() {
     
     setIsTyping(false);
     setIsAIResponding(false);
+    isChatSubmittingRef.current = false;
   };
 
   // 현재 질문이 객관식인지 확인
@@ -716,22 +740,36 @@ export default function TestChat() {
     }
   };
 
-  // 로딩 중일 때
-  if (isLoading) {
-    return (
-      <div className={indexStyles.fullContainer}>
-        <div className={indexStyles.centerCard}>
-          <div style={{ textAlign: 'center', padding: '50px' }}>
-            <div>질문을 불러오는 중...</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // 로딩 전용 페이지 제거 (요청사항)
 
   return (
     <div className={indexStyles.fullContainer}>
       <div className={indexStyles.centerCard}>
+        {/* 온보딩 완료 후 홈 이동 전 오버레이: 필요한 서류 준비 중... */}
+        {isOnboardingComplete && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            flexDirection: 'column'
+          }}>
+            <img 
+              src="/twoMori.png" 
+              alt="Two Mori" 
+              style={{ width: '220px', height: '220px', objectFit: 'contain', marginBottom: '16px' }}
+            />
+            <div style={{ color: 'white', fontSize: '18px', fontWeight: 600 }}>
+              필요한 서류 준비 중...
+            </div>
+          </div>
+        )}
         {/* 헤더 */}
         <div className={styles.header}>
           {/* 뒤로가기 버튼 */}
@@ -761,10 +799,11 @@ export default function TestChat() {
         {/* 프로필 섹션 */}
         <div className={styles.profileSection}>
           <img 
-            src={userProfile.profileImage || "/profile/1.png"} 
+            src={userProfile.img || ''} 
             alt={userProfile.name || "사용자"}
             onError={(e) => {
-              e.currentTarget.src = "/profile/1.png";
+              // 업로드 필수 정책이므로, 에러 시 빈 값 유지
+              e.currentTarget.src = '';
             }}
           />
           <div className={styles.profileInfo}>
