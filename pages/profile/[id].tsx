@@ -442,7 +442,14 @@ const ProfilePage: React.FC = () => {
             {/* 대화하기와 소개 사이 그레이 라인 */}
             <div className={styles.grayLine} style={{ marginTop: 30, marginBottom: 20, width: '95%', height: 2 }}></div>
 
-            {/* MBTI는 반투명 카드로 이동하여 제거 */}
+            {/* MBTI 수정 모달 */}
+            {isMyProfile && showMBTIModal && (
+              <MBTIModal
+                currentMBTI={mbti}
+                onClose={() => setShowMBTIModal(false)}
+                onSave={handleSaveMbti}
+              />
+            )}
 
             <ProfileIntroduceBox
               introduce={introduce}

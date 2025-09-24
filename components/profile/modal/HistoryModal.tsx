@@ -25,6 +25,9 @@ export default function HistoryModal({
   }, [items, open]);
 
   const handleChange = (idx: number, key: string, value: string) => {
+    // 길이 제한: 소속(학교/소속) 10자, 직무/역할 8자
+    if (key === 'school') value = value.slice(0, 10);
+    if (key === 'role') value = value.slice(0, 8);
     setList(prev =>
       prev.map((item, i) => {
         if (i !== idx) return item;
@@ -39,6 +42,9 @@ export default function HistoryModal({
   };
 
   const handleAddChange = (key: string, value: string) => {
+    // 길이 제한: 소속 10자, 직무/역할 8자
+    if (key === 'school') value = value.slice(0, 10);
+    if (key === 'role') value = value.slice(0, 8);
     setAddForm(prev => ({ ...prev, [key]: value }));
   };
 
@@ -63,7 +69,23 @@ export default function HistoryModal({
   };
 
   const handleSave = () => {
-    onSave(list);
+    let combined = list;
+    const canAppend = addMode && addForm && addForm.school && addForm.periodStart && addForm.periodEnd && addForm.role;
+    if (canAppend) {
+      combined = [
+        ...list,
+        {
+          school: addForm.school,
+          periodStart: addForm.periodStart,
+          periodEnd: addForm.periodEnd,
+          period: `${addForm.periodStart} ~ ${addForm.periodEnd}`,
+          role: addForm.role,
+        },
+      ];
+      setAddForm({});
+      setAddMode(false);
+    }
+    onSave(combined);
     onClose();
   };
 
@@ -164,16 +186,6 @@ export default function HistoryModal({
                   onChange={e => handleAddChange('role', e.target.value)}
                   placeholder="직무/역할"
                 />
-              </div>
-              <div className={styles.modalBoxActions}>
-                <button
-                  className={styles.actionBtn}
-                  onClick={handleAdd}
-                  aria-label="추가"
-                  style={{ color: '#636AE8FF' }}
-                >
-                    <span>저장</span>
-                </button>
               </div>
             </div>
           ) : (

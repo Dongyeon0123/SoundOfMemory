@@ -66,35 +66,42 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
     return null; // 링크가 없으면 아무것도 표시하지 않음
   }
 
-  const getIcon = (type: string, url: string) => {
+  const typeToIconFile = (type: string): string => {
     switch (type) {
-      case 'number':
-        return <FiPhone size={28} color="#000" style={{ cursor: 'pointer' }} />;
-      case 'email':
-        return <FiMail size={28} color="#000" style={{ cursor: 'pointer' }} />;
       case 'personUrl':
-        return <FiGlobe size={28} color="#000" style={{ cursor: 'pointer' }} />;
+        return 'web.png';
       case 'youtubeUrl':
-        return <FaYoutube size={28} color="#FF0000" style={{ cursor: 'pointer' }} />;
+        return 'youtube.png';
       case 'facebookUrl':
-        return <FaFacebook size={28} color="#1877F2" style={{ cursor: 'pointer' }} />;
+        return 'facebook.png';
       case 'instagramUrl':
-        return <FaInstagram size={28} color="#E4405F" style={{ cursor: 'pointer' }} />;
+        return 'instagram.png';
       case 'twitterUrl':
-        return <FaTwitter size={28} color="#1DA1F2" style={{ cursor: 'pointer' }} />;
+        return 'twitter.png';
       case 'linkedinUrl':
-        return <FaLinkedin size={28} color="#0077B5" style={{ cursor: 'pointer' }} />;
+        return 'linkedin.png';
       case 'githubUrl':
-        return <FaGithub size={28} color="#000" style={{ cursor: 'pointer' }} />;
+        return 'git.png';
       case 'notionUrl':
-        return <SiNotion size={28} color="#000" style={{ cursor: 'pointer' }} />;
+        return 'notion.png';
       case 'tiktokUrl':
-        return <FaTiktok size={28} color="#000" style={{ cursor: 'pointer' }} />;
+        return 'tiktok.png';
       case 'behanceUrl':
-        return <SiBehance size={28} color="#1769FF" style={{ cursor: 'pointer' }} />;
+        return 'behance.png';
       default:
-        return <FaChrome size={28} color="#000" style={{ cursor: 'pointer' }} />;
+        return 'linked.png';
     }
+  };
+
+  const getIcon = (type: string, url: string) => {
+    if (type === 'number') {
+      return <FiPhone size={28} color="#000" style={{ cursor: 'pointer' }} />;
+    }
+    if (type === 'email') {
+      return <FiMail size={28} color="#000" style={{ cursor: 'pointer' }} />;
+    }
+    const fileName = typeToIconFile(type);
+    return <img src={`/icon/${fileName}`} alt={type} width={28} height={28} style={{ objectFit: 'contain' }} />;
   };
 
   const handleLinkClick = (type: string, url: string) => {
@@ -130,22 +137,21 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
 
   return (
     <>
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '12px',
-        justifyContent: 'center',
-        alignItems: 'center',
-        margin: '20px 0',
-        maxWidth: '100%'
-      }}>
+      <div style={{ width: '100%', textAlign: 'center', margin: '2px 0', marginBottom: '8px' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '20px',
+          flexWrap: 'nowrap'
+        }}>
         {sortedLinks.slice(0, 6).map(([type, url]) => (
           <div 
             key={type} 
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
               background: '#f8f9fa',
               display: 'flex',
               alignItems: 'center',
@@ -172,9 +178,12 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
             }}
             title={type}
           >
-            {getIcon(type, url)}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {getIcon(type, url)}
+            </div>
           </div>
         ))}
+        </div>
       </div>
       
       <CopyModal

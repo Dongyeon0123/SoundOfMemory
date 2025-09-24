@@ -126,12 +126,17 @@ function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileIma
           {tag && tag.length > 0 && (
             <div style={{
               position: 'absolute',
-              right: 12,
-              bottom: 12,
+              right: 8,
+              bottom: 8,
+              left: 'auto',
               display: 'flex',
-              flexWrap: 'wrap',
+              flexWrap: 'nowrap',
               gap: 6,
-              maxWidth: '65%'
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              whiteSpace: 'nowrap',
+              WebkitOverflowScrolling: 'touch',
+              justifyContent: 'flex-end'
             }}>
               {tag.map((t, index) => (
                 <span key={index} style={{

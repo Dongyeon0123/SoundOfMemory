@@ -148,28 +148,7 @@ function ProfileHeader({
                     <FiEdit2 size={18} color="#222" />
                     프로필 편집
                   </button>
-                  <button
-                    onClick={() => {
-                      onScan();
-                      setShowDropdown(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      background: 'none',
-                      border: 'none',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      fontSize: 14,
-                      color: '#333',
-                    }}
-                  >
-                    <MdDocumentScanner size={18} color="#222" />
-                    QR 스캔
-                  </button>
+                  {/* QR 스캔 항목 제거 */}
                   <button
                     onClick={() => {
                       onShowQR();

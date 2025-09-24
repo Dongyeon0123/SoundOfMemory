@@ -25,12 +25,18 @@ export default function CareerModal({
   }, [items, open]);
 
   const handleChange = (idx: number, key: string, value: string) => {
+    // 길이 제한: 소속 10자, 직무/역할 8자
+    if (key === 'org') value = value.slice(0, 10);
+    if (key === 'role') value = value.slice(0, 8);
     setList(prev =>
       prev.map((item, i) => (i === idx ? { ...item, [key]: value } : item))
     );
   };
 
   const handleAddChange = (key: string, value: string) => {
+    // 길이 제한: 소속 10자, 직무/역할 8자
+    if (key === 'org') value = value.slice(0, 10);
+    if (key === 'role') value = value.slice(0, 8);
     setAddForm(prev => ({ ...prev, [key]: value }));
   };
 
@@ -55,7 +61,23 @@ export default function CareerModal({
   };
 
   const handleSave = () => {
-    onSave(list);
+    let combined = list;
+    const canAppend = addMode && addForm && addForm.org && addForm.dept && addForm.periodStart && addForm.periodEnd && addForm.months && addForm.role;
+    if (canAppend) {
+      combined = [
+        ...list,
+        {
+          org: addForm.org,
+          dept: addForm.dept,
+          period: `${addForm.periodStart} ~ ${addForm.periodEnd}`,
+          months: addForm.months,
+          role: addForm.role,
+        },
+      ];
+      setAddForm({});
+      setAddMode(false);
+    }
+    onSave(combined);
     onClose();
   };
 
@@ -186,16 +208,6 @@ export default function CareerModal({
                   onChange={e => handleAddChange('role', e.target.value)}
                   placeholder="직무/역할"
                 />
-              </div>
-              <div className={styles.modalBoxActions}>
-                <button
-                  className={styles.actionBtn}
-                  onClick={handleAdd}
-                  aria-label="추가"
-                  style={{ color: '#636AE8FF' }}
-                >
-                  저장
-                </button>
               </div>
             </div>
           ) : (
