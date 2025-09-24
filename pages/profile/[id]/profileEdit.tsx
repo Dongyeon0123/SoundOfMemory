@@ -17,7 +17,7 @@ import BackgroundModal from '../../../components/profile/modal/BackgroundModal';
 
 import { FiEdit2, FiCamera, FiFolder, FiTrash2 } from 'react-icons/fi';
 
-const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground3.png?alt=media&token=32951da6-22aa-4406-aa18-116e16828dc1';
+const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground1.png?alt=media&token=7aef9d1b-d211-4562-8321-9730430f5f94';
 
 type SocialLink = { type: string; url: string };
 

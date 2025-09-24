@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styles from '../../styles/styles.module.css';
 import ImageModal from './modal/ImageModal';
 
-const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground3.png?alt=media&token=32951da6-22aa-4406-aa18-116e16828dc1';
+const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground1.png?alt=media&token=7aef9d1b-d211-4562-8321-9730430f5f94';
 
 interface ProfileImagesProps {
   backgroundImg?: string;

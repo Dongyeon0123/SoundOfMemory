@@ -93,7 +93,7 @@ export default function FinalGreeting({
         aiName: avatarName, // AI 아바타 이름 저장
         aiIntro: `안녕 나는 ${userName}의 개인 AI비서야. 궁금한거 있으면 물어봐!`,
         img: profileImageUrl, // 업로드된 이미지 URL 또는 기본 이미지
-        backgroundImg: '/background.png', // 기본 배경 이미지
+        backgroundImg: 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground1.png?alt=media&token=7aef9d1b-d211-4562-8321-9730430f5f94', // 기본 배경 이미지
         tag: Array.from(selectedInterests) // 선택된 관심사들을 tag 필드에 저장
       });
 

@@ -4,7 +4,7 @@ import { storage } from '../../../types/firebase';
 import { getAuth } from 'firebase/auth';
 import styles from '../../../styles/profile.module.css';
 
-const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground3.png?alt=media&token=32951da6-22aa-4406-aa18-116e16828dc1';
+const DEFAULT_BACKGROUND_URL = 'https://firebasestorage.googleapis.com/v0/b/numeric-vehicle-453915-j9/o/header_images%2Fbackground1.png?alt=media&token=7aef9d1b-d211-4562-8321-9730430f5f94';
 
 interface BackgroundModalProps {
   visible: boolean;
@@ -163,7 +163,7 @@ const BackgroundModal: React.FC<BackgroundModalProps> = ({
             fontWeight: '600',
             color: '#222',
           }}>
-            배경 이미지 선택
+            배경 라이브러리
           </h3>
           <button
             onClick={onClose}
@@ -194,8 +194,7 @@ const BackgroundModal: React.FC<BackgroundModalProps> = ({
             fontSize: '14px',
             lineHeight: '1.4',
           }}>
-            아름다운 파노라마 이미지로 나만의 배경을 꾸며보세요.<br />
-            추천 화면 비율은 5:1입니다.
+            아름다운 배경 이미지로 나만의 배경을 꾸며보세요.<br />
           </div>
 
           {/* 내 배경 이미지 업로드 섹션 */}
@@ -241,7 +240,7 @@ const BackgroundModal: React.FC<BackgroundModalProps> = ({
             {/* 현재 배경 이미지 미리보기 */}
             <div style={{
               width: '100%',
-              aspectRatio: '5/1',
+              aspectRatio: '1/1',
               borderRadius: '8px',
               overflow: 'hidden',
               border: '2px solid #e0e0e0',
@@ -304,7 +303,7 @@ const BackgroundModal: React.FC<BackgroundModalProps> = ({
                   onClick={() => handleBackgroundClick(imageUrl)}
                   style={{
                     position: 'relative',
-                    aspectRatio: '5/1',
+                    aspectRatio: '1/1',
                     borderRadius: '8px',
                     overflow: 'hidden',
                     cursor: 'pointer',
