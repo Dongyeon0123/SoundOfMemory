@@ -51,14 +51,6 @@ export default function TestOnboarding() {
     );
   }
 
-  // 뒤로가기 핸들러
-  const handleBack = () => {
-    if (step > 0) {
-      setStep(step - 1);
-    } else {
-      router.push('/');
-    }
-  };
 
   // 첫 번째 단계 완료 (인사말)
   const handleGreetingComplete = () => {
@@ -108,14 +100,12 @@ export default function TestOnboarding() {
         {step === 0 && (
           <GreetingSection 
             onContinue={handleGreetingComplete}
-            onBack={handleBack}
           />
         )}
         
         {step === 1 && (
           <NameInputSection
             onContinue={handleUserNameComplete}
-            onBack={handleBack}
             step={1}
             title="이름을 알려주세요!"
             subtitle="신뢰할 수 있는 커뮤니티를 만들어가요"
@@ -126,7 +116,6 @@ export default function TestOnboarding() {
         {step === 2 && (
           <NameInputSection
             onContinue={handleAvatarNameComplete}
-            onBack={handleBack}
             step={2}
             title="저의 이름을 지어주세요!"
             subtitle="다른 사람과 소통할 AI의 이름이에요."
@@ -137,7 +126,6 @@ export default function TestOnboarding() {
         {step === 3 && (
           <InterestsSection
             onContinue={handleInterestsComplete}
-            onBack={handleBack}
           />
         )}
         
@@ -146,7 +134,6 @@ export default function TestOnboarding() {
             userName={userName}
             avatarName={avatarName}
             selectedInterests={selectedInterests}
-            onBack={handleBack}
             onNext={() => setStep(5)}
             onImageSelect={handleProfileImageSelect}
           />
@@ -155,14 +142,12 @@ export default function TestOnboarding() {
         {step === 5 && (
           <ProfileCompleteGreeting 
             onContinue={handleProfileCompleteGreeting}
-            onBack={handleBack}
           />
         )}
 
         {step === 6 && (
           <FinalGreeting 
             onComplete={handleFinalGreetingComplete}
-            onBack={handleBack}
             userName={userName}
             avatarName={avatarName}
             selectedInterests={selectedInterests}

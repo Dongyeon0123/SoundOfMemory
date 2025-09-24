@@ -43,6 +43,7 @@
   align-items: center;
   padding: 12px;
   gap: 12px;
+  position: relative;
 }
 
 .profileSection img {
@@ -81,6 +82,9 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  position: absolute;
+  right: 12px;
+  top: 8px;
 }
 
 .toggle {
@@ -233,20 +237,20 @@
 }
 
 .typingIndicator .wave {
-display: flex;
-gap: 6px;
-align-items: center;
-transform: translateY(1px);
+ display: flex;
+ gap: 6px;
+ align-items: center;
+ transform: translateY(1px);
 }
 
 .typingIndicator .dot {
-width: 6px;
-height: 6px;
-border-radius: 50%;
-background: linear-gradient(135deg, #636AE8 0%, #4850E4 100%);
-opacity: 0.6;
-animation: pulseBounce 1.4s infinite ease-in-out;
-box-shadow: 0 1px 3px rgba(99, 106, 232, 0.3);
+ width: 6px;
+ height: 6px;
+ border-radius: 50%;
+ background: linear-gradient(135deg, #636AE8 0%, #4850E4 100%);
+ opacity: 0.6;
+ animation: pulseBounce 1.4s infinite ease-in-out;
+ box-shadow: 0 1px 3px rgba(99, 106, 232, 0.3);
 }
 
 .typingIndicator .dot:nth-child(1) { animation-delay: 0s; }
@@ -254,66 +258,66 @@ box-shadow: 0 1px 3px rgba(99, 106, 232, 0.3);
 .typingIndicator .dot:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes pulseBounce {
-0%, 100% { 
+ 0%, 100% { 
   transform: scale(1) translateY(0); 
   opacity: 0.6; 
-}
-25% { 
+ }
+ 25% { 
   transform: scale(1.2) translateY(-6px); 
   opacity: 1; 
-}
-50% { 
+ }
+ 50% { 
   transform: scale(0.9) translateY(2px); 
   opacity: 0.8; 
-}
-75% { 
+ }
+ 75% { 
   transform: scale(1.1) translateY(-3px); 
   opacity: 0.9; 
-}
+ }
 }
 /* Button */
 .button {
-width: 40px;
-height: 40px;
-padding: 0 10px;
-display: flex;
-align-items: center;
-justify-content: center;
-color: #FFFFFFFF;
-background: #636AE8FF;
-opacity: 1;
-border: none;
-border-radius: 9999px;
-gap: 0px;
+  width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFFFF;
+  background: #636AE8FF;
+  opacity: 1;
+  border: none;
+  border-radius: 9999px;
+  gap: 0px;
 }
 .button .icon {
-width: 16px;
-height: 16px;
-fill: #FFFFFFFF;
+  width: 16px;
+  height: 16px;
+  fill: #FFFFFFFF;
 }
 /* Hover */
 .button:hover {
-color: #FFFFFFFF;
-background: #4850E4FF;
+  color: #FFFFFFFF;
+  background: #4850E4FF;
 }
 /* Pressed */
 .button:hover:active {
-color: #FFFFFFFF;
-background: #2C35E0FF;
+  color: #FFFFFFFF;
+  background: #2C35E0FF;
 }
 /* Disabled */
 .button:disabled {
-opacity: 0.4;
+  opacity: 0.4;
 }
 .icon {
-display: flex;
-gap: 12px;
-cursor: pointer;
+ display: flex;
+ gap: 12px;
+ cursor: pointer;
 }
 .icon,
 .icon > *,
 .icon svg,
 .icon img,
 .icon button {
-cursor: pointer;
+ cursor: pointer;
 }

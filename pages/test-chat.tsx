@@ -400,10 +400,12 @@ export default function TestChat() {
       
       setMessages(prev => [...prev, userMessage]);
       
-      // 성격 생성 API 호출
+      // 성격 생성 API 호출 (타임아웃 포함)
       const user = auth.currentUser;
       if (user) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
           const response = await fetch('https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/generatePersonality', {
             method: 'POST',
             headers: {
@@ -411,8 +413,10 @@ export default function TestChat() {
             },
             body: JSON.stringify({
               userId: user.uid
-            })
+            }),
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
           
           if (response.ok) {
             const result = await response.json();
@@ -460,16 +464,8 @@ export default function TestChat() {
             setMessages(prev => [...prev, httpErrorMessage]);
           }
         } catch (apiError) {
-          console.error('성격 생성 API 호출 중 오류:', apiError);
-          
-          // 네트워크 에러 시 사용자에게 알림
-          const networkErrorMessage: Message = {
-            id: Date.now().toString() + '_network_error',
-            text: '네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요.',
-            isUser: false,
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, networkErrorMessage]);
+          console.error('성격 생성 API 호출 중 오류(또는 타임아웃):', apiError);
+          // 메시지는 표시하지 않고 조용히 진행합니다.
         }
       }
       
@@ -489,10 +485,10 @@ export default function TestChat() {
       // 사용자 프로필 정보 다시 로드 (업데이트된 태그 정보 포함)
       await fetchUserProfile();
       
-      // 3초 후 홈으로 이동
+      // 1초 후 홈으로 이동 (지연 단축)
       setTimeout(() => {
         window.location.href = '/';
-      }, 3000);
+      }, 1000);
        
      } catch (error) {
        console.error('온보딩 완료 처리 중 오류:', error);
@@ -710,79 +706,108 @@ export default function TestChat() {
   // 현재 질문이 객관식인지 확인
   const isCurrentQuestionObjective = currentQuestion?.type === 'objective';
 
-  // 뒤로가기 핸들러
-  const handleBack = () => {
-    if (currentStep > 1) {
-      // 온보딩 단계를 한 칸씩 뒤로 이동
-      const prevStep = currentStep - 1;
-      setCurrentStep(prevStep);
-      
-      // 이전 질문으로 설정
-      if (questions.length > 0 && prevStep <= questions.length) {
-        const prevQuestion = questions[prevStep - 1];
-        setCurrentQuestion(prevQuestion);
-        
-        // 채팅창을 이전 질문으로 초기화
-        const prevQuestionMessage: Message = {
-          id: Date.now().toString() + '_prev',
-          text: prevQuestion.question,
-          isUser: false,
-          timestamp: new Date(),
-          isTyping: false
-        };
-        
-        setMessages([prevQuestionMessage]);
-        setIsQuestionReady(false);
-      }
-    } else {
-      // 첫 번째 단계에서는 홈으로 이동
-      window.location.href = '/';
-    }
-  };
 
   // 로딩 전용 페이지 제거 (요청사항)
 
   return (
     <div className={indexStyles.fullContainer}>
       <div className={indexStyles.centerCard}>
-        {/* 온보딩 완료 후 홈 이동 전 오버레이: 필요한 서류 준비 중... */}
-        {isOnboardingComplete && (
+        {/* 초기 로딩 오버레이 */}
+        {isLoading && (
           <div style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.55)',
+            inset: 0,
+            background: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 20,
+            padding: 24
+          }}>
+            <div style={{
+              width: 300,
+              maxWidth: '86%',
+              background: '#257EFE',
+              border: '1px solid #257EFE',
+              borderRadius: 20,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+              backdropFilter: 'blur(10px) saturate(120%)',
+              WebkitBackdropFilter: 'blur(10px) saturate(120%)',
+              padding: '24px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 14
+            }}>
+              <img 
+                src="/twoMori.png" 
+                alt="Two Mori" 
+                style={{ width: 160, height: 160, objectFit: 'contain' }}
+              />
+              <div style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>
+                준비 중이에요
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 13, textAlign: 'center', lineHeight: 1.5 }}>
+                질문을 불러오고 있어요. 잠시만 기다려 주세요.
+              </div>
+              <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: 0.95, animation: 'loaderDot 1.2s infinite ease-in-out' }}></span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: 0.95, animation: 'loaderDot 1.2s infinite ease-in-out 0.2s' }}></span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: 0.95, animation: 'loaderDot 1.2s infinite ease-in-out 0.4s' }}></span>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* 처리 중/온보딩 완료 오버레이 (그라데이션 + 글래스 효과) */}
+        {(isProcessingComplete || isOnboardingComplete) && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 10,
-            flexDirection: 'column'
+            padding: 24
           }}>
-            <img 
-              src="/twoMori.png" 
-              alt="Two Mori" 
-              style={{ width: '220px', height: '220px', objectFit: 'contain', marginBottom: '16px' }}
-            />
-            <div style={{ color: 'white', fontSize: '18px', fontWeight: 600 }}>
-              필요한 서류 준비 중...
+            <div style={{
+              width: 300,
+              maxWidth: '86%',
+              background: '#257EFE',
+              border: '1px solid #257EFE',
+              borderRadius: 20,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+              backdropFilter: 'blur(10px) saturate(120%)',
+              WebkitBackdropFilter: 'blur(10px) saturate(120%)',
+              padding: '24px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 14
+            }}>
+              <img 
+                src="/twoMori.png" 
+                alt="Two Mori" 
+                style={{ width: 160, height: 160, objectFit: 'contain' }}
+              />
+              <div style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>
+                {isProcessingComplete ? '처리 중입니다' : '마지막 준비 중이에요'}
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: 13, textAlign: 'center', lineHeight: 1.5 }}>
+                {isProcessingComplete 
+                  ? '잠시만 기다려 주세요. 데이터를 정리하고 있어요.' 
+                  : '곧 홈으로 이동해요. 멋진 대화를 시작해볼까요?'}
+              </div>
+              <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: 0.95, animation: 'loaderDot 1.2s infinite ease-in-out' }}></span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: 0.95, animation: 'loaderDot 1.2s infinite ease-in-out 0.2s' }}></span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', opacity: 0.95, animation: 'loaderDot 1.2s infinite ease-in-out 0.4s' }}></span>
+              </div>
             </div>
           </div>
         )}
         {/* 헤더 */}
         <div className={styles.header}>
-          {/* 뒤로가기 버튼 */}
-          <button
-            onClick={handleBack}
-            className={styles.backButton}
-            aria-label="뒤로가기"
-          >
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M18 22L10 14L18 6" stroke="#222" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          
           {/* 진행상황 바 (온보딩 중에만 표시) */}
           {!isOnboardingComplete && (
             <div className={styles.progressBar}>

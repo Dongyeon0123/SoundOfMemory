@@ -6,21 +6,20 @@ interface CompletionSectionProps {
   userName: string;
   avatarName: string;
   selectedInterests: Set<string>;
-  onBack: () => void;
   onNext: () => void;
   onImageSelect: (file: File) => void;
 }
 
-export default function CompletionSection({ userName, avatarName, selectedInterests, onBack, onNext, onImageSelect }: CompletionSectionProps) {
+export default function CompletionSection({ userName, avatarName, selectedInterests, onNext, onImageSelect }: CompletionSectionProps) {
   const [selectedProfileImage, setSelectedProfileImage] = useState<File | null>(null);
   const [hasProfileImage, setHasProfileImage] = useState(false);
 
   // 디버깅: props 확인
   useEffect(() => {
-    console.log('CompletionSection props:', { userName, avatarName, selectedInterests, onBack, onNext });
+    console.log('CompletionSection props:', { userName, avatarName, selectedInterests, onNext });
     console.log('onNext type:', typeof onNext);
     console.log('onNext function:', onNext);
-  }, [userName, avatarName, selectedInterests, onBack, onNext]);
+  }, [userName, avatarName, selectedInterests, onNext]);
 
   const handleImageSelect = (file: File) => {
     setSelectedProfileImage(file);
@@ -43,17 +42,8 @@ export default function CompletionSection({ userName, avatarName, selectedIntere
 
   return (
     <div className={styles.completionContent}>
-      {/* 헤더 - 뒤로가기 버튼과 진행상황 바 */}
+      {/* 헤더 - 진행상황 바 */}
       <div className={styles.header}>
-        <button 
-          onClick={onBack} 
-          className={styles.backButton}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        
         <div className={styles.progressBar}>
           <div className={styles.progressContainer}>
             <div 

@@ -3,10 +3,9 @@ import styles from '../../styles/onboarding/interestsSection.module.css';
 
 interface InterestsSectionProps {
   onContinue: (interests: Set<string>) => void;
-  onBack: () => void;
 }
 
-export default function InterestsSection({ onContinue, onBack }: InterestsSectionProps) {
+export default function InterestsSection({ onContinue }: InterestsSectionProps) {
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
 
   // 카테고리 데이터
@@ -61,17 +60,8 @@ export default function InterestsSection({ onContinue, onBack }: InterestsSectio
 
   return (
     <div className={styles.nameInputContent}>
-      {/* 헤더 - 뒤로가기 버튼과 진행상황 바 */}
+      {/* 헤더 - 진행상황 바 */}
       <div className={styles.header}>
-        <button 
-          onClick={onBack} 
-          className={styles.backButton}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        
         <div className={styles.progressBar}>
           <div className={styles.progressContainer}>
             <div 

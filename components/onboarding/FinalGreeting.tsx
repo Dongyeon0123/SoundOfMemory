@@ -6,7 +6,6 @@ import styles from '../../styles/onboarding/greetingSection.module.css';
 
 interface FinalGreetingProps {
   onComplete: () => void;
-  onBack: () => void;
   userName: string;
   avatarName: string;
   selectedInterests: Set<string>;
@@ -15,7 +14,6 @@ interface FinalGreetingProps {
 
 export default function FinalGreeting({ 
   onComplete, 
-  onBack, 
   userName, 
   avatarName, 
   selectedInterests, 
@@ -123,16 +121,6 @@ export default function FinalGreeting({
 
   return (
     <div className={styles.onboardingContent}>
-      {/* 뒤로가기 버튼 */}
-      <button 
-        onClick={onBack} 
-        className={styles.backButton}
-        disabled={isSaving}
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
       
       {/* twoMori.png 이미지 - 더 크게 하고 위로 올림 */}
       <div style={{

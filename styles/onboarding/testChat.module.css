@@ -378,3 +378,15 @@
 .messageSection::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* 로더 점 애니메이션 (오버레이에서 사용) */
+@keyframes loaderDot {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
