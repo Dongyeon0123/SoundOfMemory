@@ -13,6 +13,7 @@ function IntroduceModal({
   onSave,
 }: IntroduceModalProps) {
   const [value, setValue] = useState(currentIntroduce ?? '');
+  const MAX_LEN = 125;
 
   const handleSave = () => {
     onSave(value.trim());
@@ -26,9 +27,13 @@ function IntroduceModal({
         <textarea
           className={introStyles.introTextarea}
           value={value}
-          onChange={e => setValue(e.target.value)}
+          onChange={e => setValue(e.target.value.slice(0, MAX_LEN))}
           placeholder="자기소개를 입력하세요!"
+          maxLength={MAX_LEN}
         />
+        <div style={{ textAlign: 'right', color: '#888', fontSize: 12, marginTop: 6 }}>
+          {value.length} / {MAX_LEN}
+        </div>
         <div className={introStyles.introModalActions}>
           <button
             className={introStyles.introModalButton}
