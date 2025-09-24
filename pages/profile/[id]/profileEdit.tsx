@@ -51,6 +51,7 @@ const ProfileEditPage: React.FC = () => {
     message: '',
     type: 'success',
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   const [showSocialModal, setShowSocialModal] = useState(false);
   const [showChatTopicModal, setShowChatTopicModal] = useState(false);
@@ -279,10 +280,17 @@ const ProfileEditPage: React.FC = () => {
   // 채팅 주제 체크/해제 핸들러
   const handleToggleChatTopic = (topicName: string) => {
     setSelectedChatTopics(prev => {
-      const newSelected = prev.includes(topicName) 
-        ? prev.filter(topic => topic !== topicName)
-        : [...prev, topicName];
-      return newSelected;
+      const isSelected = prev.includes(topicName);
+      if (isSelected) {
+        // 선택 해제
+        return prev.filter(topic => topic !== topicName);
+      }
+      // 선택 추가: 최대 5개 제한
+      if (prev.length >= 5) {
+        alert('태그는 최대 5개까지 선택할 수 있습니다.');
+        return prev;
+      }
+      return [...prev, topicName];
     });
   };
 
@@ -337,41 +345,45 @@ const ProfileEditPage: React.FC = () => {
   // 저장 함수: socialLinks 배열 → 객체 변환 후 저장
   const handleSaveProfile = async () => {
     if (!profile) return;
+    setIsSaving(true);
     try {
       const socialLinksObject = socialLinks.reduce((acc, { type, url }) => {
         acc[type] = url;
         return acc;
       }, {} as Record<string, string>);
-  
+
       // 선택되지 않은 소셜은 ''로 만들어서 서버 반영
       SOCIAL_KEYS.forEach(key => {
         if (!socialLinks.find(l => l.type === key)) {
           socialLinksObject[key] = '';
         }
       });
-      
+
       // AI 인사말이 비어있으면 기본값 설정 (사용자 이름 포함)
       const aiIntro = profile.aiIntro?.trim() || `안녕! 나는 ${profile.name || '개인 AI 아바타 비서'}야. 궁금한거 있으면 물어봐!`;
-      
+
+      // 태그 최대 5개로 강제 제한
+      const limitedTags = (selectedChatTopics || []).slice(0, 5);
+
       const updateData = {
         ...profile,
         socialLinks: socialLinksObject,
         aiIntro: aiIntro,
-        // 선택된 채팅 주제를 tag 필드에 저장
-        tag: selectedChatTopics,
+        // 선택된 채팅 주제를 tag 필드에 저장 (최대 5개)
+        tag: limitedTags,
       };
-      
+
       // 선택된 채팅 주제도 함께 저장 (기존 기능 유지)
 
 
       for (const topic of chatTopics) {
         await updateChatTopicInformation(profile.id, topic.topicName, topic.information);
       }
-  
+
       await updateProfileField(profile.id, updateData);
       setModal({ show: true, message: '프로필이 성공적으로 저장되었습니다.', type: 'success' });
       setShowSocialModal(false);
-      
+
       // 저장 후 프로필 페이지로 돌아가기
       setTimeout(() => {
         router.push(`/profile/${profile.id}`);
@@ -379,6 +391,8 @@ const ProfileEditPage: React.FC = () => {
     } catch (e: any) {
       console.error('저장 중 오류:', e);
       setModal({ show: true, message: '프로필 저장 중 오류가 발생했습니다.', type: 'error' });
+    } finally {
+      setIsSaving(false);
     }
   };  
 
@@ -554,11 +568,26 @@ const ProfileEditPage: React.FC = () => {
               </svg>
             </button>
             <span style={{ fontWeight: 700, fontSize: 18 }}>프로필 편집</span>
-            <button onClick={handleSaveProfile} className={profileStyles.editSaveButton}>
-              저장
+            <button onClick={handleSaveProfile} className={profileStyles.editSaveButton} disabled={isSaving} aria-busy={isSaving}>
+              {isSaving ? '저장중...' : '저장'}
             </button>
           </div>
         </div>
+
+        {/* 저장 중 오버레이 */}
+        {isSaving && (
+          <div style={{
+            position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+          }}>
+            <div style={{
+              background: '#fff', borderRadius: 12, padding: '14px 18px',
+              boxShadow: '0 6px 24px rgba(0,0,0,0.15)', fontWeight: 700, color: '#636AE8'
+            }}>
+              저장중...
+            </div>
+          </div>
+        )}
 
         <div className={`${styles.scrollMain} ${styles.scrollMainProfile}`}>
 

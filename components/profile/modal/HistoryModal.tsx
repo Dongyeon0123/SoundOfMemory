@@ -65,27 +65,11 @@ export default function HistoryModal({
       },
     ]);
     setAddForm({});
-    setAddMode(false);
+    // addMode는 유지하여 계속 추가 가능하게
   };
 
   const handleSave = () => {
-    let combined = list;
-    const canAppend = addMode && addForm && addForm.school && addForm.periodStart && addForm.periodEnd && addForm.role;
-    if (canAppend) {
-      combined = [
-        ...list,
-        {
-          school: addForm.school,
-          periodStart: addForm.periodStart,
-          periodEnd: addForm.periodEnd,
-          period: `${addForm.periodStart} ~ ${addForm.periodEnd}`,
-          role: addForm.role,
-        },
-      ];
-      setAddForm({});
-      setAddMode(false);
-    }
-    onSave(combined);
+    onSave(list);
     onClose();
   };
 
@@ -147,7 +131,8 @@ export default function HistoryModal({
               </div>
             </div>
           ))}
-          {addMode ? (
+
+          {addMode && (
             <div className={styles.modalBoxItem}>
               <div className={styles.modalBoxRow}>
                 <span className={styles.modalBoxLabel}>학교/소속</span>
@@ -187,15 +172,25 @@ export default function HistoryModal({
                   placeholder="직무/역할"
                 />
               </div>
+              <div className={styles.modalBoxActions}>
+                <button
+                  className={styles.actionBtn}
+                  onClick={handleAdd}
+                  aria-label="추가"
+                  style={{ color: '#636AE8FF' }}
+                >
+                  추가
+                </button>
+              </div>
             </div>
-          ) : (
-            <button
-              className={styles.modalAddBtn}
-              onClick={() => setAddMode(true)}
-            >
-              <FiPlus size={18} style={{ marginRight: 6 }} /> 이력 추가
-            </button>
           )}
+
+          <button
+            className={styles.modalAddBtn}
+            onClick={() => { setAddForm({}); setAddMode(true); }}
+          >
+            <FiPlus size={18} style={{ marginRight: 6 }} /> 이력 추가
+          </button>
         </div>
         <div className={styles.modalActions}>
           <button className={styles.modalButton} onClick={onClose}>

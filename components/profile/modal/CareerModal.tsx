@@ -57,27 +57,11 @@ export default function CareerModal({
       },
     ]);
     setAddForm({});
-    setAddMode(false);
+    // addMode 유지하여 계속 추가 가능하게
   };
 
   const handleSave = () => {
-    let combined = list;
-    const canAppend = addMode && addForm && addForm.org && addForm.dept && addForm.periodStart && addForm.periodEnd && addForm.months && addForm.role;
-    if (canAppend) {
-      combined = [
-        ...list,
-        {
-          org: addForm.org,
-          dept: addForm.dept,
-          period: `${addForm.periodStart} ~ ${addForm.periodEnd}`,
-          months: addForm.months,
-          role: addForm.role,
-        },
-      ];
-      setAddForm({});
-      setAddMode(false);
-    }
-    onSave(combined);
+    onSave(list);
     onClose();
   };
 
@@ -154,7 +138,8 @@ export default function CareerModal({
               </div>
             </div>
           ))}
-          {addMode ? (
+
+          {addMode && (
             <div className={styles.modalBoxItem}>
               <div className={styles.modalBoxRow}>
                 <span className={styles.modalBoxLabel}>소속</span>
@@ -209,15 +194,25 @@ export default function CareerModal({
                   placeholder="직무/역할"
                 />
               </div>
+              <div className={styles.modalBoxActions}>
+                <button
+                  className={styles.actionBtn}
+                  onClick={handleAdd}
+                  aria-label="추가"
+                  style={{ color: '#636AE8FF' }}
+                >
+                  추가
+                </button>
+              </div>
             </div>
-          ) : (
-            <button
-              className={styles.modalAddBtn}
-              onClick={() => setAddMode(true)}
-            >
-              <FiPlus size={18} style={{ marginRight: 6 }} /> 경력 추가
-            </button>
           )}
+
+          <button
+            className={styles.modalAddBtn}
+            onClick={() => { setAddForm({}); setAddMode(true); }}
+          >
+            <FiPlus size={18} style={{ marginRight: 6 }} /> 경력 추가
+          </button>
         </div>
         <div className={styles.modalActions}>
           <button className={styles.modalButton} onClick={onClose}>

@@ -160,7 +160,9 @@ export function ProfileCareerBox({ career, isMyProfile, onEdit, obscured = false
                 <span style={{ color: '#222', fontWeight: 400, fontSize: 15, marginTop: 6 }}>{c.org}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, marginBottom: 4 }}>
                   <span style={{ color: '#9095A0FF', fontWeight: 400, fontSize: 13 }}>{c.dept}</span>
-                  <span style={{ color: '#888', fontSize: 12, fontWeight: 500 }}>{c.months}개월</span>
+                  {c.months ? (
+                    <span style={{ color: '#888', fontSize: 12, fontWeight: 500 }}>{c.months}개월</span>
+                  ) : null}
                 </div>
                 <span style={{ color: '#888', fontWeight: 400, fontSize: 12 }}>
                   {c.period}
