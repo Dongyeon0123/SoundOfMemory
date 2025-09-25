@@ -160,7 +160,7 @@
 /* 모바일에서는 고정 요소들을 위한 마진 추가 */
 @media (max-width: 768px) {
   .messageSection {
-    margin-top: 180px; /* 헤더 + 프로필 높이 */
+    margin-top: 210px; /* 헤더 + 프로필 높이 */
     margin-bottom: 120px; /* 제목 + 입력 영역 높이 */
     max-height: calc(100vh - 211px); /* 고정 요소들 제외한 높이 */
   }
