@@ -568,7 +568,6 @@ export default function TestChat() {
   // AI 응답 시뮬레이션
   const simulateAIResponse = async (userMessage: string) => {
     setIsAIResponding(true);
-    setIsTyping(true);
     
     // 타이핑 효과를 위한 지연
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -632,7 +631,6 @@ export default function TestChat() {
       }
     }
     
-    setIsTyping(false);
     setIsAIResponding(false);
   };
 
@@ -679,7 +677,6 @@ export default function TestChat() {
     
     // AI 응답 시뮬레이션 (채팅 모드)
     setIsAIResponding(true);
-    setIsTyping(true);
     
     // 타이핑 효과를 위한 지연
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -698,7 +695,6 @@ export default function TestChat() {
     const aiResponse = '흥미로운 질문이네요! 더 자세히 이야기해주세요.';
     await typeMessage(aiResponse, aiMessage.id);
     
-    setIsTyping(false);
     setIsAIResponding(false);
     isChatSubmittingRef.current = false;
   };

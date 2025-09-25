@@ -9,8 +9,19 @@
   padding: 0 16px 20px 16px;
   background-color: #fff;
   border-bottom: 1px solid #ddd;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   margin-top: 21px;
+}
+
+/* 모바일에서는 fixed 사용 */
+@media (max-width: 768px) {
+  .header {
+    position: fixed;
+    left: 0;
+    right: 0;
+  }
 }
 
 /* 뒤로가기 버튼 */
@@ -64,10 +75,19 @@
   padding: 12px;
   gap: 12px;
   position: sticky;
-  top: 0;
+  top: 110px; /* 헤더 높이 + margin-top */
   background: #fff;
-  z-index: 10;
+  z-index: 99;
   border-bottom: 1px solid #f0f0f0;
+}
+
+/* 모바일에서는 fixed 사용 */
+@media (max-width: 768px) {
+  .profileSection {
+    position: fixed;
+    left: 0;
+    right: 0;
+  }
 }
 
 .profileSection img {
@@ -110,9 +130,17 @@
   padding: 16px 0 8px 0;
   background: #fff;
   position: sticky;
-  top: 73px; /* 프로필 섹션 높이만큼 */
-  z-index: 9;
-  border-bottom: 1px solid #f0f0f0;
+  bottom: 75px; /* 입력 영역 바로 위 */
+  z-index: 98;
+}
+
+/* 모바일에서는 fixed 사용 */
+@media (max-width: 768px) {
+  .chatTitle {
+    position: fixed;
+    left: 0;
+    right: 0;
+  }
 }
 
 /* 메시지 영역 */
@@ -125,9 +153,17 @@
   overflow-y: auto;
   padding-bottom: 10px;
   min-height: 0;
-  max-height: calc(100vh - 200px); /* 고정 요소들 제외한 높이 */
   position: relative;
   scroll-behavior: smooth;
+}
+
+/* 모바일에서는 고정 요소들을 위한 마진 추가 */
+@media (max-width: 768px) {
+  .messageSection {
+    margin-top: 180px; /* 헤더 + 프로필 높이 */
+    margin-bottom: 120px; /* 제목 + 입력 영역 높이 */
+    max-height: calc(100vh - 211px); /* 고정 요소들 제외한 높이 */
+  }
 }
 
 .msgWrapper {
@@ -300,16 +336,25 @@
 .inputSection {
   position: sticky;
   bottom: 0;
-  width: 100%;
   border-top: 1px solid #ddd;
-  padding: 10px 16px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 8px;
   background: #fff;
-  z-index: 10;
+  z-index: 100;
   box-sizing: border-box;
   flex-shrink: 0; /* 높이 고정 */
+}
+
+/* 모바일에서는 fixed 사용 */
+@media (max-width: 768px) {
+  .inputSection {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
 }
 
 .textarea {
