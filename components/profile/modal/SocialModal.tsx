@@ -5,7 +5,7 @@ import {
   FaGithub, FaFacebook, FaInstagram, FaYoutube, FaTwitter, FaLinkedin, FaBlogger,
   FaEnvelope, FaGlobe, FaBandcamp, FaCoffee, FaBehance, FaPhone
 } from 'react-icons/fa';
-import { FaX } from 'react-icons/fa6';
+import { FaXTwitter } from 'react-icons/fa6';
 
 import styles from '../../../styles/profile.module.css';
 
@@ -16,7 +16,7 @@ const SOCIAL_LINKS = [
   { key: 'youtubeUrl', label: '유튜브', icon: <FaYoutube /> },
   { key: 'facebookUrl', label: '페이스북', icon: <FaFacebook /> },
   { key: 'instagramUrl', label: '인스타그램', icon: <FaInstagram /> },
-  { key: 'twitterUrl', label: 'X', icon: <FaX /> },
+  { key: 'twitterUrl', label: 'X', icon: <FaXTwitter /> },
   { key: 'bandUrl', label: '밴드', icon: <FaBandcamp /> },
   { key: 'linkedinUrl', label: '링크드인', icon: <FaLinkedin /> },
   { key: 'githubUrl', label: '깃허브', icon: <FaGithub /> },
