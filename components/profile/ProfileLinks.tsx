@@ -77,7 +77,7 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
       case 'instagramUrl':
         return 'instagram.png';
       case 'twitterUrl':
-        return 'twitter.png';
+        return 'X.png';
       case 'linkedinUrl':
         return 'linkedin.png';
       case 'githubUrl':
@@ -89,7 +89,7 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
       case 'behanceUrl':
         return 'behance.png';
       default:
-        return 'linked.png';
+        return 'web.png';
     }
   };
 
