@@ -14,6 +14,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     const auth = getAuth();
@@ -56,10 +57,14 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   const handleSplashFinish = () => {
     setShowSplash(false);
+    setIsInitialLoad(false);
   };
 
+  // 프로필 페이지로 이동할 때는 SplashScreen을 표시하지 않음
+  const shouldShowSplash = showSplash && isInitialLoad && !router.pathname.startsWith('/profile/');
+
   // 스플래시 화면이 끝나고 인증 체크가 완료된 후에만 컴포넌트 렌더링
-  if (showSplash || !isAuthChecked) {
+  if (shouldShowSplash || !isAuthChecked) {
     return (
       <Provider store={store}>
         <Head>
@@ -73,7 +78,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
         </Head>
         
-        {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+        {shouldShowSplash && <SplashScreen onFinish={handleSplashFinish} />}
       </Provider>
     );
   }
