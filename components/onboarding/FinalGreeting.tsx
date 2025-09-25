@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { setProfileField, updateChatTopicInformation } from '../../types/profiles';
 import { uploadProfileImage } from '../../client/uploadProfileImage';
 import styles from '../../styles/onboarding/greetingSection.module.css';
+
+// 진행상황 바 애니메이션 스타일 추가
+const progressPulseKeyframes = `
+  @keyframes progressPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+`;
+
+// 스타일을 head에 추가
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = progressPulseKeyframes;
+  document.head.appendChild(style);
+}
 
 interface FinalGreetingProps {
   onComplete: () => void;
@@ -25,17 +41,27 @@ export default function FinalGreeting({
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [userId, setUserId] = useState<string | null>(null);
 
-  // 현재 로그인된 사용자 ID 가져오기
+  // 현재 로그인된 사용자 ID 가져오기 (onAuthStateChanged 사용)
   useEffect(() => {
     const auth = getAuth();
-    const user = auth.currentUser;
-    if (user) {
-      setUserId(user.uid);
-    }
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('사용자 인증 확인됨:', user.uid);
+        setUserId(user.uid);
+      } else {
+        // 사용자가 없으면 즉시 test-chat으로 이동
+        console.log('사용자가 로그인되지 않았습니다. test-chat으로 이동합니다.');
+        setTimeout(() => {
+          onComplete();
+        }, 1000);
+      }
+    });
+    
+    return () => unsubscribe();
+  }, [onComplete]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowTyping(true), 500);
+    const timer = setTimeout(() => setShowTyping(true), 300);
     return () => clearTimeout(timer);
   }, []);
 
@@ -43,18 +69,33 @@ export default function FinalGreeting({
   useEffect(() => {
     if (showTyping) {
       const timer = setTimeout(() => {
-        // 3초 후 자동으로 저장 시작
+        // 1.5초 후 자동으로 저장 시작
         handleSaveData();
-      }, 3000); // 3초 후 자동 전환
+      }, 1500); // 1.5초 후 자동 전환
       
       return () => clearTimeout(timer);
     }
   }, [showTyping]);
 
+  // 안전장치: 10초 후 강제로 test-chat으로 이동
+  useEffect(() => {
+    const safetyTimer = setTimeout(() => {
+      console.log('안전장치: 5초 후 강제로 test-chat으로 이동합니다.');
+      onComplete();
+    }, 5000);
+
+    return () => clearTimeout(safetyTimer);
+  }, [onComplete]);
+
   // 데이터 저장 함수
   const handleSaveData = async () => {
     if (!userId) {
+      console.error('사용자 ID가 없습니다. test-chat으로 이동합니다.');
       setSaveStatus('error');
+      // userId가 없어도 test-chat으로 이동
+      setTimeout(() => {
+        onComplete();
+      }, 500);
       return;
     }
 
@@ -104,20 +145,28 @@ export default function FinalGreeting({
 
       // 저장 완료 후 바로 홈으로 이동
       setSaveStatus('success');
+      console.log('데이터 저장 완료. test-chat으로 이동합니다.');
       setTimeout(() => {
+        console.log('onComplete() 호출');
         onComplete();
       }, 1000);
 
     } catch (error) {
       console.error('데이터 저장 실패:', error);
       setSaveStatus('error');
+      // 오류가 발생해도 test-chat으로 이동
+      console.log('오류 발생. test-chat으로 이동합니다.');
+      setTimeout(() => {
+        console.log('onComplete() 호출 (오류)');
+        onComplete();
+      }, 1000);
     } finally {
       setIsSaving(false);
     }
   };
 
   const firstText = "전세계 AI 프로필들과\n대화를 시작해봐요!";
-  const secondText = "필요한 서류 준비 중...";
+  const secondText = "프로필을 저장하고 있어요...";
 
   return (
     <div className={styles.onboardingContent}>
@@ -185,8 +234,29 @@ export default function FinalGreeting({
             fontSize: '17px',
             fontWeight: '500',
             lineHeight: '1.4',
+            marginBottom: '20px',
+            whiteSpace: 'nowrap'
           }}>
             {secondText}
+          </div>
+          
+          {/* 진행상황 바 */}
+          <div style={{
+            width: '200px',
+            height: '6px',
+            background: 'rgba(255, 255, 255, 0.3)',
+            borderRadius: '3px',
+            overflow: 'hidden',
+            margin: '0 auto'
+          }}>
+            <div style={{
+              width: isSaving ? '100%' : '0%',
+              height: '100%',
+              background: 'linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,1))',
+              borderRadius: '3px',
+              transition: 'width 3s ease-in-out',
+              animation: isSaving ? 'progressPulse 1.5s ease-in-out infinite' : 'none'
+            }} />
           </div>
         </div>
       )}
