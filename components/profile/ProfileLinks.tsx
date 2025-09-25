@@ -89,7 +89,7 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
       case 'behanceUrl':
         return 'behance.png';
       default:
-        return 'web.png';
+        return 'blog.png';
     }
   };
 
