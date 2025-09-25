@@ -263,23 +263,31 @@ const Home: React.FC = () => {
         />
 
         {/* 헤더 */}
-        <HeaderBar
-          userId={userId}
-          pendingRequestsCount={pendingRequestsCount}
-          unreadAnnouncementsCount={unreadAnnouncementsCount}
-          onLogout={async () => {
-            const auth = getAuth();
-            await signOut(auth);
-            window.location.reload();
-          }}
-          onSearchClick={() => setShowSearchModal(true)}
-        />
+        <div className={styles.fadeInUp}>
+          <HeaderBar
+            userId={userId}
+            pendingRequestsCount={pendingRequestsCount}
+            unreadAnnouncementsCount={unreadAnnouncementsCount}
+            onLogout={async () => {
+              const auth = getAuth();
+              await signOut(auth);
+              window.location.reload();
+            }}
+            onSearchClick={() => setShowSearchModal(true)}
+          />
+        </div>
 
         {/* 본문 */}
         <div className={styles.scrollMain} style={{ paddingTop: 10 }}>
-          <MyAvatar loading={loading} userId={userId} myProfile={myProfile} />
-          <FriendsSection title="즐겨찾기" friends={favorites} loading={loading} />
-          <FriendsSection title="친구" friends={normalFriends} loading={loading} />
+          <div className={styles.fadeInUpDelay100}>
+            <MyAvatar loading={loading} userId={userId} myProfile={myProfile} />
+          </div>
+          <div className={styles.fadeInUpDelay200}>
+            <FriendsSection title="즐겨찾기" friends={favorites} loading={loading} />
+          </div>
+          <div className={styles.fadeInUpDelay300}>
+            <FriendsSection title="친구" friends={normalFriends} loading={loading} />
+          </div>
         </div>
       </div>
 

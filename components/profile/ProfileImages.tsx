@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../../styles/styles.module.css';
 import ImageModal from './modal/ImageModal';
 
@@ -18,6 +18,29 @@ function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileIma
   const [backgroundLoaded, setBackgroundLoaded] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
+  // 이미지 preload
+  useEffect(() => {
+    const preloadImages = () => {
+      const imagesToPreload = [
+        backgroundImg || DEFAULT_BACKGROUND_URL,
+        img,
+        '/W-B.png'
+      ].filter(Boolean);
+
+      imagesToPreload.forEach((src) => {
+        if (src) {
+          const link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.href = src;
+          document.head.appendChild(link);
+        }
+      });
+    };
+
+    preloadImages();
+  }, [backgroundImg, img]);
+
   const handleImageClick = () => {
     if (img) {
       setIsImageModalOpen(true);
@@ -27,16 +50,34 @@ function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileIma
   return (
     <>
       <div className={styles.mainHeader}>
-        <div className={styles.bgImgWrap}>
+        <div className={styles.bgImgWrap} style={{ position: 'relative' }}>
+          {/* 배경 이미지 로딩 스켈레톤 */}
+          {!backgroundLoaded && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+              zIndex: 1
+            }} />
+          )}
           <img
             src={backgroundImg || DEFAULT_BACKGROUND_URL}
             alt={name}
+            loading="eager"
+            fetchPriority="high"
             style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
               width: '100%',
               height: '100%',
               objectPosition: 'center',
               opacity: backgroundLoaded ? 1 : 0,
-              transition: 'opacity 0.3s ease'
+              transition: 'opacity 0.2s ease',
+              zIndex: 2
             }}
             onLoad={() => setBackgroundLoaded(true)}
             onError={() => setBackgroundLoaded(true)}
@@ -45,6 +86,7 @@ function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileIma
           <img
             src="/W-B.png"
             alt="W-B Logo"
+            loading="eager"
             style={{
               position: 'absolute',
               top: 5,
@@ -52,7 +94,7 @@ function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileIma
               width: 50,
               height: 50,
               opacity: 0.8,
-              zIndex: 3
+              zIndex: 10
             }}
           />
         </div>
@@ -70,34 +112,74 @@ function ProfileImages({ backgroundImg, img, name, desc, mbti, tag }: ProfileIma
           minHeight: 130,
           boxShadow: '0 10px 36px rgba(0, 0, 0, 0.14)',
           overflow: 'hidden',
+          zIndex: 5
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
-            {img && (
-              <img
-                src={img}
-                alt={name}
-                width={70}
-                height={70}
-                style={{ 
-                  objectFit: 'cover', 
+            <div style={{ position: 'relative', width: 70, height: 70, flexShrink: 0 }}>
+              {img ? (
+                <>
+                  {/* 프로필 이미지 로딩 스켈레톤 */}
+                  {!profileLoaded && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 70,
+                      height: 70,
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%)',
+                      animation: 'pulse 1.5s ease-in-out infinite'
+                    }} />
+                  )}
+                  <img
+                    src={img}
+                    alt={name}
+                    width={70}
+                    height={70}
+                    loading="eager"
+                    fetchPriority="high"
+                    style={{ 
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      objectFit: 'cover', 
+                      borderRadius: '50%',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s ease, opacity 0.2s ease',
+                      border: '2px solid rgba(255, 255, 255, 0.8)',
+                      opacity: profileLoaded ? 1 : 0
+                    }}
+                    onClick={handleImageClick}
+                    onLoad={() => setProfileLoaded(true)}
+                    onError={() => setProfileLoaded(true)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  />
+                </>
+              ) : (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 70,
+                  height: 70,
                   borderRadius: '50%',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease, opacity 0.3s ease',
-                  border: '2px solid rgba(255, 255, 255, 0.8)',
-                  flexShrink: 0,
-                  opacity: profileLoaded ? 1 : 0
-                }}
-                onClick={handleImageClick}
-                onLoad={() => setProfileLoaded(true)}
-                onError={() => setProfileLoaded(true)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              />
-            )}
+                  background: 'linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#999',
+                  fontSize: 24,
+                  fontWeight: 'bold'
+                }}>
+                  ?
+                </div>
+              )}
+            </div>
             <div style={{ flex: 1, position: 'relative' }}>
               <h2 style={{ 
                 margin: 0, 

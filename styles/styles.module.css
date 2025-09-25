@@ -579,3 +579,102 @@
   overflow: hidden;
   position: relative;
 }
+
+/* 요소별 아래에서 위로 올라오는 애니메이션 */
+@keyframes slideUpFadeIn {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 순차적 애니메이션 클래스들 */
+.fadeInUp {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+}
+
+.fadeInUpDelay100 {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s forwards;
+  opacity: 0;
+}
+
+.fadeInUpDelay200 {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s forwards;
+  opacity: 0;
+}
+
+.fadeInUpDelay300 {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
+  opacity: 0;
+}
+
+.fadeInUpDelay400 {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s forwards;
+  opacity: 0;
+}
+
+.fadeInUpDelay500 {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s forwards;
+  opacity: 0;
+}
+
+.fadeInUpDelay600 {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
+  opacity: 0;
+}
+
+/* 프로필 페이지 요소별 자동 애니메이션 */
+.profileAnimatedContainer > *:nth-child(1) {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s forwards;
+  opacity: 0;
+}
+
+.profileAnimatedContainer > *:nth-child(2) {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s forwards;
+  opacity: 0;
+}
+
+.profileAnimatedContainer > *:nth-child(3) {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
+  opacity: 0;
+}
+
+.profileAnimatedContainer > *:nth-child(4) {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s forwards;
+  opacity: 0;
+}
+
+.profileAnimatedContainer > *:nth-child(5) {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s forwards;
+  opacity: 0;
+}
+
+.profileAnimatedContainer > *:nth-child(6) {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
+  opacity: 0;
+}
+
+.profileAnimatedContainer > *:nth-child(7) {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.7s forwards;
+  opacity: 0;
+}
+
+.profileAnimatedContainer > *:nth-child(8) {
+  animation: slideUpFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.8s forwards;
+  opacity: 0;
+}
+
+/* 로딩 스켈레톤 애니메이션 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

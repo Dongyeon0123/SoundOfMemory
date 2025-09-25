@@ -498,7 +498,7 @@ const GuestProfilePage: React.FC = () => {
 
         {/* 본문 */}
         <div className={`${styles.scrollMain} ${styles.scrollMainProfile}`}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className={styles.profileAnimatedContainer} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <ProfileImages 
               backgroundImg={profile.backgroundImg} 
               img={profile.img} 
