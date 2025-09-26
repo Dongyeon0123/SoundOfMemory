@@ -37,6 +37,7 @@ const GuestProfilePage: React.FC = () => {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [myUid, setMyUid] = useState<string | null>(null);
   const [isAnonymous, setIsAnonymous] = useState<boolean | null>(null);
   const [actualUserId, setActualUserId] = useState<string | null>(null);
@@ -101,6 +102,7 @@ const GuestProfilePage: React.FC = () => {
   useEffect(() => {
     if (typeof id === 'string') {
       setLoading(true);
+      setAssetsLoaded(false);
       
       const loadProfile = async () => {
         let actualUserId = id;
@@ -138,6 +140,20 @@ const GuestProfilePage: React.FC = () => {
         try {
           const profile = await fetchProfileById(actualUserId);
           setProfile(profile);
+          // 이미지 프리로드
+          const urls: string[] = [];
+          if (profile?.img) urls.push(profile.img);
+          if (profile?.backgroundImg) urls.push(profile.backgroundImg);
+          if (urls.length > 0) {
+            const loadImage = (src: string) => new Promise<void>((resolve) => {
+              const img = new Image();
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+              img.src = src;
+            });
+            await Promise.all(urls.map(loadImage));
+          }
+          setAssetsLoaded(true);
           
           // 채팅 주제 데이터도 함께 불러오기
           const topics = await fetchUserChatTopics(actualUserId);
@@ -331,7 +347,7 @@ const GuestProfilePage: React.FC = () => {
     if (profile) updateProfileField(profile.id, { career: newCareer });
   };
 
-  if (loading)
+  if (loading || !assetsLoaded)
     return (
       <div className={styles.fullContainer}>
         <div className={styles.centerCard}>

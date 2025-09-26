@@ -191,8 +191,20 @@ const Home: React.FC = () => {
     return () => clearInterval(interval);
   }, [userId, profiles]);
 
-  const favorites = friends.filter(f => f.favorite);
-  const normalFriends = friends.filter(f => !f.favorite);
+  const compareKorean = (a: any, b: any) => {
+    const an = (a?.friendName || '').toString().trim();
+    const bn = (b?.friendName || '').toString().trim();
+    return an.localeCompare(bn, 'ko', { sensitivity: 'base' });
+  };
+
+  const favorites = friends
+    .filter(f => f.favorite)
+    .slice()
+    .sort(compareKorean);
+  const normalFriends = friends
+    .filter(f => !f.favorite)
+    .slice()
+    .sort(compareKorean);
 
   // 친구요청 보내기
   const handleSendFriendRequest = async (targetUserId: string) => {

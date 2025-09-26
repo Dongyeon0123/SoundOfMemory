@@ -37,6 +37,7 @@ const ProfilePage: React.FC = () => {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [myUid, setMyUid] = useState<string | null>(null);
 
   const [isFriend, setIsFriend] = useState(false);
@@ -98,8 +99,23 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     if (typeof id === 'string') {
       setLoading(true);
-      fetchProfileById(id).then((profile) => {
+      setAssetsLoaded(false);
+      fetchProfileById(id).then(async (profile) => {
         setProfile(profile);
+        // 이미지 프리로드 (프로필/배경)
+        const urls: string[] = [];
+        if (profile?.img) urls.push(profile.img);
+        if (profile?.backgroundImg) urls.push(profile.backgroundImg);
+        if (urls.length > 0) {
+          const loadImage = (src: string) => new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+            img.src = src;
+          });
+          await Promise.all(urls.map(loadImage));
+        }
+        setAssetsLoaded(true);
         setLoading(false);
       });
       
@@ -246,7 +262,7 @@ const ProfilePage: React.FC = () => {
     if (profile) updateProfileField(profile.id, { career: newCareer });
   };
 
-  if (loading)
+  if (loading || !assetsLoaded)
     return (
       <div className={styles.fullContainer}>
         <div className={styles.centerCard}>
