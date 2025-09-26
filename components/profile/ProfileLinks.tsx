@@ -137,7 +137,7 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
 
   return (
     <>
-      <div style={{ width: '100%', textAlign: 'center', margin: '2px 0', marginBottom: '8px' }}>
+      <div style={{ width: '100%', textAlign: 'center', margin: '2px 0', marginBottom: '8px', marginTop: '8px' }}>
         <div style={{
           display: 'flex',
           justifyContent: 'center',
