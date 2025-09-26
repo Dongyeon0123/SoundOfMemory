@@ -14,6 +14,7 @@ import ChatHeader from '../../components/chat/ChatHeader';
 import ProfileSection from '../../components/chat/ProfileSection';
 import MessageList from '../../components/chat/MessageList';
 import ChatInput from '../../components/chat/ChatInput';
+import TokenExhaustedModal from '../../components/TokenExhaustedModal';
 
 const Chat = () => {
   const router = useRouter();
@@ -44,6 +45,9 @@ const Chat = () => {
   
   // 중복 전송 방지를 위한 디바운싱
   const [lastSendTime, setLastSendTime] = useState(0);
+  
+  // 토큰 부족 모달 상태
+  const [showTokenExhaustedModal, setShowTokenExhaustedModal] = useState(false);
 
   const [profileInfo, setProfileInfo] = useState<{ id: string; name: string; img: string; tag?: string[]; aiIntro?: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -360,6 +364,15 @@ const Chat = () => {
           }
           const json = await response.json().catch(() => null);
           if (!response.ok) {
+            console.log('서버 응답 오류:', response.status, json);
+            // 토큰 부족 에러 체크 (402 Payment Required 포함)
+            if (json?.error?.includes('토큰') || json?.error?.includes('token') || 
+                json?.message?.includes('토큰') || json?.message?.includes('token') ||
+                response.status === 429 || response.status === 402) {
+              console.log('토큰 부족 에러 감지, 모달 표시');
+              setShowTokenExhaustedModal(true);
+              return; // 토큰 부족이면 다른 엔드포인트 시도하지 않음
+            }
             lastError = new Error(`서버 응답 오류: ${response.status}`);
             continue;
           }
@@ -458,6 +471,17 @@ const Chat = () => {
           textareaRef={textareaRef}
         />
       </div>
+      
+      {/* 토큰 부족 모달 */}
+      <TokenExhaustedModal
+        isOpen={showTokenExhaustedModal}
+        onClose={() => setShowTokenExhaustedModal(false)}
+        onUpgrade={() => {
+          // 프리미엄 업그레이드 로직 (추후 구현)
+          console.log('프리미엄 업그레이드');
+          setShowTokenExhaustedModal(false);
+        }}
+      />
     </div>
   );
 };

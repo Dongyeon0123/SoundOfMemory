@@ -47,6 +47,149 @@
   box-sizing: border-box;
 }
 
+/* 토큰 부족 모달 스타일 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  padding: 24px 24px 16px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modalBody {
+  padding: 24px;
+  text-align: center;
+}
+
+.tokenExhaustedIcon {
+  margin-bottom: 20px;
+}
+
+.tokenIcon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.tokenExhaustedMessage {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #666;
+  margin: 0 0 24px 0;
+}
+
+.tokenExhaustedInfo {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.infoItem:last-child {
+  margin-bottom: 0;
+}
+
+.infoLabel {
+  font-size: 14px;
+  color: #666;
+}
+
+.infoValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modalFooter {
+  padding: 16px 24px 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.modalButtonSecondary {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalButtonSecondary:hover {
+  background: #f8f9fa;
+  border-color: #ccc;
+}
+
+.modalButtonPrimary {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #636AE8;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 106, 232, 0.25);
+  white-space: nowrap;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalButtonPrimary:hover {
+  background: #505edb;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 106, 232, 0.35);
+}
+
 /* 카드형 (카카오톡 스타일) - 모바일에서는 화면 꽉 채움 */
 .cardMode {
   width: 100vw;
