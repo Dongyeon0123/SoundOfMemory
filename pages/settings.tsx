@@ -163,7 +163,7 @@ export default function SettingsPage() {
                 </div>
                 <div className={styles.walletInfo}>
                   <div className={styles.balanceLabel}>
-                    현재 보유 토큰
+                    현재 보유 모이
                   </div>
                   <div className={styles.balanceAmount}>
                     ₩{formatAmount(walletBalance)}
@@ -173,9 +173,6 @@ export default function SettingsPage() {
               
               <div className={styles.userEmail}>
                 {auth.currentUser?.email || '사용자'}
-              </div>
-              <div className={styles.feeInfo}>
-                요금: 월 9,900원 (자동 결제)
               </div>
             </div>
           </div>
