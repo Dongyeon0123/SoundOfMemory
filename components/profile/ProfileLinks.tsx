@@ -79,7 +79,7 @@ function ProfileLinks({ socialLinks, obscured = false }: ProfileLinksProps) {
       case 'twitterUrl':
         return 'X.png';
       case 'linkedinUrl':
-        return 'linkedin.png';
+        return 'linked.png';
       case 'githubUrl':
         return 'git.png';
       case 'notionUrl':
