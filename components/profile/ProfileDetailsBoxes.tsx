@@ -66,7 +66,7 @@ export function ProfileHistoryBox({ history, isMyProfile, onEdit, obscured = fal
         <BsSuitDiamondFill size={16} color="#257EFE" style={{ position: 'relative', top: 1 }} />
         <span style={{ fontSize: 17, color: '#222', fontWeight: 600, lineHeight: '18px', position: 'relative', top: 2.5, marginBottom: 5 }}>이력</span>
       </div>
-      <div style={{ marginTop: 12, color: '#888', fontWeight: 600, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', filter: obscured ? 'blur(4px)' : 'none' }}>
+      <div style={{ marginTop: 12, color: '#888', fontWeight: 400, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', filter: obscured ? 'blur(4px)' : 'none' }}>
         {history && history.length > 0 ? (
           history.map((h, i) => (
             <div
@@ -138,7 +138,7 @@ export function ProfileCareerBox({ career, isMyProfile, onEdit, obscured = false
         <BsSuitDiamondFill size={16} color="#257EFE" style={{ position: 'relative', top: 1 }} />
         <span style={{ fontSize: 17, color: '#222', fontWeight: 600, lineHeight: '18px', position: 'relative', top: 2.5, marginBottom: 5 }}>경력</span>
       </div>
-      <div style={{ marginTop: 12, color: '#888', fontWeight: 500, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', filter: obscured ? 'blur(4px)' : 'none' }}>
+      <div style={{ marginTop: 12, color: '#888', fontWeight: 400, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', filter: obscured ? 'blur(4px)' : 'none' }}>
         {career && career.length > 0 ? (
           career.map((c, i) => (
             <div
