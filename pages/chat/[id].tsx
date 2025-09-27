@@ -437,7 +437,7 @@ const Chat = () => {
     <div className={cardStyles.fullContainer}>
       <div className={cardStyles.centerCard}>
   
-        <ChatHeader title="Sound Of Memory" />
+        <ChatHeader title="Sound +f Memory" />
   
         <ProfileSection
           name={profileInfo?.name || "AI"}
