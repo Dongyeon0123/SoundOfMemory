@@ -303,29 +303,29 @@ const ProfilePage: React.FC = () => {
               <div style={{
                 position: 'relative',
                 width: 80,
-                height: 80
+                height: 80,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
                 <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
+                  width: 80,
+                  height: 80,
                   border: '4px solid rgba(99, 106, 232, 0.1)',
                   borderTop: '4px solid #636AE8',
                   borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
+                  animation: 'spin 1s linear infinite',
+                  boxSizing: 'border-box'
                 }} />
                 <div style={{
                   position: 'absolute',
-                  top: 8,
-                  left: 8,
-                  width: 'calc(100% - 16px)',
-                  height: 'calc(100% - 16px)',
+                  width: 56,
+                  height: 56,
                   border: '2px solid rgba(99, 106, 232, 0.1)',
                   borderTop: '2px solid #257EFE',
                   borderRadius: '50%',
-                  animation: 'spin 1.5s linear infinite reverse'
+                  animation: 'spin 1.5s linear infinite reverse',
+                  boxSizing: 'border-box'
                 }} />
               </div>
               
