@@ -627,7 +627,7 @@ const GuestProfilePage: React.FC = () => {
               isAnonymous={isAnonymous}
             />
 
-            {/* 연락처 저장하기 버튼 */}
+            {/* 연락처 저장하기 버튼 - 임시 비활성화
             <div style={{ width: '100%', padding: '0 20px', marginTop: 12 }}>
               <button
                 onClick={() => {
@@ -669,6 +669,7 @@ const GuestProfilePage: React.FC = () => {
                 연락처 저장하기
               </button>
             </div>
+            */}
 
             {/* 대화하기와 소개 사이 그레이 라인 */}
             <div className={styles.grayLine} style={{ marginTop: 20, marginBottom: 10 }}></div>
