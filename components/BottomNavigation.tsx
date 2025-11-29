@@ -29,7 +29,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentPath }) => {
       activeIcon: MdLibraryBooks,
     },
     {
-      label: '공유',
+      label: '',
       path: '/share',
       icon: IoShareSocial,
       activeIcon: IoShareSocial,

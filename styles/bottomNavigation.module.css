@@ -48,7 +48,7 @@
 
 /* 공유 버튼 특별 스타일 */
 .navItem.special {
-  margin-top: -75px;
+  margin-top: -90px;
   justify-content: flex-start;
   padding-top: 0;
   position: relative;
@@ -74,7 +74,8 @@
   z-index: 1;
   position: absolute;
   margin: 0;
-  top: 20px;
+  margin-left: -1px;
+  top: 24px;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 24px !important;
@@ -85,19 +86,6 @@
   justify-content: center;
 }
 
-.navItem.special .label {
-  margin-top: 0;
-  z-index: 1;
-  position: absolute;
-  top: 44px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1;
-  white-space: nowrap;
-  font-size: 11px;
-  font-weight: 500;
-}
 
 .icon {
   font-size: 24px;
@@ -128,7 +116,7 @@
   }
 
   .navItem.special {
-    margin-top: -70px;
+    margin-top: -85px;
   }
 
   .navItem.special::before {
@@ -138,18 +126,13 @@
   }
 
   .navItem.special .icon {
-    top: 23px;
+    top: 27px;
     transform: translate(-50%, -50%);
     font-size: 22px !important;
     width: 22px !important;
     height: 22px !important;
   }
 
-  .navItem.special .label {
-    top: 51px;
-    line-height: 1;
-    font-size: 10px;
-  }
 
   .icon {
     font-size: 22px;
@@ -164,7 +147,7 @@
 /* 작은 화면 대응 */
 @media (max-width: 480px) {
   .navItem.special {
-    margin-top: -68px;
+    margin-top: -83px;
   }
 
   .navItem.special::before {
@@ -174,18 +157,13 @@
   }
 
   .navItem.special .icon {
-    top: 22px;
+    top: 26px;
     transform: translate(-50%, -50%);
     font-size: 20px !important;
     width: 20px !important;
     height: 20px !important;
   }
 
-  .navItem.special .label {
-    top: 48px;
-    line-height: 1;
-    font-size: 9px;
-  }
 
   .icon {
     font-size: 20px;
