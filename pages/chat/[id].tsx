@@ -9,7 +9,6 @@ import { fetchProfileById } from "../../types/profiles";
 import { doc, onSnapshot, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../types/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
 import ChatHeader from '../../components/chat/ChatHeader';
 import ProfileSection from '../../components/chat/ProfileSection';
 import MessageList from '../../components/chat/MessageList';

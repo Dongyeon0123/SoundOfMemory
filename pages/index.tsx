@@ -23,6 +23,8 @@ import MyAvatar from '../components/home/MyAvatar';
 import FriendsSection from '../components/home/FriendsSection';
 import SearchModal from '../components/home/SearchModal';
 import FullScreenToggleButton from '../components/home/FullScreenToggleButton';
+import BottomNavigation from '../components/BottomNavigation';
+import HamburgerMenu from '../components/home/HamburgerMenu';
 import NotificationModal from '../components/NotificationModal';
 
 const Home: React.FC = () => {
@@ -31,6 +33,7 @@ const Home: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
   const [search, setSearch] = useState('');
   const [isCardMode, setIsCardMode] = useState(true); // 기본값을 true로 변경
   const [sendingRequests, setSendingRequests] = useState<Set<string>>(new Set());
@@ -286,11 +289,12 @@ const Home: React.FC = () => {
               window.location.reload();
             }}
             onSearchClick={() => setShowSearchModal(true)}
+            onMenuClick={() => setShowHamburgerMenu(true)}
           />
         </div>
 
         {/* 본문 */}
-        <div className={styles.scrollMain} style={{ paddingTop: 10 }}>
+        <div className={styles.scrollMain} style={{ paddingTop: 10, paddingBottom: 80 }}>
           <div className={styles.fadeInUpDelay100}>
             <MyAvatar loading={loading} userId={userId} myProfile={myProfile} />
           </div>
@@ -301,6 +305,22 @@ const Home: React.FC = () => {
             <FriendsSection title="친구" friends={normalFriends} loading={loading} />
           </div>
         </div>
+
+        {/* 하단 네비게이션 바 */}
+        <BottomNavigation />
+
+        {/* 햄버거 메뉴 (카드 안에 렌더링) */}
+        <HamburgerMenu
+          userId={userId}
+          pendingRequestsCount={pendingRequestsCount}
+          unreadAnnouncementsCount={unreadAnnouncementsCount}
+          onSearchClick={() => {
+            setShowHamburgerMenu(false);
+            setShowSearchModal(true);
+          }}
+          isOpen={showHamburgerMenu}
+          onOpenChange={setShowHamburgerMenu}
+        />
       </div>
 
       {/* 검색 모달 */}

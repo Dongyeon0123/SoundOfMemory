@@ -17,6 +17,7 @@ import CareerModal from '../../components/profile/modal/CareerModal';
 import SuccessFailModal from '../../components/profile/modal/SuccessFailModal';
 import QRCodeModal from '../../components/profile/modal/QRCodeModal';
 import LoginRequiredModal from '../../components/profile/modal/LoginRequiredModal';
+import ContactSaveModal from '../../components/profile/modal/ContactSaveModal';
 import ProfileHeader from '../../components/profile/ProfileHeader';
 import ProfileImages from '../../components/profile/ProfileImages';
 import ProfileBasicInfo from '../../components/profile/ProfileBasicInfo';
@@ -56,6 +57,7 @@ const GuestProfilePage: React.FC = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginModalAction, setLoginModalAction] = useState('');
+  const [showContactSaveModal, setShowContactSaveModal] = useState(false);
 
   // 성공/실패 모달 상태
   const [modal, setModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({
@@ -329,6 +331,89 @@ const GuestProfilePage: React.FC = () => {
     }
   };
 
+  // 연락처 저장 핸들러
+  const handleSaveContact = async () => {
+    if (!profile) return;
+    
+    const phone = profile.socialLinks?.number;
+    const email = profile.socialLinks?.email;
+    const name = profile.name || '연락처';
+    
+    // Web Contact API 시도 (지원되는 브라우저에서만)
+    if ('contacts' in navigator && 'ContactsManager' in window) {
+      try {
+        const contactsManager = (navigator as any).contacts;
+        const contact = {
+          name: [name],
+        } as any;
+        
+        if (phone) {
+          const phoneNumber = phone.replace(/[^\d+]/g, '');
+          contact.tel = [phoneNumber];
+        }
+        
+        if (email) {
+          contact.email = [email];
+        }
+        
+        await contactsManager.select(['name', 'tel', 'email']).then((result: any) => {
+          // 사용자가 연락처를 선택하면 저장
+          console.log('연락처 저장됨:', result);
+          setModal({ show: true, message: '연락처가 저장되었습니다.', type: 'success' });
+        }).catch((err: any) => {
+          console.log('Web Contact API 실패, vCard 다운로드로 전환');
+          downloadVCard(name, phone, email);
+        });
+        return;
+      } catch (error) {
+        console.log('Web Contact API 사용 불가, vCard 다운로드로 전환');
+      }
+    }
+    
+    // vCard 다운로드 방식 (폴백)
+    downloadVCard(name, phone, email);
+  };
+
+  // vCard 다운로드 함수
+  const downloadVCard = (name: string, phone?: string, email?: string) => {
+    // vCard 형식으로 연락처 생성
+    let vcard = 'BEGIN:VCARD\n';
+    vcard += 'VERSION:3.0\n';
+    vcard += `FN:${name}\n`;
+    
+    if (phone) {
+      // 전화번호에서 숫자만 추출
+      const phoneNumber = phone.replace(/[^\d+]/g, '');
+      vcard += `TEL;TYPE=CELL:${phoneNumber}\n`;
+    }
+    
+    if (email) {
+      vcard += `EMAIL:${email}\n`;
+    }
+    
+    vcard += 'END:VCARD';
+    
+    // Blob 생성 및 다운로드
+    const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${name}.vcf`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    // 모바일에서 연락처 앱으로 바로 열리도록 안내
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      setModal({ show: true, message: '연락처 파일이 다운로드되었습니다. 파일을 열어 연락처에 추가하세요.', type: 'success' });
+    } else {
+      setModal({ show: true, message: '연락처 파일이 다운로드되었습니다. 파일을 열어 연락처 앱에 가져오세요.', type: 'success' });
+    }
+  };
+
   // Firestore 업데이트 핸들러들
   const handleSaveMbti = (newMbti: string) => {
     setMbti(newMbti);
@@ -542,6 +627,49 @@ const GuestProfilePage: React.FC = () => {
               isAnonymous={isAnonymous}
             />
 
+            {/* 연락처 저장하기 버튼 */}
+            <div style={{ width: '100%', padding: '0 20px', marginTop: 12 }}>
+              <button
+                onClick={() => {
+                  const hasContact = profile?.socialLinks?.number || profile?.socialLinks?.email;
+                  if (!hasContact) {
+                    setShowContactSaveModal(true);
+                  } else {
+                    handleSaveContact();
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '14px 20px',
+                  background: '#f8f9fa',
+                  color: '#222',
+                  border: '1px solid #e9ecef',
+                  borderRadius: 8,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#e9ecef';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#f8f9fa';
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                연락처 저장하기
+              </button>
+            </div>
+
             {/* 대화하기와 소개 사이 그레이 라인 */}
             <div className={styles.grayLine} style={{ marginTop: 20, marginBottom: 10 }}></div>
 
@@ -605,6 +733,12 @@ const GuestProfilePage: React.FC = () => {
         visible={showLoginModal}
         actionName={loginModalAction}
         onClose={() => setShowLoginModal(false)}
+      />
+
+      {/* 연락처 저장 모달 */}
+      <ContactSaveModal
+        visible={showContactSaveModal}
+        onClose={() => setShowContactSaveModal(false)}
       />
     </div>
   );
