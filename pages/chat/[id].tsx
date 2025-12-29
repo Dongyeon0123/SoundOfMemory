@@ -364,14 +364,14 @@ const Chat = () => {
           const json = await response.json().catch(() => null);
           if (!response.ok) {
             console.log('서버 응답 오류:', response.status, json);
-            // 토큰 부족 에러 체크 (402 Payment Required 포함)
-            if (json?.error?.includes('토큰') || json?.error?.includes('token') || 
-                json?.message?.includes('토큰') || json?.message?.includes('token') ||
-                response.status === 429 || response.status === 402) {
-              console.log('토큰 부족 에러 감지, 모달 표시');
-              setShowTokenExhaustedModal(true);
-              return; // 토큰 부족이면 다른 엔드포인트 시도하지 않음
-            }
+            // 토큰 부족 에러 체크 비활성화
+            // if (json?.error?.includes('토큰') || json?.error?.includes('token') || 
+            //     json?.message?.includes('토큰') || json?.message?.includes('token') ||
+            //     response.status === 429 || response.status === 402) {
+            //   console.log('토큰 부족 에러 감지, 모달 표시');
+            //   setShowTokenExhaustedModal(true);
+            //   return; // 토큰 부족이면 다른 엔드포인트 시도하지 않음
+            // }
             lastError = new Error(`서버 응답 오류: ${response.status}`);
             continue;
           }
