@@ -54,21 +54,31 @@ export default function GuestChatPage() {
 
   // 질문 셔플 및 표시 함수
   const shuffleAndDisplayQuestions = useCallback((questions: string[], used: Set<string>) => {
+    console.log('shuffleAndDisplayQuestions 호출됨');
+    console.log('전체 질문:', questions);
+    console.log('사용된 질문:', Array.from(used));
+    
     // 사용하지 않은 질문들만 필터링
     const availableQuestions = questions.filter(q => !used.has(q));
+    console.log('사용 가능한 질문:', availableQuestions);
     
     // 사용 가능한 질문이 없으면 모든 질문 리셋
     if (availableQuestions.length === 0) {
+      console.log('사용 가능한 질문이 없어서 리셋');
       setUsedQuestions(new Set());
       const shuffled = [...questions].sort(() => Math.random() - 0.5);
-      setDisplayedQuestions(shuffled.slice(0, 3));
+      const selected = shuffled.slice(0, 3);
+      console.log('리셋 후 선택된 질문:', selected);
+      setDisplayedQuestions(selected);
       return;
     }
     
     // 셔플
     const shuffled = [...availableQuestions].sort(() => Math.random() - 0.5);
     // 3개 선택 (사용 가능한 질문이 3개 미만이면 있는 만큼만)
-    setDisplayedQuestions(shuffled.slice(0, Math.min(3, shuffled.length)));
+    const selected = shuffled.slice(0, Math.min(3, shuffled.length));
+    console.log('선택된 질문:', selected);
+    setDisplayedQuestions(selected);
   }, []);
 
   // 소유자 프로필 로드 (이름/사진/태그/aiIntro)
@@ -99,18 +109,54 @@ export default function GuestChatPage() {
         }
         
         // 추천 질문 불러오기
-        const recommendQuestionsRef = doc(db, 'users', ownerId, 'derived', 'recommendquestions');
-        const recommendQuestionsSnap = await getDoc(recommendQuestionsRef);
-        if (recommendQuestionsSnap.exists()) {
-          const data = recommendQuestionsSnap.data();
-          const questions = data?.questions || [];
-          console.log('추천 질문 불러오기:', questions);
-          setAllRecommendQuestions(questions);
-          // 초기 3개 질문 셔플해서 표시
-          shuffleAndDisplayQuestions(questions, new Set());
-        } else {
-          console.log('추천 질문 문서가 존재하지 않습니다');
+        console.log('=== 추천 질문 불러오기 시작 ===');
+        console.log('ownerId:', ownerId);
+        console.log('db 객체:', db);
+        
+        try {
+          const recommendQuestionsRef = doc(db, 'users', ownerId, 'derived', 'recommendquestions');
+          console.log('Firestore 경로:', `users/${ownerId}/derived/recommendquestions`);
+          console.log('문서 참조 생성 완료:', recommendQuestionsRef);
+          
+          const recommendQuestionsSnap = await getDoc(recommendQuestionsRef);
+          console.log('문서 조회 완료, exists:', recommendQuestionsSnap.exists());
+          
+          if (recommendQuestionsSnap.exists()) {
+            const data = recommendQuestionsSnap.data();
+            console.log('문서 데이터:', data);
+            const questions = data?.questions || [];
+            console.log('추천 질문 배열:', questions);
+            console.log('추천 질문 개수:', questions.length);
+            
+            setAllRecommendQuestions(questions);
+            // 초기 3개 질문 셔플해서 표시
+            shuffleAndDisplayQuestions(questions, new Set());
+            console.log('추천 질문 설정 완료');
+          } else {
+            console.log('❌ 추천 질문 문서가 존재하지 않습니다');
+            console.log('문서 경로를 확인하세요: users/' + ownerId + '/derived/recommendquestions');
+            
+            // 기본 추천 질문 사용 (테스트용)
+            const defaultQuestions = [
+              "당신의 취미는 무엇인가요?",
+              "어떤 일을 하시나요?",
+              "좋아하는 음식은 무엇인가요?",
+              "주말에는 주로 무엇을 하시나요?",
+              "최근에 본 영화나 드라마가 있나요?",
+              "여행 가고 싶은 곳이 있나요?"
+            ];
+            console.log('기본 추천 질문 사용:', defaultQuestions);
+            setAllRecommendQuestions(defaultQuestions);
+            shuffleAndDisplayQuestions(defaultQuestions, new Set());
+          }
+        } catch (recommendError: any) {
+          console.error('❌ 추천 질문 불러오기 실패');
+          console.error('에러 코드:', recommendError?.code);
+          console.error('에러 메시지:', recommendError?.message);
+          console.error('전체 에러:', recommendError);
+          // 추천 질문 없이 계속 진행
         }
+        console.log('=== 추천 질문 불러오기 종료 ===');
       } catch (e) {
         console.error('프로필 로드 에러:', e);
         // 에러가 발생해도 기본 정보로 설정
@@ -434,6 +480,13 @@ export default function GuestChatPage() {
         />
         
         {/* 추천 질문 영역 - 입력창 위 */}
+        {(() => {
+          console.log('추천 질문 렌더링 체크:');
+          console.log('- displayedQuestions.length:', displayedQuestions.length);
+          console.log('- messages.length:', messages.length);
+          console.log('- 조건 충족:', displayedQuestions.length > 0 && messages.length <= 1);
+          return null;
+        })()}
         {displayedQuestions.length > 0 && messages.length <= 1 && (
           <div style={{
             padding: '12px 20px',
