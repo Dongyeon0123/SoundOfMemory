@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from '../../styles/styles.module.css';
 import mbtiStyles from '../../styles/MbtiModal.module.css';
-import { FiEdit2 } from 'react-icons/fi';
+import { FiChevronUp } from 'react-icons/fi';
 import { BsSuitDiamondFill } from 'react-icons/bs';
 
 // 1) MBTI 박스
@@ -29,18 +29,48 @@ interface ProfileIntroduceBoxProps {
 }
 
 export function ProfileIntroduceBox({ introduce, isMyProfile, onEdit, obscured = false }: ProfileIntroduceBoxProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   return (
     <div
       className={styles.introduceBox}
       style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', position: 'relative', marginTop: 10 }}
     >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <BsSuitDiamondFill size={16} color="#257EFE" style={{ position: 'relative', top: 1 }} />
-                <span style={{ fontSize: 17, color: '#222', fontWeight: 600, lineHeight: '18px', position: 'relative', top: 2.5, marginBottom: 5 }}>소개</span>
-              </div>
-              <span style={{ fontSize: 14, color: '#888', fontWeight: 400, marginTop: 12, lineHeight: '1.6', filter: obscured ? 'blur(4px)' : 'none' }}>
-        {introduce || '소개를 작성해보세요 !'}
-      </span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BsSuitDiamondFill size={16} color="#257EFE" style={{ position: 'relative', top: 1 }} />
+          <span style={{ fontSize: 17, color: '#222', fontWeight: 600, lineHeight: '18px', position: 'relative', top: 2.5, marginBottom: 5 }}>소개</span>
+        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 4,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 0.3s ease',
+            transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)',
+          }}
+        >
+          <FiChevronUp size={20} color="#888" />
+        </button>
+      </div>
+      <div
+        style={{
+          maxHeight: isExpanded ? '500px' : '0',
+          opacity: isExpanded ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease, opacity 0.3s ease',
+          width: '100%',
+        }}
+      >
+        <span style={{ fontSize: 14, color: '#888', fontWeight: 400, marginTop: 12, lineHeight: '1.6', filter: obscured ? 'blur(4px)' : 'none', display: 'block' }}>
+          {introduce || '소개를 작성해보세요 !'}
+        </span>
+      </div>
     </div>
   );
 }
@@ -60,56 +90,86 @@ interface ProfileHistoryBoxProps {
 }
 
 export function ProfileHistoryBox({ history, isMyProfile, onEdit, obscured = false }: ProfileHistoryBoxProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   return (
     <div className={styles.historyBox} style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <BsSuitDiamondFill size={16} color="#257EFE" style={{ position: 'relative', top: 1 }} />
-        <span style={{ fontSize: 17, color: '#222', fontWeight: 600, lineHeight: '18px', position: 'relative', top: 2.5, marginBottom: 5 }}>이력</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BsSuitDiamondFill size={16} color="#257EFE" style={{ position: 'relative', top: 1 }} />
+          <span style={{ fontSize: 17, color: '#222', fontWeight: 600, lineHeight: '18px', position: 'relative', top: 2.5, marginBottom: 5 }}>이력</span>
+        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 4,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 0.3s ease',
+            transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)',
+          }}
+        >
+          <FiChevronUp size={20} color="#888" />
+        </button>
       </div>
-      <div style={{ marginTop: 12, color: '#888', fontWeight: 400, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', filter: obscured ? 'blur(4px)' : 'none' }}>
-        {history && history.length > 0 ? (
-          history.map((h, i) => (
-            <div
-              key={i}
-              className={styles.historyContent}
-              style={{
-                background: '#fff',
-                borderRadius: 24,
-                boxShadow: '0 1px 6px 0 rgba(99,106,232,0.07)',
-                padding: '15px 16px 13px 16px',
-                marginBottom: 8,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ color: '#222', fontWeight: 400, fontSize: 15 }}>{h.school}</span>
-                <span style={{ color: '#888', fontWeight: 400, fontSize: 12, marginTop: 6 }}>{h.period}</span>
-              </div>
-              <span
+      <div
+        style={{
+          maxHeight: isExpanded ? '1000px' : '0',
+          opacity: isExpanded ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease, opacity 0.3s ease',
+          width: '100%',
+        }}
+      >
+        <div style={{ marginTop: 12, color: '#888', fontWeight: 400, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', filter: obscured ? 'blur(4px)' : 'none' }}>
+          {history && history.length > 0 ? (
+            history.map((h, i) => (
+              <div
+                key={i}
+                className={styles.historyContent}
                 style={{
-                  color: '#000',
-                  fontWeight: 500,
-                  fontSize: 12,
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: 0,
-                  padding: '8px 4px',
-                  marginLeft: 16,
-                  display: 'inline-block',
-                  minWidth: 64,
-                  textAlign: 'center',
+                  background: '#fff',
+                  borderRadius: 24,
+                  boxShadow: '0 1px 6px 0 rgba(99,106,232,0.07)',
+                  padding: '15px 16px 13px 16px',
+                  marginBottom: 8,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
-                {h.role}
-              </span>
-            </div>
-          ))
-        ) : (
-          <span>이력이 없습니다.</span>
-        )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ color: '#222', fontWeight: 400, fontSize: 15 }}>{h.school}</span>
+                  <span style={{ color: '#888', fontWeight: 400, fontSize: 12, marginTop: 6 }}>{h.period}</span>
+                </div>
+                <span
+                  style={{
+                    color: '#000',
+                    fontWeight: 500,
+                    fontSize: 12,
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: 0,
+                    padding: '8px 4px',
+                    marginLeft: 16,
+                    display: 'inline-block',
+                    minWidth: 64,
+                    textAlign: 'center',
+                  }}
+                >
+                  {h.role}
+                </span>
+              </div>
+            ))
+          ) : (
+            <span>이력이 없습니다.</span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -132,64 +192,94 @@ interface ProfileCareerBoxProps {
 }
 
 export function ProfileCareerBox({ career, isMyProfile, onEdit, obscured = false }: ProfileCareerBoxProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   return (
     <div className={styles.historyBox} style={{ position: 'relative', marginTop: 10, marginBottom: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <BsSuitDiamondFill size={16} color="#257EFE" style={{ position: 'relative', top: 1 }} />
-        <span style={{ fontSize: 17, color: '#222', fontWeight: 600, lineHeight: '18px', position: 'relative', top: 2.5, marginBottom: 5 }}>경력</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BsSuitDiamondFill size={16} color="#257EFE" style={{ position: 'relative', top: 1 }} />
+          <span style={{ fontSize: 17, color: '#222', fontWeight: 600, lineHeight: '18px', position: 'relative', top: 2.5, marginBottom: 5 }}>경력</span>
+        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 4,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 0.3s ease',
+            transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)',
+          }}
+        >
+          <FiChevronUp size={20} color="#888" />
+        </button>
       </div>
-      <div style={{ marginTop: 12, color: '#888', fontWeight: 400, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', filter: obscured ? 'blur(4px)' : 'none' }}>
-        {career && career.length > 0 ? (
-          career.map((c, i) => (
-            <div
-              key={i}
-              className={styles.historyContent}
-              style={{
-                background: '#fff',
-                borderRadius: 24,
-                boxShadow: '0 1px 6px 0 rgba(99,106,232,0.07)',
-                padding: '15px 16px 13px 16px',
-                marginBottom: 8,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ color: '#222', fontWeight: 400, fontSize: 15, marginTop: 6 }}>{c.org}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, marginBottom: 4 }}>
-                  <span style={{ color: '#9095A0FF', fontWeight: 400, fontSize: 13 }}>{c.dept}</span>
-                  {c.months ? (
-                    <span style={{ color: '#888', fontSize: 12, fontWeight: 500 }}>{c.months}개월</span>
-                  ) : null}
-                </div>
-                <span style={{ color: '#888', fontWeight: 400, fontSize: 12 }}>
-                  {c.period}
-                </span>
-              </div>
-              <span
+      <div
+        style={{
+          maxHeight: isExpanded ? '1000px' : '0',
+          opacity: isExpanded ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease, opacity 0.3s ease',
+          width: '100%',
+        }}
+      >
+        <div style={{ marginTop: 12, color: '#888', fontWeight: 400, fontSize: 14, display: 'flex', flexDirection: 'column', gap: 8, width: '100%', filter: obscured ? 'blur(4px)' : 'none' }}>
+          {career && career.length > 0 ? (
+            career.map((c, i) => (
+              <div
+                key={i}
+                className={styles.historyContent}
                 style={{
-                  color: '#000',
-                  fontWeight: 500,
-                  fontSize: 12,
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: 0,
-                  padding: '8px 4px',
-                  marginLeft: 16,
-                  display: 'inline-block',
-                  minWidth: 64,
-                  textAlign: 'center',
+                  background: '#fff',
+                  borderRadius: 24,
+                  boxShadow: '0 1px 6px 0 rgba(99,106,232,0.07)',
+                  padding: '15px 16px 13px 16px',
+                  marginBottom: 8,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
-                {c.role}
-              </span>
-            </div>
-          ))
-        ) : (
-          <span>경력이 없습니다.</span>
-        )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ color: '#222', fontWeight: 400, fontSize: 15, marginTop: 6 }}>{c.org}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, marginBottom: 4 }}>
+                    <span style={{ color: '#9095A0FF', fontWeight: 400, fontSize: 13 }}>{c.dept}</span>
+                    {c.months ? (
+                      <span style={{ color: '#888', fontSize: 12, fontWeight: 500 }}>{c.months}개월</span>
+                    ) : null}
+                  </div>
+                  <span style={{ color: '#888', fontWeight: 400, fontSize: 12 }}>
+                    {c.period}
+                  </span>
+                </div>
+                <span
+                  style={{
+                    color: '#000',
+                    fontWeight: 500,
+                    fontSize: 12,
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: 0,
+                    padding: '8px 4px',
+                    marginLeft: 16,
+                    display: 'inline-block',
+                    minWidth: 64,
+                    textAlign: 'center',
+                  }}
+                >
+                  {c.role}
+                </span>
+              </div>
+            ))
+          ) : (
+            <span>경력이 없습니다.</span>
+          )}
+        </div>
       </div>
     </div>
   );

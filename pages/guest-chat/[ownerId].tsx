@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -27,6 +27,11 @@ export default function GuestChatPage() {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [messageCount, setMessageCount] = useState(0);
   const GUEST_MESSAGE_LIMIT = 5;
+  
+  // 추천 질문 관련 상태
+  const [allRecommendQuestions, setAllRecommendQuestions] = useState<string[]>([]);
+  const [displayedQuestions, setDisplayedQuestions] = useState<string[]>([]);
+  const [usedQuestions, setUsedQuestions] = useState<Set<string>>(new Set());
 
   const chatDocPath = () => {
     if (!ownerId || typeof ownerId !== 'string' || !guestId) return null;
@@ -46,6 +51,25 @@ export default function GuestChatPage() {
     });
     return () => unsubscribe();
   }, [router]);
+
+  // 질문 셔플 및 표시 함수
+  const shuffleAndDisplayQuestions = useCallback((questions: string[], used: Set<string>) => {
+    // 사용하지 않은 질문들만 필터링
+    const availableQuestions = questions.filter(q => !used.has(q));
+    
+    // 사용 가능한 질문이 없으면 모든 질문 리셋
+    if (availableQuestions.length === 0) {
+      setUsedQuestions(new Set());
+      const shuffled = [...questions].sort(() => Math.random() - 0.5);
+      setDisplayedQuestions(shuffled.slice(0, 3));
+      return;
+    }
+    
+    // 셔플
+    const shuffled = [...availableQuestions].sort(() => Math.random() - 0.5);
+    // 3개 선택 (사용 가능한 질문이 3개 미만이면 있는 만큼만)
+    setDisplayedQuestions(shuffled.slice(0, Math.min(3, shuffled.length)));
+  }, []);
 
   // 소유자 프로필 로드 (이름/사진/태그/aiIntro)
   useEffect(() => {
@@ -73,7 +97,22 @@ export default function GuestChatPage() {
             aiIntro: '안녕! 나는 개인 AI 아바타 비서야. 궁금한거 있으면 물어봐!'
           });
         }
+        
+        // 추천 질문 불러오기
+        const recommendQuestionsRef = doc(db, 'users', ownerId, 'derived', 'recommendquestions');
+        const recommendQuestionsSnap = await getDoc(recommendQuestionsRef);
+        if (recommendQuestionsSnap.exists()) {
+          const data = recommendQuestionsSnap.data();
+          const questions = data?.questions || [];
+          console.log('추천 질문 불러오기:', questions);
+          setAllRecommendQuestions(questions);
+          // 초기 3개 질문 셔플해서 표시
+          shuffleAndDisplayQuestions(questions, new Set());
+        } else {
+          console.log('추천 질문 문서가 존재하지 않습니다');
+        }
       } catch (e) {
+        console.error('프로필 로드 에러:', e);
         // 에러가 발생해도 기본 정보로 설정
         setProfileInfo({
           id: ownerId,
@@ -85,7 +124,7 @@ export default function GuestChatPage() {
       }
     };
     loadOwnerProfile();
-  }, [ownerId]);
+  }, [ownerId, shuffleAndDisplayQuestions]);
 
   // 게스트 채팅방 초기화: 문서 생성 및 AI 인사말 저장
   useEffect(() => {
@@ -357,6 +396,20 @@ export default function GuestChatPage() {
     router.push('/register/login');
   };
 
+  // 추천 질문 클릭 핸들러
+  const handleQuestionClick = (question: string) => {
+    // 선택한 질문을 사용된 질문에 추가
+    const newUsedQuestions = new Set(usedQuestions);
+    newUsedQuestions.add(question);
+    setUsedQuestions(newUsedQuestions);
+    
+    // 입력창에 질문 설정
+    setInput(question);
+    
+    // 다음 질문들 셔플
+    shuffleAndDisplayQuestions(allRecommendQuestions, newUsedQuestions);
+  };
+
   return (
     <div className={cardStyles.fullContainer}>
       <div className={cardStyles.centerCard}>
@@ -370,6 +423,7 @@ export default function GuestChatPage() {
           onToggleProMode={() => {}}
         />
         <div style={{ width: '100%', height: '1px', background: '#e0e0e0' }} />
+        
         <MessageList
           loading={loading}
           messages={messages}
@@ -378,6 +432,51 @@ export default function GuestChatPage() {
           scrollRef={scrollRef}
           profileName={profileInfo?.name || ''}
         />
+        
+        {/* 추천 질문 영역 - 입력창 위 */}
+        {displayedQuestions.length > 0 && messages.length <= 1 && (
+          <div style={{
+            padding: '12px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            background: '#F8F9FF',
+            borderTop: '1px solid #e0e0e0'
+          }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#636AE8', marginBottom: 2 }}>
+              추천 질문
+            </span>
+            {displayedQuestions.map((question, index) => (
+              <button
+                key={index}
+                onClick={() => handleQuestionClick(question)}
+                style={{
+                  padding: '10px 14px',
+                  background: '#fff',
+                  border: '1px solid #E5E8EB',
+                  borderRadius: 10,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  fontWeight: 400,
+                  color: '#222',
+                  textAlign: 'left',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#F8F9FF';
+                  e.currentTarget.style.borderColor = '#636AE8';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#fff';
+                  e.currentTarget.style.borderColor = '#E5E8EB';
+                }}
+              >
+                {question}
+              </button>
+            ))}
+          </div>
+        )}
+        
         <ChatInput
           input={input}
           onInputChange={setInput}
