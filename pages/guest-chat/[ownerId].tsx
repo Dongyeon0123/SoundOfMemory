@@ -442,8 +442,8 @@ export default function GuestChatPage() {
     router.push('/register/login');
   };
 
-  // 추천 질문 클릭 핸들러
-  const handleQuestionClick = (question: string) => {
+  // 추천 질문 클릭 핸들러 - 바로 전송
+  const handleQuestionClick = async (question: string) => {
     // 선택한 질문을 사용된 질문에 추가
     const newUsedQuestions = new Set(usedQuestions);
     newUsedQuestions.add(question);
@@ -454,6 +454,98 @@ export default function GuestChatPage() {
     
     // 다음 질문들 셔플
     shuffleAndDisplayQuestions(allRecommendQuestions, newUsedQuestions);
+    
+    // 바로 메시지 전송
+    if (!ownerId || typeof ownerId !== 'string' || !guestId) return;
+    
+    // 횟수 제한 체크
+    if (messageCount >= GUEST_MESSAGE_LIMIT) {
+      setShowLimitModal(true);
+      return;
+    }
+
+    setIsWaitingForReply(true);
+    
+    // 로컬 상태에 사용자 메시지 즉시 추가
+    const userMessage = { id: `user_${Date.now()}`, content: question, sender: 'user' as const, timestamp: new Date() };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+
+    try {
+      const auth = getAuth();
+      if (!auth.currentUser) {
+        setIsWaitingForReply(false);
+        return;
+      }
+
+      // Firestore에 사용자 메시지 저장
+      const ref = chatDocPath();
+      if (ref) {
+        try {
+          const docSnap = await getDoc(ref);
+          if (docSnap.exists()) {
+            const currentMessages = docSnap.data().messages || [];
+            const updatedMessages = [...currentMessages, question];
+            await setDoc(ref, { messages: updatedMessages });
+          }
+        } catch (firestoreError) {
+        }
+      }
+
+      // AI 답변 요청
+      const url = 'https://asia-northeast3-numeric-vehicle-453915-j9.cloudfunctions.net/guestchat/guest';
+      const payload = { ownerId, guestId, message: question };
+      
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      const responseText = await res.text().catch(() => '');
+      
+      if (res.ok) {
+        try {
+          const responseData = JSON.parse(responseText);
+          if (responseData.response) {
+            const ref = chatDocPath();
+            if (ref) {
+              try {
+                const docSnap = await getDoc(ref);
+                if (docSnap.exists()) {
+                  const currentMessages = docSnap.data().messages || [];
+                  const updatedMessages = [...currentMessages, responseData.response];
+                  await setDoc(ref, { messages: updatedMessages });
+                }
+              } catch (firestoreError) {
+                const aiMessage = { id: `ai_${Date.now()}`, content: responseData.response, sender: 'ai' as const, timestamp: new Date() };
+                setMessages(prev => [...prev, aiMessage]);
+              }
+            }
+          }
+        } catch (parseError) {
+          if (responseText) {
+            const aiMessage = { id: `ai_${Date.now()}`, content: responseText, sender: 'ai' as const, timestamp: new Date() };
+            setMessages(prev => [...prev, aiMessage]);
+          }
+        }
+      } else {
+        if (res.status === 429) {
+          try {
+            const errorData = JSON.parse(responseText);
+            if (errorData.code === 'GUEST_TRIAL_EXPIRED') {
+              setShowLimitModal(true);
+              return;
+            }
+          } catch (parseError) {
+          }
+        }
+      }
+    } catch (e) {
+    } finally {
+      setIsWaitingForReply(false);
+    }
   };
 
   return (
@@ -493,11 +585,11 @@ export default function GuestChatPage() {
             display: 'flex',
             flexDirection: 'column',
             gap: 8,
-            background: '#F8F9FF',
+            background: '#D6E7FF',
             borderTop: '1px solid #e0e0e0'
           }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#636AE8', marginBottom: 2 }}>
-              추천 질문
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#636AE8', marginBottom: 2, textAlign: 'center' }}>
+              모리가 추천하는 질문
             </span>
             {displayedQuestions.map((question, index) => (
               <button
@@ -505,8 +597,8 @@ export default function GuestChatPage() {
                 onClick={() => handleQuestionClick(question)}
                 style={{
                   padding: '10px 14px',
-                  background: '#fff',
-                  border: '1px solid #E5E8EB',
+                  background: '#ABCEFF',
+                  border: '1px solid #9BB8E8',
                   borderRadius: 10,
                   cursor: 'pointer',
                   fontSize: 13,
@@ -516,12 +608,12 @@ export default function GuestChatPage() {
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F8F9FF';
-                  e.currentTarget.style.borderColor = '#636AE8';
+                  e.currentTarget.style.background = '#9BB8E8';
+                  e.currentTarget.style.borderColor = '#8AA7D7';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#fff';
-                  e.currentTarget.style.borderColor = '#E5E8EB';
+                  e.currentTarget.style.background = '#ABCEFF';
+                  e.currentTarget.style.borderColor = '#9BB8E8';
                 }}
               >
                 {question}
