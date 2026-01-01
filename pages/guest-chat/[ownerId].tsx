@@ -32,6 +32,7 @@ export default function GuestChatPage() {
   const [allRecommendQuestions, setAllRecommendQuestions] = useState<string[]>([]);
   const [displayedQuestions, setDisplayedQuestions] = useState<string[]>([]);
   const [usedQuestions, setUsedQuestions] = useState<Set<string>>(new Set());
+  const [showRecommendQuestions, setShowRecommendQuestions] = useState(true);
 
   const chatDocPath = () => {
     if (!ownerId || typeof ownerId !== 'string' || !guestId) return null;
@@ -572,18 +573,43 @@ export default function GuestChatPage() {
         />
         
         {/* 추천 질문 영역 - 입력창 위 */}
-        {displayedQuestions.length > 0 && (
+        {displayedQuestions.length > 0 && showRecommendQuestions && (
           <div style={{
             padding: '12px 20px',
             display: 'flex',
             flexDirection: 'column',
             gap: 8,
             background: '#D6E7FF',
-            borderTop: '1px solid #e0e0e0'
+            borderTop: '1px solid #e0e0e0',
+            position: 'relative'
           }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#636AE8', marginBottom: 2, textAlign: 'center' }}>
-              모리가 추천하는 질문
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#636AE8', marginBottom: 2 }}>
+                모리가 추천하는 질문
+              </span>
+              <button
+                onClick={() => setShowRecommendQuestions(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#636AE8',
+                  fontSize: 24,
+                  fontWeight: 'bold',
+                  lineHeight: 1,
+                  minWidth: 32,
+                  minHeight: 32,
+                  position: 'absolute',
+                  right: 0,
+                }}
+              >
+                ×
+              </button>
+            </div>
             {displayedQuestions.map((question, index) => (
               <button
                 key={index}
@@ -612,6 +638,40 @@ export default function GuestChatPage() {
                 {question}
               </button>
             ))}
+          </div>
+        )}
+        
+        {/* 추천 질문 열기 버튼 - 닫혀있을 때 */}
+        {displayedQuestions.length > 0 && !showRecommendQuestions && (
+          <div style={{
+            padding: '8px 20px',
+            display: 'flex',
+            justifyContent: 'center',
+            background: '#f8f9fa',
+            borderTop: '1px solid #e0e0e0'
+          }}>
+            <button
+              onClick={() => setShowRecommendQuestions(true)}
+              style={{
+                padding: '8px 16px',
+                background: '#D6E7FF',
+                border: '1px solid #9BB8E8',
+                borderRadius: 8,
+                cursor: 'pointer',
+                fontSize: 12,
+                fontWeight: 600,
+                color: '#636AE8',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#ABCEFF';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#D6E7FF';
+              }}
+            >
+              💡 추천 질문 보기
+            </button>
           </div>
         )}
         
