@@ -572,14 +572,7 @@ export default function GuestChatPage() {
         />
         
         {/* 추천 질문 영역 - 입력창 위 */}
-        {(() => {
-          console.log('추천 질문 렌더링 체크:');
-          console.log('- displayedQuestions.length:', displayedQuestions.length);
-          console.log('- messages.length:', messages.length);
-          console.log('- 조건 충족:', displayedQuestions.length > 0 && messages.length <= 1);
-          return null;
-        })()}
-        {displayedQuestions.length > 0 && messages.length <= 1 && (
+        {displayedQuestions.length > 0 && (
           <div style={{
             padding: '12px 20px',
             display: 'flex',
